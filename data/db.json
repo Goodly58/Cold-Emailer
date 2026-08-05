@@ -1,0 +1,349 @@
+{
+  "profile": {
+    "name": "Your Name",
+    "headline": "Your one-line headline (e.g. Data analyst, ex-XYZ)",
+    "phone": "+971 5X XXX XXXX",
+    "linkedinUrl": "https://linkedin.com/in/your-handle"
+  },
+  "companies": [
+    {
+      "id": "c1",
+      "name": "First Abu Dhabi Bank (FAB)",
+      "sector": "Banking",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE Emiratisation points system; large UAE National programs (graduate + experienced).",
+      "careersUrl": "https://www.bankfab.com/en-ae/about-fab/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c2",
+      "name": "Emirates NBD",
+      "sector": "Banking",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Ruwad & National talent programs; actively recruits Emiratis.",
+      "careersUrl": "https://www.emiratesnbd.com/en/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c3",
+      "name": "ADCB",
+      "sector": "Banking",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Tamooha & UAE National development programs.",
+      "careersUrl": "https://www.adcb.com/en/about-us/careers/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c4",
+      "name": "Mashreq",
+      "sector": "Banking",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Ta'meed program for UAE Nationals.",
+      "careersUrl": "https://www.mashreqbank.com/en/uae/neo/about-us/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c5",
+      "name": "ADIB",
+      "sector": "Banking",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.adib.ae/en/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c6",
+      "name": "e& (Etisalat Group)",
+      "sector": "Telecom / Tech",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Regulator-driven Emiratisation; strong national graduate programs.",
+      "careersUrl": "https://www.eand.com/en/careers.html",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c7",
+      "name": "du (EITC)",
+      "sector": "Telecom",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.du.ae/about-us/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c8",
+      "name": "ADNOC Group",
+      "sector": "Energy",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Semi-government; Emiratis strongly preferred across corporate roles.",
+      "careersUrl": "https://www.adnoc.ae/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c9",
+      "name": "Mubadala",
+      "sector": "Sovereign Investment",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "UAE National development a core mandate.",
+      "careersUrl": "https://www.mubadala.com/en/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c10",
+      "name": "ADIA",
+      "sector": "Sovereign Investment",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "careersUrl": "https://www.adia.ae/en/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c11",
+      "name": "ADQ",
+      "sector": "Sovereign Investment",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.adq.ae/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c12",
+      "name": "DP World",
+      "sector": "Logistics",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.dpworld.com/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c13",
+      "name": "Masdar",
+      "sector": "Renewable Energy",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://masdar.ae/en/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c14",
+      "name": "TAQA",
+      "sector": "Utilities / Energy",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.taqa.com/careers/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c15",
+      "name": "Emirates Group",
+      "sector": "Aviation",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Dedicated UAE National recruitment track.",
+      "careersUrl": "https://www.emiratesgroupcareers.com/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c16",
+      "name": "Etihad Airways",
+      "sector": "Aviation",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://careers.etihad.com/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c17",
+      "name": "G42 / Core42 / Presight",
+      "sector": "AI / Tech",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Fast-growing AI group; national talent programs and strong government ties.",
+      "careersUrl": "https://www.g42.ai/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c18",
+      "name": "Careem",
+      "sector": "Tech",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.careem.com/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c19",
+      "name": "talabat",
+      "sector": "Tech",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://careers.talabat.com/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c20",
+      "name": "noon",
+      "sector": "E-commerce",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.noon.com/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c21",
+      "name": "Emaar",
+      "sector": "Real Estate",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "careersUrl": "https://www.emaar.com/en/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c22",
+      "name": "Microsoft UAE",
+      "sector": "Tech (MNC)",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "MNC mainland entities are quota-liable; MSFT runs UAE National hiring initiatives.",
+      "careersUrl": "https://careers.microsoft.com/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c23",
+      "name": "Google (Dubai)",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": false,
+      "careersUrl": "https://careers.google.com/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c24",
+      "name": "Amazon MENA",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www.amazon.jobs/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c25",
+      "name": "McKinsey & Company (Middle East)",
+      "sector": "Consulting",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "ME offices actively recruit GCC nationals for government-facing work.",
+      "careersUrl": "https://www.mckinsey.com/careers",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c26",
+      "name": "BCG Middle East",
+      "sector": "Consulting",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "careersUrl": "https://careers.bcg.com/",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c27",
+      "name": "PwC Middle East",
+      "sector": "Consulting / Big 4",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Watani UAE National program.",
+      "careersUrl": "https://www.pwc.com/m1/en/careers.html",
+      "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c28",
+      "name": "Deloitte Middle East",
+      "sector": "Consulting / Big 4",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://www2.deloitte.com/xe/en/careers.html",
+      "createdAt": "2026-08-05T00:00:00Z"
+    }
+  ],
+  "contacts": [],
+  "applications": [],
+  "outreach": [],
+  "templates": [
+    {
+      "id": "t1",
+      "name": "Cold intro — hiring manager",
+      "category": "cold-intro",
+      "subject": "{{role}} at {{company}} — quick note",
+      "body": "Hi {{firstName}},\n\nI saw {{company}} is hiring for {{role}} and wanted to reach out directly rather than disappear into the applicant pool.\n\n{{hook}}\n\nTwo things that might be relevant:\n- [Proof point 1 — a result with a number in it]\n- [Proof point 2 — most relevant experience for this role]\n\nI'm a UAE National, so my hire also counts toward {{company}}'s Emiratisation targets — but I'd rather earn the role on merit; happy to walk you through my work in 15 minutes.\n\nBest,\n{{myName}}\n{{headline}}\n{{linkedin}} | {{phone}}"
+    },
+    {
+      "id": "t2",
+      "name": "Emiratisation angle — HR / TA lead",
+      "category": "emiratisation",
+      "subject": "Emirati candidate — {{role}} ({{company}})",
+      "body": "Dear {{firstName}},\n\nI'm an Emirati professional ({{headline}}) exploring {{role}} opportunities at {{company}}.\n\nBeyond the fit for the role itself, I understand hiring UAE Nationals is a priority — my hire counts toward your MoHRE Emiratisation targets, and Nafis support (salary top-up and employer pension contribution) applies.\n\n{{hook}}\n\nWould you be open to a short call this week, or could you point me to the right hiring manager?\n\nWith thanks,\n{{myName}}\n{{linkedin}} | {{phone}}"
+    },
+    {
+      "id": "t3",
+      "name": "Follow-up 1 (day 3)",
+      "category": "followup",
+      "subject": "Re: {{role}} at {{company}}",
+      "body": "Hi {{firstName}},\n\nFollowing up on my note from a few days ago — I know inboxes are brutal.\n\nOne line on why I'm worth 15 minutes: {{hook}}\n\nIf someone else owns this hire, a quick redirect would be hugely appreciated.\n\nBest,\n{{myName}}"
+    },
+    {
+      "id": "t4",
+      "name": "Follow-up 2 — breakup (day 8)",
+      "category": "followup",
+      "subject": "Re: {{role}} at {{company}} — closing the loop",
+      "body": "Hi {{firstName}},\n\nLast note from me — I'll assume the timing isn't right and won't clutter your inbox further.\n\nIf a {{role}}-shaped need comes up later, my details are below and I'd genuinely love to talk. Either way, thanks for reading.\n\nBest,\n{{myName}}\n{{linkedin}} | {{phone}}"
+    },
+    {
+      "id": "t5",
+      "name": "Post-application nudge",
+      "category": "application",
+      "subject": "Applied for {{role}} — putting a face to the application",
+      "body": "Hi {{firstName}},\n\nI just applied for the {{role}} opening at {{company}} (application under {{myName}}) and wanted to introduce myself directly.\n\n{{hook}}\n\nI'm also a UAE National, which I understand is relevant for {{company}}'s Emiratisation goals. If it's useful, I'm happy to share a short summary of exactly how I'd approach the first 90 days in this role.\n\nBest,\n{{myName}}\n{{headline}}\n{{linkedin}} | {{phone}}"
+    },
+    {
+      "id": "t6",
+      "name": "Referral ask (2nd-degree connection)",
+      "category": "referral",
+      "subject": "Quick favour — {{role}} at {{company}}",
+      "body": "Hi {{firstName}},\n\nHope you're well! I'm applying for {{role}} at {{company}} and saw you're connected there.\n\n{{hook}}\n\nWould you be comfortable referring me, or introducing me to the hiring manager? Happy to send a short blurb + CV to make it zero-effort. And of course, tell me if it's awkward — no pressure at all.\n\nThanks either way,\n{{myName}}"
+    }
+  ]
+}
