@@ -28,9 +28,15 @@ Open http://localhost:3000.
 
 ## Data
 
-Everything lives in `data/db.json` (set `DB_PATH` to store it elsewhere). It's plain JSON — easy to
-back up, export, or edit by hand. Note: using the app mutates this file, so your live data will show
-up as git changes; either commit it (private repo) or point `DB_PATH` outside the repo.
+Two backends, picked automatically:
+
+- **Locally**: plain JSON at `data/db.json` (set `DB_PATH` to store it elsewhere) — zero setup,
+  easy to back up or edit by hand. Using the app mutates this file, so live data shows up as git
+  changes; commit it (private repo) or point `DB_PATH` outside the repo.
+- **Hosted**: set `TURSO_DATABASE_URL` (+ `TURSO_AUTH_TOKEN`) and everything is stored in a free
+  [Turso](https://turso.tech) cloud database instead. Seeds itself on first load.
+
+To put it online for $0/month (Vercel + Turso), follow [DEPLOY.md](./DEPLOY.md).
 
 ## Deliberate non-goals
 

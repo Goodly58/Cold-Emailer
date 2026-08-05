@@ -1,42 +1,50 @@
 # Deploying online
 
-The app is a Next.js server with a JSON file database, so it needs a host that gives you a
-**persistent disk** (a "volume"). Serverless hosts like Vercel won't persist the file — use one of
-these instead.
+The app supports two storage backends, picked automatically:
 
-## Option A — Railway (recommended, ~$5/mo, easiest)
+- **Turso** (cloud SQLite) when `TURSO_DATABASE_URL` is set — use this for hosted deployments.
+- **JSON file** at `data/db.json` otherwise — zero-setup local dev, and Docker hosts with a volume.
 
-1. Go to [railway.com](https://railway.com) and sign in with your GitHub account.
-2. **New Project → Deploy from GitHub repo** → pick `Goodly58/Cold-Emailer`.
-3. In the service **Settings → Source**, set the branch you deployed (or merge to `main` first).
-   Railway auto-detects the `Dockerfile`.
-4. In the service **Settings → Volumes → Add Volume**, set the mount path to `/data`.
-   This is what keeps your data across redeploys — don't skip it.
-5. In **Variables**, add `APP_PASSWORD` = a password of your choosing (this locks the site).
-6. In **Settings → Networking → Generate Domain**. Open the URL, enter your password, done.
+## Option A — Vercel + Turso (recommended, $0/month)
 
-Every `git push` to the deployed branch auto-redeploys, and your data survives because it lives on
-the volume.
+**1. Create the free database (turso.tech):**
 
-## Option B — Fly.io (free-ish, needs their CLI)
+1. Sign up at [turso.tech](https://turso.tech) (GitHub login works, no credit card).
+2. Create a database (any name, pick a nearby region).
+3. Copy the **database URL** (looks like `libsql://yourdb-yourname.turso.io`).
+4. Create an **auth token** for the database and copy it.
 
-```bash
-fly launch --no-deploy       # accepts the Dockerfile
-fly volumes create data --size 1
-# add to fly.toml:  [mounts]  source = "data"  destination = "/data"
-fly secrets set APP_PASSWORD=yourpassword
-fly deploy
-```
+**2. Deploy the app (vercel.com):**
 
-## Option C — Render
+1. Sign up at [vercel.com](https://vercel.com) with your GitHub account.
+2. **Add New → Project** → import `Goodly58/Cold-Emailer`.
+3. Before hitting Deploy, expand **Environment Variables** and add:
+   - `TURSO_DATABASE_URL` = the URL from step 1.3
+   - `TURSO_AUTH_TOKEN` = the token from step 1.4
+   - `APP_PASSWORD` = a password of your choosing (locks the site)
+4. Click **Deploy**. You'll get a URL like `cold-emailer.vercel.app`.
 
-Works the same way (New Web Service → connect repo → Docker), but persistent disks require the
-paid tier; the free tier wipes your data on every restart, so don't use free Render for this.
+Vercel deploys the repo's default branch for production. If your code is on a feature branch,
+either merge it to `main`, or set **Project Settings → Git → Production Branch** to that branch.
+
+On first load the database seeds itself with the starter companies and templates. Every push to
+the production branch auto-redeploys; your data lives in Turso, untouched by deploys.
+
+## Option B — Railway (~$5/mo, uses the Dockerfile + a volume)
+
+1. [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo**.
+2. Settings → Volumes → mount path `/data`.
+3. Variables → `APP_PASSWORD`. (No Turso vars → it uses the JSON file on the volume.)
+4. Settings → Networking → Generate Domain.
+
+## Option C — Any VM (e.g. Oracle Cloud always-free)
+
+Run the Dockerfile anywhere with a persistent disk mounted at `/data`, or just
+`npm install && npm run build && npm start` behind a reverse proxy.
 
 ## Notes
 
 - **Always set `APP_PASSWORD`** on a public deployment — this tracker holds names, emails, and
-  notes about real people. Without the variable set, the app runs open (fine locally, not online).
+  notes about real people. Without it the app runs open (fine locally, not online).
 - The password unlocks the site for 90 days per browser via a cookie.
-- To back up your data, download `/data/db.json` (Railway: service → Volume → or just add an
-  export button later). Locally the same file is `data/db.json`.
+- Backup: Turso dashboard can export your database; locally, copy `data/db.json`.
