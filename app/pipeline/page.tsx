@@ -17,7 +17,7 @@ export default function Pipeline() {
   const [url, setUrl] = useState('');
   const [emirati, setEmirati] = useState(true);
 
-  const [importSource, setImportSource] = useState<'greenhouse' | 'lever'>('greenhouse');
+  const [importSource, setImportSource] = useState('greenhouse');
   const [importSlug, setImportSlug] = useState('');
   const [importCompany, setImportCompany] = useState('');
   const [importJobs, setImportJobs] = useState<ImportedJob[] | null>(null);
@@ -126,18 +126,22 @@ export default function Pipeline() {
       <div className="card mb">
         <h2 style={{ marginTop: 0 }}>Import live openings (public ATS feeds)</h2>
         <p className="muted mb">
-          Many companies run careers pages on Greenhouse or Lever. Enter the board slug (the name in
-          their careers URL, e.g. <code>careem</code>) to pull every open role — no scraping, these
-          are public APIs.
+          Most tech/startup careers pages run on one of these six ATS platforms. Enter the board
+          slug (the company name in their careers URL, e.g. <code>careem</code>) to pull every open
+          role — no scraping, these are public APIs. Not sure which ATS a company uses? Open their
+          careers page and look at the URL: <code>boards.greenhouse.io/X</code>,{' '}
+          <code>jobs.lever.co/X</code>, <code>jobs.ashbyhq.com/X</code>,{' '}
+          <code>apply.workable.com/X</code>, <code>jobs.smartrecruiters.com/X</code> — the{' '}
+          <code>X</code> is the slug.
         </p>
         <form onSubmit={runImport} className="form-row">
-          <select
-            className="fixed"
-            value={importSource}
-            onChange={(e) => setImportSource(e.target.value as 'greenhouse' | 'lever')}
-          >
+          <select className="fixed" value={importSource} onChange={(e) => setImportSource(e.target.value)}>
             <option value="greenhouse">Greenhouse</option>
             <option value="lever">Lever</option>
+            <option value="ashby">Ashby</option>
+            <option value="workable">Workable</option>
+            <option value="smartrecruiters">SmartRecruiters</option>
+            <option value="recruitee">Recruitee</option>
           </select>
           <input
             placeholder="Board slug, e.g. careem"

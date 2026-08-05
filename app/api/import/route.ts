@@ -4,13 +4,23 @@ import { NextRequest, NextResponse } from 'next/server';
 // These endpoints are intentionally public (they power companies' own
 // careers pages), so this is ToS-clean — unlike scraping LinkedIn.
 //
-//   Greenhouse: https://boards-api.greenhouse.io/v1/boards/{slug}/jobs
-//   Lever:      https://api.lever.co/v0/postings/{slug}?mode=json
+//   Greenhouse:      https://boards-api.greenhouse.io/v1/boards/{slug}/jobs
+//   Lever:           https://api.lever.co/v0/postings/{slug}?mode=json
+//   Ashby:           https://api.ashbyhq.com/posting-api/job-board/{slug}
+//   Workable:        https://apply.workable.com/api/v1/widget/accounts/{slug}
+//   SmartRecruiters: https://api.smartrecruiters.com/v1/companies/{slug}/postings
+//   Recruitee:       https://{slug}.recruitee.com/api/offers/
 
 export interface ImportedJob {
   title: string;
   location: string;
   url: string;
+}
+
+async function fetchJson(url: string, sourceName: string): Promise<unknown> {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`${sourceName} returned ${res.status} — check the slug`);
+  return res.json();
 }
 
 export async function GET(req: NextRequest) {
@@ -23,31 +33,71 @@ export async function GET(req: NextRequest) {
   try {
     let jobs: ImportedJob[] = [];
     if (source === 'greenhouse') {
-      const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`, {
-        cache: 'no-store',
-      });
-      if (!res.ok) throw new Error(`Greenhouse returned ${res.status} — check the board slug`);
-      const data = await res.json();
-      jobs = (data.jobs || []).map((j: { title: string; location?: { name?: string }; absolute_url: string }) => ({
+      const data = (await fetchJson(
+        `https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`,
+        'Greenhouse'
+      )) as { jobs?: Array<{ title: string; location?: { name?: string }; absolute_url: string }> };
+      jobs = (data.jobs || []).map((j) => ({
         title: j.title,
         location: j.location?.name || '',
         url: j.absolute_url,
       }));
     } else if (source === 'lever') {
-      const res = await fetch(`https://api.lever.co/v0/postings/${slug}?mode=json`, {
-        cache: 'no-store',
-      });
-      if (!res.ok) throw new Error(`Lever returned ${res.status} — check the company slug`);
-      const data = await res.json();
-      jobs = (Array.isArray(data) ? data : []).map(
-        (j: { text: string; categories?: { location?: string }; hostedUrl: string }) => ({
-          title: j.text,
-          location: j.categories?.location || '',
-          url: j.hostedUrl,
-        })
-      );
+      const data = (await fetchJson(
+        `https://api.lever.co/v0/postings/${slug}?mode=json`,
+        'Lever'
+      )) as Array<{ text: string; categories?: { location?: string }; hostedUrl: string }>;
+      jobs = (Array.isArray(data) ? data : []).map((j) => ({
+        title: j.text,
+        location: j.categories?.location || '',
+        url: j.hostedUrl,
+      }));
+    } else if (source === 'ashby') {
+      const data = (await fetchJson(
+        `https://api.ashbyhq.com/posting-api/job-board/${slug}`,
+        'Ashby'
+      )) as { jobs?: Array<{ title: string; location?: string; jobUrl?: string; applyUrl?: string }> };
+      jobs = (data.jobs || []).map((j) => ({
+        title: j.title,
+        location: j.location || '',
+        url: j.jobUrl || j.applyUrl || '',
+      }));
+    } else if (source === 'workable') {
+      const data = (await fetchJson(
+        `https://apply.workable.com/api/v1/widget/accounts/${slug}`,
+        'Workable'
+      )) as { jobs?: Array<{ title: string; city?: string; country?: string; url: string }> };
+      jobs = (data.jobs || []).map((j) => ({
+        title: j.title,
+        location: [j.city, j.country].filter(Boolean).join(', '),
+        url: j.url,
+      }));
+    } else if (source === 'smartrecruiters') {
+      const data = (await fetchJson(
+        `https://api.smartrecruiters.com/v1/companies/${slug}/postings`,
+        'SmartRecruiters'
+      )) as {
+        content?: Array<{ id: string; name: string; location?: { city?: string; country?: string } }>;
+      };
+      jobs = (data.content || []).map((j) => ({
+        title: j.name,
+        location: [j.location?.city, j.location?.country].filter(Boolean).join(', '),
+        url: `https://jobs.smartrecruiters.com/${slug}/${j.id}`,
+      }));
+    } else if (source === 'recruitee') {
+      const data = (await fetchJson(`https://${slug}.recruitee.com/api/offers/`, 'Recruitee')) as {
+        offers?: Array<{ title: string; location?: string; careers_url?: string }>;
+      };
+      jobs = (data.offers || []).map((j) => ({
+        title: j.title,
+        location: j.location || '',
+        url: j.careers_url || '',
+      }));
     } else {
-      return NextResponse.json({ error: 'source must be greenhouse or lever' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'source must be one of: greenhouse, lever, ashby, workable, smartrecruiters, recruitee' },
+        { status: 400 }
+      );
     }
     return NextResponse.json({ jobs });
   } catch (e) {

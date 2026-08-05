@@ -6,6 +6,18 @@ import type { Company, Tier } from '@/lib/types';
 
 const TIERS: Tier[] = ['dream', 'target', 'backup'];
 
+// LinkedIn deep links — open pre-filled searches in the user's own browser
+// session. This is the ToS-clean way to "connect" LinkedIn: no automation,
+// no scraping, just one-click navigation.
+function linkedinPeopleUrl(company: string): string {
+  const keywords = `"${company}" talent acquisition OR recruiter OR "hiring manager" OR emiratisation`;
+  return `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(keywords)}`;
+}
+
+function linkedinJobsUrl(company: string): string {
+  return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(company)}&location=${encodeURIComponent('United Arab Emirates')}`;
+}
+
 export default function Companies() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [name, setName] = useState('');
@@ -104,14 +116,19 @@ export default function Companies() {
               <tr key={c.id}>
                 <td>
                   <strong>{c.name}</strong>
-                  {c.careersUrl && (
-                    <>
-                      {' '}
-                      <a href={c.careersUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
+                  <div style={{ fontSize: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {c.careersUrl && (
+                      <a href={c.careersUrl} target="_blank" rel="noreferrer">
                         careers ↗
                       </a>
-                    </>
-                  )}
+                    )}
+                    <a href={linkedinPeopleUrl(c.name)} target="_blank" rel="noreferrer" title="LinkedIn: find TA/recruiters/hiring managers here">
+                      in: people ↗
+                    </a>
+                    <a href={linkedinJobsUrl(c.name)} target="_blank" rel="noreferrer" title="LinkedIn: this company's UAE jobs">
+                      in: jobs ↗
+                    </a>
+                  </div>
                 </td>
                 <td className="muted">{c.sector}</td>
                 <td className="muted">{c.location}</td>

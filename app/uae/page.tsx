@@ -79,9 +79,39 @@ export default function UaePlaybook() {
           seeded in your Companies list with careers links.
         </li>
         <li>
-          <strong>LinkedIn searches</strong> — &ldquo;Emiratisation&rdquo;, &ldquo;UAE National&rdquo;,
-          &ldquo;Bilingual Emirati&rdquo; as keywords; recruiters post quota roles with exactly these
-          words.
+          <strong>LinkedIn searches</strong> — recruiters post quota roles with exactly these
+          keywords. One-click saved searches (all UAE, past week):{' '}
+          <a
+            href={`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent('Emiratisation')}&location=${encodeURIComponent('United Arab Emirates')}&f_TPR=r604800`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            &ldquo;Emiratisation&rdquo; jobs ↗
+          </a>
+          {' · '}
+          <a
+            href={`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent('"UAE National"')}&location=${encodeURIComponent('United Arab Emirates')}&f_TPR=r604800`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            &ldquo;UAE National&rdquo; jobs ↗
+          </a>
+          {' · '}
+          <a
+            href={`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent('Emirati')}&location=${encodeURIComponent('United Arab Emirates')}&f_TPR=r604800`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            &ldquo;Emirati&rdquo; jobs ↗
+          </a>
+          {' · '}
+          <a
+            href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent('emiratisation lead OR "emiratisation manager" OR "national talent"')}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Emiratisation leads (people) ↗
+          </a>
         </li>
         <li>
           <strong>Semi-government</strong> (ADNOC, Mubadala, ADIA, ADQ, e&) — strong national-talent
