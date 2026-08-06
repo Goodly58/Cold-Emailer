@@ -297,6 +297,917 @@
       "emiratisation": true,
       "careersUrl": "https://www2.deloitte.com/xe/en/careers.html",
       "createdAt": "2026-08-05T00:00:00Z"
+    },
+    {
+      "id": "c29",
+      "name": "Dubai Islamic Bank",
+      "sector": "Banking",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system; dedicated UAE National programs.",
+      "careersUrl": "https://www.dib.ae/careers",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c30",
+      "name": "Emirates Islamic",
+      "sector": "Banking",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system; part of Emirates NBD group.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c31",
+      "name": "RAKBANK",
+      "sector": "Banking",
+      "location": "Ras Al Khaimah",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c32",
+      "name": "Commercial Bank of Dubai",
+      "sector": "Banking",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c33",
+      "name": "National Bank of Fujairah",
+      "sector": "Banking",
+      "location": "Fujairah",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c34",
+      "name": "Sharjah Islamic Bank",
+      "sector": "Banking",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c35",
+      "name": "Ajman Bank",
+      "sector": "Banking",
+      "location": "Ajman",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c36",
+      "name": "HSBC UAE",
+      "sector": "Banking (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable; CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c37",
+      "name": "Standard Chartered UAE",
+      "sector": "Banking (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable; CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c38",
+      "name": "Citi UAE",
+      "sector": "Banking (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable; CBUAE points system.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c39",
+      "name": "Sukoon Insurance",
+      "sector": "Insurance",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Insurance sector has its own Emiratisation regime.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c40",
+      "name": "Orient Insurance",
+      "sector": "Insurance",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Insurance sector Emiratisation regime.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c41",
+      "name": "Daman (National Health Insurance)",
+      "sector": "Insurance",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Semi-government; strong national preference.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c42",
+      "name": "International Holding Company (IHC)",
+      "sector": "Investment",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Largest listed company in the region; rapid hiring.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c43",
+      "name": "Dubai Holding",
+      "sector": "Investment",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government-owned holding group.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c44",
+      "name": "Investment Corporation of Dubai (ICD)",
+      "sector": "Sovereign Investment",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai's sovereign holding vehicle.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c45",
+      "name": "Emirates Investment Authority",
+      "sector": "Sovereign Investment",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal sovereign fund; Emiratis strongly preferred.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c46",
+      "name": "Alpha Dhabi Holding",
+      "sector": "Investment",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "IHC group company.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c47",
+      "name": "Multiply Group",
+      "sector": "Investment",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "IHC group company.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c48",
+      "name": "Emirates Global Aluminium (EGA)",
+      "sector": "Industry",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Large industrial employer; established UAE National program.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c49",
+      "name": "Borouge",
+      "sector": "Petrochemicals",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "ADNOC group company.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c50",
+      "name": "Emirates Steel Arkan",
+      "sector": "Industry",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government-linked industrial group.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c51",
+      "name": "DEWA",
+      "sector": "Utilities",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government entity; Emiratis strongly preferred.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c52",
+      "name": "EWEC",
+      "sector": "Utilities",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government-linked utility.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c53",
+      "name": "ENOC",
+      "sector": "Energy",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai government-owned energy group.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c54",
+      "name": "ENEC / Nawah Energy",
+      "sector": "Nuclear Energy",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati talent development is a core mandate.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c55",
+      "name": "Dubai Petroleum",
+      "sector": "Energy",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c56",
+      "name": "flydubai",
+      "sector": "Aviation",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government-owned carrier; UAE National programs.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c57",
+      "name": "Air Arabia",
+      "sector": "Aviation",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c58",
+      "name": "Dubai Airports",
+      "sector": "Aviation",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government entity.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c59",
+      "name": "Abu Dhabi Airports",
+      "sector": "Aviation",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government entity.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c60",
+      "name": "Etihad Rail",
+      "sector": "Transport",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "National infrastructure project; strong Emirati hiring.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c61",
+      "name": "AD Ports Group",
+      "sector": "Logistics",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "ADQ group; national talent programs.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c62",
+      "name": "Aramex",
+      "sector": "Logistics",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Quota-liable mainland employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c63",
+      "name": "Dubai Aerospace Enterprise (DAE)",
+      "sector": "Aviation Finance",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "ICD-owned.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c64",
+      "name": "Strata Manufacturing",
+      "sector": "Aerospace Manufacturing",
+      "location": "Al Ain",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mubadala company; built around Emirati workforce.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c65",
+      "name": "EDGE Group",
+      "sector": "Defence Tech",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "State-owned defence group; heavy Emirati recruitment.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c66",
+      "name": "Tawazun Council",
+      "sector": "Defence",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government entity.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c67",
+      "name": "Space42 (Yahsat / Bayanat)",
+      "sector": "Space / AI",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "National space champion; Emirati talent priority.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c68",
+      "name": "Injazat",
+      "sector": "IT Services",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "G42/Core42 group; national talent programs.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c69",
+      "name": "Khazna Data Centers",
+      "sector": "Data Centres",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "G42/Mubadala-linked.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c70",
+      "name": "Property Finder",
+      "sector": "Tech",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Quota-liable mainland tech employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c71",
+      "name": "Dubizzle Group (Bayut)",
+      "sector": "Tech",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Quota-liable mainland tech employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c72",
+      "name": "Tabby",
+      "sector": "Fintech",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "High-growth fintech; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c73",
+      "name": "Astra Tech (Botim)",
+      "sector": "Tech",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "G42-linked consumer tech.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c74",
+      "name": "Alef Education",
+      "sector": "EdTech",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government-linked edtech.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c75",
+      "name": "Huspy",
+      "sector": "PropTech",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c76",
+      "name": "Oracle UAE",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c77",
+      "name": "SAP UAE",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c78",
+      "name": "IBM UAE",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c79",
+      "name": "Cisco UAE",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c80",
+      "name": "Meta (Dubai)",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Regional office; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c81",
+      "name": "TikTok (Dubai)",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Regional office; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c82",
+      "name": "LinkedIn (Dubai)",
+      "sector": "Tech (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Regional office; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c83",
+      "name": "EY Middle East",
+      "sector": "Consulting / Big 4",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "UAE National programs; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c84",
+      "name": "KPMG Lower Gulf",
+      "sector": "Consulting / Big 4",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "UAE National programs; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c85",
+      "name": "Strategy& Middle East",
+      "sector": "Consulting",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "PwC's strategy arm; GCC national hiring.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c86",
+      "name": "Kearney Middle East",
+      "sector": "Consulting",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government-facing work; GCC nationals prioritized.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c87",
+      "name": "Oliver Wyman IMEA",
+      "sector": "Consulting",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "GCC national recruitment.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c88",
+      "name": "Accenture Middle East",
+      "sector": "Consulting / Tech",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Large quota-liable employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c89",
+      "name": "Alvarez & Marsal ME",
+      "sector": "Consulting",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c90",
+      "name": "Aldar Properties",
+      "sector": "Real Estate",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi's flagship developer; national programs.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c91",
+      "name": "Nakheel",
+      "sector": "Real Estate",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai government-owned developer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c92",
+      "name": "Majid Al Futtaim",
+      "sector": "Retail / Real Estate",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Very large quota-liable employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c93",
+      "name": "DAMAC Properties",
+      "sector": "Real Estate",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c94",
+      "name": "Jumeirah Group",
+      "sector": "Hospitality",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai Holding company.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c95",
+      "name": "Abu Dhabi National Hotels (ADNH)",
+      "sector": "Hospitality",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c96",
+      "name": "AECOM Middle East",
+      "sector": "Engineering",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Quota-liable; construction is a designated sector.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c97",
+      "name": "Parsons Middle East",
+      "sector": "Engineering",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Quota-liable; construction is a designated sector.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c98",
+      "name": "PureHealth",
+      "sector": "Healthcare",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Largest healthcare group in the region; ADQ-linked.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c99",
+      "name": "SEHA",
+      "sector": "Healthcare",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Government health operator; Emiratis strongly preferred.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c100",
+      "name": "M42",
+      "sector": "Health Tech",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "G42 + Mubadala health venture.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c101",
+      "name": "Cleveland Clinic Abu Dhabi",
+      "sector": "Healthcare",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mubadala-operated.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c102",
+      "name": "Burjeel Holdings",
+      "sector": "Healthcare",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Designated sector — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c103",
+      "name": "Mediclinic Middle East",
+      "sector": "Healthcare",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Designated sector — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c104",
+      "name": "Al-Futtaim Group",
+      "sector": "Conglomerate",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "One of the largest private employers in the UAE.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c105",
+      "name": "Al Tayer Group",
+      "sector": "Retail / Automotive",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Large quota-liable employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c106",
+      "name": "Chalhoub Group",
+      "sector": "Luxury Retail",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Large quota-liable employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c107",
+      "name": "Landmark Group",
+      "sector": "Retail",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c108",
+      "name": "Lulu Group",
+      "sector": "Retail",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c109",
+      "name": "GMG",
+      "sector": "Retail / Health",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c110",
+      "name": "Agthia Group",
+      "sector": "FMCG",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "ADQ company.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c111",
+      "name": "Emirates Flight Catering",
+      "sector": "Catering",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c112",
+      "name": "Unilever Gulf",
+      "sector": "FMCG (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c113",
+      "name": "PepsiCo MENA",
+      "sector": "FMCG (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c114",
+      "name": "Procter & Gamble MENA",
+      "sector": "FMCG (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c115",
+      "name": "Nestlé Middle East",
+      "sector": "FMCG (MNC)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland entity — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c116",
+      "name": "Khalifa University",
+      "sector": "Education",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emiratis strongly preferred for staff roles.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c117",
+      "name": "Mohamed bin Zayed University of AI (MBZUAI)",
+      "sector": "Education / AI",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "National AI talent mandate.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c118",
+      "name": "Zayed University",
+      "sector": "Education",
+      "location": "Dubai / Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal university.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c119",
+      "name": "United Arab Emirates University",
+      "sector": "Education",
+      "location": "Al Ain",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal university.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c120",
+      "name": "GEMS Education",
+      "sector": "Education",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Designated sector — quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
     }
   ],
   "contacts": [],

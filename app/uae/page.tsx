@@ -34,6 +34,52 @@ export default function UaePlaybook() {
         </li>
       </ul>
 
+      <h2>1b. Is there an official list of quota-liable companies?</h2>
+      <p>
+        <strong>No — MoHRE does not publish company names.</strong> It notifies affected companies
+        privately through its digital system. But the criteria are public, so you can derive the
+        list yourself. A company is almost certainly quota-liable if it is:
+      </p>
+      <ul>
+        <li><strong>Mainland-registered</strong> (not a free-zone-only entity like DIFC/ADGM/DMCC), <em>and</em></li>
+        <li><strong>50+ skilled employees</strong> → 2%/year growth target, <em>or</em></li>
+        <li>
+          <strong>20–49 employees in one of the 14 designated sectors</strong> → must hire a fixed
+          number of Emiratis (1 by end-2024, 2 by end-2025), with roughly AED 96k–108k per missing
+          hire.
+        </li>
+      </ul>
+      <p>
+        <strong>The 14 designated sectors:</strong> information &amp; communications; financial &amp;
+        insurance; real estate; professional, scientific &amp; technical activities; administrative
+        &amp; support services; education; health &amp; social work; arts &amp; entertainment; mining
+        &amp; quarrying; manufacturing; construction; wholesale &amp; retail trade; transportation
+        &amp; storage; accommodation &amp; food services.
+      </p>
+      <div className="callout">
+        <strong>Three ways to build your own list, best first:</strong>
+        <ul style={{ marginTop: 8, marginBottom: 0 }}>
+          <li>
+            <strong>Nafis portal</strong> — every company posting there has self-identified as
+            wanting Emirati hires. This is the closest thing to an official list that exists.
+          </li>
+          <li>
+            <strong>The career fairs</strong> — the Tawdheef and Ru&apos;ya exhibitor lists are
+            published before each event and are effectively a curated list of employers actively
+            hiring Emiratis this year. Download them and add the relevant names here.
+          </li>
+          <li>
+            <strong>LinkedIn</strong> — search the keyword &ldquo;Emiratisation&rdquo; and look at
+            which companies post those roles or employ an Emiratisation/national-talent lead.
+          </li>
+        </ul>
+      </div>
+      <p className="muted">
+        Free zone note: companies registered <em>only</em> in a free zone sit outside MoHRE quotas,
+        so the quota argument doesn&apos;t apply there — but Nafis salary support often still does.
+        Many large groups hold both mainland and free-zone entities.
+      </p>
+
       <h2>2. Nafis benefits (what the employer saves)</h2>
       <ul>
         <li>Salary support / top-up paid by the government for Emiratis in private-sector roles.</li>
@@ -69,9 +115,47 @@ export default function UaePlaybook() {
       </ul>
 
       <h2>4. Where to hunt</h2>
+      <div className="callout">
+        <strong>Emirati-only career fairs — the highest-density opportunity of the year.</strong>
+        <ul style={{ marginTop: 8, marginBottom: 0 }}>
+          <li>
+            <a href="https://www.ruyacareers.ae" target="_blank" rel="noreferrer">
+              Ru&apos;ya Careers ↗
+            </a>{' '}
+            — Dubai, <strong>28–30 September 2026</strong>.
+          </li>
+          <li>
+            <a href="https://informaconnect.com/tawdheef/" target="_blank" rel="noreferrer">
+              Tawdheef × Zaheb ↗
+            </a>{' '}
+            — ADNEC Abu Dhabi, <strong>17–19 November 2026</strong>. 100+ companies, 1,000+ jobs.
+          </li>
+        </ul>
+        <p style={{ marginTop: 8, marginBottom: 0 }}>
+          Every employer in the room is there specifically to hire Emiratis, and hiring managers
+          attend in person. Register early, and grab the exhibitor list when it&apos;s published —
+          it doubles as a target-company list.
+        </p>
+      </div>
       <ul>
         <li>
-          <strong>Nafis portal</strong> — quota-driven listings, often lower competition.
+          <strong>
+            <a href="https://nafis.gov.ae" target="_blank" rel="noreferrer">
+              Nafis portal ↗
+            </a>
+          </strong>{' '}
+          — register with your Emirates ID (any UAE national 18–60). 32,000+ companies recruit
+          there and it&apos;s also how you claim the salary and pension support. Quota-driven
+          listings, often lower competition.
+        </li>
+        <li>
+          <strong>Emirati-focused recruitment agencies</strong> — e.g. Sundus and ABC Recruitment
+          (Abu Dhabi) place UAE Nationals specifically; one good agency recruiter can generate
+          several interviews.
+        </li>
+        <li>
+          <strong>Government portals</strong> (for public-sector roles) — FAHR (federal), TAMM (Abu
+          Dhabi), Dubai Careers, Sharjah.ae.
         </li>
         <li>
           <strong>Bank/telco national programs</strong> — every major bank runs a dedicated UAE

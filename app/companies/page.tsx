@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { create, list, patch, remove } from '@/lib/client';
+import { api, create, list, patch, remove } from '@/lib/client';
 import type { Company, Tier } from '@/lib/types';
 
 const TIERS: Tier[] = ['dream', 'target', 'backup'];
@@ -26,6 +26,9 @@ export default function Companies() {
   const [tier, setTier] = useState<Tier>('target');
   const [emiratisation, setEmiratisation] = useState(true);
   const [filter, setFilter] = useState('');
+  const [tierFilter, setTierFilter] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
 
   useEffect(() => {
     list<Company>('companies').then(setCompanies);
@@ -52,19 +55,36 @@ export default function Companies() {
     setCompanies((prev) => prev.filter((c) => c.id !== id));
   }
 
-  const shown = companies.filter(
-    (c) =>
-      !filter ||
-      c.name.toLowerCase().includes(filter.toLowerCase()) ||
-      c.sector.toLowerCase().includes(filter.toLowerCase())
-  );
+  async function syncStarterList() {
+    setSyncing(true);
+    setSyncMsg('');
+    try {
+      const { added } = await api<{ added: number }>('/api/sync-companies', { method: 'POST' });
+      setSyncMsg(added ? `Added ${added} companies.` : 'Already up to date.');
+      if (added) setCompanies(await list<Company>('companies'));
+    } catch {
+      setSyncMsg('Sync failed.');
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  const shown = companies.filter((c) => {
+    const q = filter.toLowerCase();
+    const matchesText =
+      !q ||
+      c.name.toLowerCase().includes(q) ||
+      c.sector.toLowerCase().includes(q) ||
+      c.location.toLowerCase().includes(q);
+    return matchesText && (!tierFilter || c.tier === tierFilter);
+  });
 
   return (
     <div>
       <h1>Target companies</h1>
       <p className="subtitle">
-        Seeded with 28 UAE employers where Emirati status is a genuine advantage. Click a tier badge
-        to cycle Dream → Target → Backup.
+        120 UAE employers that are quota-liable or run active Emiratisation programs. Click a tier
+        badge to cycle Dream → Target → Backup, and use the LinkedIn links to find who to email.
       </p>
 
       <div className="card mb">
@@ -94,8 +114,26 @@ export default function Companies() {
         </form>
       </div>
 
-      <div className="mb" style={{ maxWidth: 320 }}>
-        <input placeholder="Filter by name or sector…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+      <div className="form-row mb">
+        <input
+          placeholder="Filter by name, sector or location…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+        <select className="fixed" value={tierFilter} onChange={(e) => setTierFilter(e.target.value)}>
+          <option value="">All tiers</option>
+          {TIERS.map((t) => (
+            <option key={t} value={t}>
+              {t} ({companies.filter((c) => c.tier === t).length})
+            </option>
+          ))}
+        </select>
+        <button className="fixed" onClick={syncStarterList} disabled={syncing}>
+          {syncing ? 'Syncing…' : 'Sync starter list'}
+        </button>
+        <span className="fixed muted" style={{ alignSelf: 'center' }}>
+          {syncMsg || `${shown.length} of ${companies.length}`}
+        </span>
       </div>
 
       <div className="card">
