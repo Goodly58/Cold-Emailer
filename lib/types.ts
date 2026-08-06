@@ -188,6 +188,8 @@ export interface RefreshRun {
   updated: number;
   closed: number;
   failed: number;
+  /** Left for the next run because the time budget ran out. */
+  skipped?: number;
   errors?: Array<{ company: string; error: string }>;
 }
 

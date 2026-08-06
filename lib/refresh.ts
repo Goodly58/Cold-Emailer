@@ -248,6 +248,7 @@ export async function refreshAllSources(
       updated: report.updated,
       closed: report.closed,
       failed: report.failed,
+      skipped: report.skipped || undefined,
       errors: errors.length ? errors : undefined,
     };
     db.runs.unshift(run);

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          # Build without touching a real database — the app falls back to the
+          # bundled seed when no Turso credentials are present.
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Check the seed database is valid JSON
+        run: node -e "const d=require('./data/db.json'); const need=['profile','companies','contacts','applications','outreach','templates','jobSources','runs']; for (const k of need) if (!(k in d)) { console.error('missing key:', k); process.exit(1) } console.log('seed ok:', d.companies.length, 'companies')"
