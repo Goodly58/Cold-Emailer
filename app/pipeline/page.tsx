@@ -15,6 +15,7 @@ export default function Pipeline() {
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
   const [url, setUrl] = useState('');
+  const [division, setDivision] = useState('');
   const [emirati, setEmirati] = useState(true);
 
   const [importSource, setImportSource] = useState('greenhouse');
@@ -40,10 +41,17 @@ export default function Pipeline() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!company || !role) return;
-    await addApp({ companyName: company, roleTitle: role, jobUrl: url || undefined, source: 'manual' });
+    await addApp({
+      companyName: company,
+      roleTitle: role,
+      jobUrl: url || undefined,
+      division: division || undefined,
+      source: 'manual',
+    });
     setCompany('');
     setRole('');
     setUrl('');
+    setDivision('');
   }
 
   async function move(app: Application, dir: 1 | -1) {
@@ -107,6 +115,7 @@ export default function Pipeline() {
         <form onSubmit={handleAdd} className="form-row">
           <input placeholder="Company" value={company} onChange={(e) => setCompany(e.target.value)} />
           <input placeholder="Role title" value={role} onChange={(e) => setRole(e.target.value)} />
+          <input placeholder="Division (optional)" value={division} onChange={(e) => setDivision(e.target.value)} />
           <input placeholder="Job URL (optional)" value={url} onChange={(e) => setUrl(e.target.value)} />
           <label className="fixed flex" style={{ marginBottom: 0 }}>
             <input
@@ -215,6 +224,7 @@ export default function Pipeline() {
                   </div>
                   <div className="company">
                     {a.companyName}
+                    {a.division ? ` · ${a.division}` : ''}
                     {a.location ? ` · ${a.location}` : ''}
                   </div>
                   {a.emiratiAngle && <span className="badge badge-uae">Emirati advantage</span>}

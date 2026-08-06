@@ -39,6 +39,12 @@ export interface Company {
   emiratisationNotes?: string;
   careersUrl?: string;
   notes?: string;
+  /** Email domain, e.g. bankfab.com — drives email pattern generation. */
+  domain?: string;
+  /** Which pattern this company uses, e.g. "first.last". */
+  emailPattern?: string;
+  /** Business units / departments that hire separately. */
+  divisions?: string[];
   createdAt: string;
 }
 
@@ -52,6 +58,27 @@ export const CONTACT_STATUSES: ContactStatus[] = [
   'closed',
 ];
 
+/** Why this person matters — drives which template to use. */
+export type ContactKind = 'hiring-manager' | 'ta-recruiter' | 'emiratisation-lead' | 'exec' | 'peer';
+
+export const CONTACT_KINDS: ContactKind[] = [
+  'hiring-manager',
+  'ta-recruiter',
+  'emiratisation-lead',
+  'exec',
+  'peer',
+];
+
+export const CONTACT_KIND_LABELS: Record<ContactKind, string> = {
+  'hiring-manager': 'Hiring manager',
+  'ta-recruiter': 'TA / Recruiter',
+  'emiratisation-lead': 'Emiratisation lead',
+  exec: 'Exec / Leadership',
+  peer: 'Peer / Referral',
+};
+
+export type EmailStatus = 'unknown' | 'guessed' | 'verified' | 'bounced';
+
 export interface Contact {
   id: string;
   companyName: string;
@@ -61,6 +88,18 @@ export interface Contact {
   linkedin?: string;
   status: ContactStatus;
   notes?: string;
+  /** Which division/business unit they sit in. */
+  division?: string;
+  kind?: ContactKind;
+  emailStatus?: EmailStatus;
+  /** Other pattern guesses, kept so you can try the next one after a bounce. */
+  emailCandidates?: string[];
+  /** Research: prior employers, education, tenure. */
+  background?: string;
+  /** Research: recent post, promotion, funding round, launch. */
+  recentActivity?: string;
+  /** The one personalized sentence that goes in the email. */
+  hook?: string;
   createdAt: string;
 }
 
@@ -71,6 +110,8 @@ export interface Application {
   jobUrl?: string;
   source?: string;
   location?: string;
+  /** Which division is hiring — big employers hire per business unit. */
+  division?: string;
   stage: Stage;
   emiratiAngle?: boolean;
   appliedAt?: string;

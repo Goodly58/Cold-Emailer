@@ -23,7 +23,7 @@ function Composer() {
   const [toEmail, setToEmail] = useState(search.get('email') || '');
   const [company, setCompany] = useState(search.get('company') || '');
   const [role, setRole] = useState('');
-  const [hook, setHook] = useState('');
+  const [hook, setHook] = useState(search.get('hook') || '');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [copied, setCopied] = useState(false);

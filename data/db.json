@@ -15,6 +15,8 @@
       "emiratisation": true,
       "emiratisationNotes": "CBUAE Emiratisation points system; large UAE National programs (graduate + experienced).",
       "careersUrl": "https://www.bankfab.com/en-ae/about-fab/careers",
+      "domain": "bankfab.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -26,6 +28,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Ruwad & National talent programs; actively recruits Emiratis.",
       "careersUrl": "https://www.emiratesnbd.com/en/careers",
+      "domain": "emiratesnbd.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -37,6 +41,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Tamooha & UAE National development programs.",
       "careersUrl": "https://www.adcb.com/en/about-us/careers/",
+      "domain": "adcb.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -48,6 +54,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Ta'meed program for UAE Nationals.",
       "careersUrl": "https://www.mashreqbank.com/en/uae/neo/about-us/careers",
+      "domain": "mashreq.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -58,6 +66,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.adib.ae/en/careers",
+      "domain": "adib.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -69,6 +79,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Regulator-driven Emiratisation; strong national graduate programs.",
       "careersUrl": "https://www.eand.com/en/careers.html",
+      "domain": "eand.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -79,6 +91,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.du.ae/about-us/careers",
+      "domain": "du.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -90,6 +104,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Semi-government; Emiratis strongly preferred across corporate roles.",
       "careersUrl": "https://www.adnoc.ae/careers",
+      "domain": "adnoc.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -101,6 +117,8 @@
       "emiratisation": true,
       "emiratisationNotes": "UAE National development a core mandate.",
       "careersUrl": "https://www.mubadala.com/en/careers",
+      "domain": "mubadala.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -111,6 +129,8 @@
       "tier": "dream",
       "emiratisation": true,
       "careersUrl": "https://www.adia.ae/en/careers",
+      "domain": "adia.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -121,6 +141,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.adq.ae/careers",
+      "domain": "adq.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -131,6 +153,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.dpworld.com/careers",
+      "domain": "dpworld.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -141,6 +165,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://masdar.ae/en/careers",
+      "domain": "masdar.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -151,6 +177,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.taqa.com/careers/",
+      "domain": "taqa.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -162,6 +190,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Dedicated UAE National recruitment track.",
       "careersUrl": "https://www.emiratesgroupcareers.com/",
+      "domain": "emirates.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -172,6 +202,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://careers.etihad.com/",
+      "domain": "etihad.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -183,6 +215,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Fast-growing AI group; national talent programs and strong government ties.",
       "careersUrl": "https://www.g42.ai/careers",
+      "domain": "g42.ai",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -193,6 +227,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.careem.com/careers",
+      "domain": "careem.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -203,6 +239,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://careers.talabat.com/",
+      "domain": "talabat.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -213,6 +251,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.noon.com/careers",
+      "domain": "noon.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -223,6 +263,8 @@
       "tier": "backup",
       "emiratisation": true,
       "careersUrl": "https://www.emaar.com/en/careers",
+      "domain": "emaar.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -234,6 +276,8 @@
       "emiratisation": true,
       "emiratisationNotes": "MNC mainland entities are quota-liable; MSFT runs UAE National hiring initiatives.",
       "careersUrl": "https://careers.microsoft.com/",
+      "domain": "microsoft.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -244,6 +288,8 @@
       "tier": "dream",
       "emiratisation": false,
       "careersUrl": "https://careers.google.com/",
+      "domain": "google.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -254,6 +300,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www.amazon.jobs/",
+      "domain": "amazon.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -265,6 +313,8 @@
       "emiratisation": true,
       "emiratisationNotes": "ME offices actively recruit GCC nationals for government-facing work.",
       "careersUrl": "https://www.mckinsey.com/careers",
+      "domain": "mckinsey.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -275,6 +325,8 @@
       "tier": "dream",
       "emiratisation": true,
       "careersUrl": "https://careers.bcg.com/",
+      "domain": "bcg.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -286,6 +338,8 @@
       "emiratisation": true,
       "emiratisationNotes": "Watani UAE National program.",
       "careersUrl": "https://www.pwc.com/m1/en/careers.html",
+      "domain": "pwc.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -296,6 +350,8 @@
       "tier": "target",
       "emiratisation": true,
       "careersUrl": "https://www2.deloitte.com/xe/en/careers.html",
+      "domain": "deloitte.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
@@ -307,6 +363,8 @@
       "emiratisation": true,
       "emiratisationNotes": "CBUAE points system; dedicated UAE National programs.",
       "careersUrl": "https://www.dib.ae/careers",
+      "domain": "dib.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -317,6 +375,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "CBUAE points system; part of Emirates NBD group.",
+      "domain": "emiratesislamic.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -327,6 +387,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "CBUAE points system.",
+      "domain": "rakbank.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -337,6 +399,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "CBUAE points system.",
+      "domain": "cbd.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -437,6 +501,8 @@
       "tier": "dream",
       "emiratisation": true,
       "emiratisationNotes": "Largest listed company in the region; rapid hiring.",
+      "domain": "ihcuae.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -497,6 +563,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Large industrial employer; established UAE National program.",
+      "domain": "ega.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -527,6 +595,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Government entity; Emiratis strongly preferred.",
+      "domain": "dewa.gov.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -547,6 +617,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Dubai government-owned energy group.",
+      "domain": "enoc.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -576,6 +648,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Government-owned carrier; UAE National programs.",
+      "domain": "flydubai.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -585,6 +659,8 @@
       "location": "Sharjah",
       "tier": "backup",
       "emiratisation": true,
+      "domain": "airarabia.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -615,6 +691,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "National infrastructure project; strong Emirati hiring.",
+      "domain": "etihadrail.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -625,6 +703,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "ADQ group; national talent programs.",
+      "domain": "adports.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -635,6 +715,8 @@
       "tier": "backup",
       "emiratisation": true,
       "emiratisationNotes": "Quota-liable mainland employer.",
+      "domain": "aramex.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -665,6 +747,8 @@
       "tier": "dream",
       "emiratisation": true,
       "emiratisationNotes": "State-owned defence group; heavy Emirati recruitment.",
+      "domain": "edgegroup.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -715,6 +799,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Quota-liable mainland tech employer.",
+      "domain": "propertyfinder.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -735,6 +821,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "High-growth fintech; quota-liable.",
+      "domain": "tabby.ai",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -774,6 +862,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable.",
+      "domain": "oracle.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -784,6 +874,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable.",
+      "domain": "sap.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -794,6 +886,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable.",
+      "domain": "ibm.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -804,6 +898,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable.",
+      "domain": "cisco.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -844,6 +940,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "UAE National programs; quota-liable.",
+      "domain": "ey.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -854,6 +952,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "UAE National programs; quota-liable.",
+      "domain": "kpmg.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -894,6 +994,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Large quota-liable employer.",
+      "domain": "accenture.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -913,6 +1015,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Abu Dhabi's flagship developer; national programs.",
+      "domain": "aldar.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -923,6 +1027,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Dubai government-owned developer.",
+      "domain": "nakheel.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -933,6 +1039,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Very large quota-liable employer.",
+      "domain": "maf.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -952,6 +1060,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Dubai Holding company.",
+      "domain": "jumeirah.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -991,6 +1101,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Largest healthcare group in the region; ADQ-linked.",
+      "domain": "purehealth.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1051,6 +1163,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "One of the largest private employers in the UAE.",
+      "domain": "alfuttaim.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1071,6 +1185,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Large quota-liable employer.",
+      "domain": "chalhoubgroup.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1127,6 +1243,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable.",
+      "domain": "unilever.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1157,6 +1275,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable.",
+      "domain": "nestle.com",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1167,6 +1287,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Emiratis strongly preferred for staff roles.",
+      "domain": "ku.ac.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1177,6 +1299,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "National AI talent mandate.",
+      "domain": "mbzuai.ac.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1187,6 +1311,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Federal university.",
+      "domain": "zu.ac.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
@@ -1197,6 +1323,8 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Federal university.",
+      "domain": "uaeu.ac.ae",
+      "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
