@@ -125,6 +125,44 @@ export default function Runs() {
         </div>
       )}
 
+      <div className="card mb">
+        <h2 style={{ marginTop: 0 }}>Backup</h2>
+        <p className="muted mb">
+          Your data lives in a hosted database. Download a copy periodically — it&apos;s a single
+          JSON file you can restore from.
+        </p>
+        <div className="flex">
+          <a className="btn primary" href="/api/backup" download>
+            ↓ Download backup
+          </a>
+          <label className="btn" style={{ marginBottom: 0 }}>
+            ↑ Restore from file
+            <input
+              type="file"
+              accept="application/json"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (!confirm('Restore will REPLACE all current data. Continue?')) {
+                  e.target.value = '';
+                  return;
+                }
+                const text = await file.text();
+                const res = await fetch('/api/backup', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: text,
+                });
+                const body = await res.json();
+                alert(res.ok ? 'Restored. Reloading.' : `Restore failed: ${body.error}`);
+                if (res.ok) window.location.reload();
+              }}
+            />
+          </label>
+        </div>
+      </div>
+
       <div className="card">
         <table>
           <thead>
