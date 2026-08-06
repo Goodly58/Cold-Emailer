@@ -224,8 +224,30 @@ export default function Sources() {
           skipped. Runs in batches — leave the page open while it works.
         </p>
         <div className="flex">
-          <button className="primary" onClick={sweepAll} disabled={sweeping}>
-            {sweeping ? 'Sweeping…' : 'Sweep all companies'}
+          <button
+            className="primary"
+            disabled={sweeping}
+            onClick={async () => {
+              setErr('');
+              try {
+                const r = await api<{ added: number; unsupported: string[] }>(
+                  '/api/sources/from-companies',
+                  { method: 'POST' }
+                );
+                setSweepLog([
+                  `✓ Registered ${r.added} sources from known ATS data` +
+                    (r.unsupported.length ? ` (${r.unsupported.length} on platforms without a public feed)` : ''),
+                ]);
+                setSources(await list<JobSource>('jobSources'));
+              } catch {
+                setErr('Could not register known sources.');
+              }
+            }}
+          >
+            Add known boards (instant)
+          </button>
+          <button onClick={sweepAll} disabled={sweeping}>
+            {sweeping ? 'Sweeping…' : 'Probe the rest'}
           </button>
           {sweeping && (
             <button onClick={() => setSweepStop(true)}>Stop after this batch</button>

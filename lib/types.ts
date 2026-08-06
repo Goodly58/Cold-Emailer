@@ -45,6 +45,9 @@ export interface Company {
   emailPattern?: string;
   /** Business units / departments that hire separately. */
   divisions?: string[];
+  /** Known ATS platform and board slug, when research identified one. */
+  ats?: string;
+  atsSlug?: string;
   createdAt: string;
 }
 
