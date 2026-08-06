@@ -167,7 +167,14 @@ export function replySubject(originalSubject: string): string {
  * send. Wamda's guidance is specific about why it matters in the region: names
  * repeat, and a signature is how a recipient works out who wrote to them.
  */
-export function withSignature(body: string, signature: string | null): string {
-  if (!signature?.trim()) return body;
-  return `${body.trimEnd()}\n${signature.trim()}\n`;
+export function withSignature(body: string, signature: string | null, fallbackName?: string | null): string {
+  if (signature?.trim()) return `${body.trimEnd()}\n${signature.trim()}\n`;
+
+  // No Gmail signature is the common case for a student's personal account, and
+  // the generated body ends at "Kind regards," on purpose — the sign-off is
+  // supplied here. Without either, the email arrives signed off by nobody,
+  // which in a market where names repeat is precisely the thing Wamda's
+  // guidance says makes a recipient unable to place who wrote to them.
+  if (fallbackName?.trim()) return `${body.trimEnd()}\n${fallbackName.trim()}\n`;
+  return body;
 }

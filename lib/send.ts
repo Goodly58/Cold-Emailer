@@ -170,7 +170,7 @@ export async function sendOutreach(
 
   // ---- Build and send ----------------------------------------------------
   const references: string[] = JSON.parse(outreach.references_chain);
-  const body = withSignature(outreach.body ?? '', user.signatureBlock);
+  const body = withSignature(outreach.body ?? '', user.signatureBlock, user.canonicalName ?? user.name);
 
   const mime = buildMime({
     fromName: user.canonicalName ?? user.name,
@@ -259,41 +259,63 @@ async function recordSent(
     userId: string;
     personId: string;
     now: Date;
+    /** The day it actually went out. The repair sweep knows better than `now`. */
+    sentDateUae?: string;
   }
 ): Promise<void> {
   const at = nowIso(input.now);
-  const sentDateUae = toUaeDate(input.now);
+  const sentDateUae = input.sentDateUae ?? toUaeDate(input.now);
   const evidenceIds: string[] = JSON.parse(outreach.evidence_ids);
 
-  await execute(
-    `UPDATE outreach
-        SET status = 'sent', gmail_message_id = ?, gmail_thread_id = ?,
-            sent_body_verbatim = ?, sent_at = ?, sent_date_uae = ?,
-            references_chain = ?, updated_at = ?
-      WHERE id = ?`,
-    [
-      input.gmailMessageId,
-      input.gmailThreadId,
-      input.body,
-      at,
-      sentDateUae,
-      JSON.stringify([...input.references, input.messageId]),
-      at,
-      outreach.id,
-    ]
-  );
+  // One transaction. These four writes describe a single fact — this email went
+  // out — and a crash between them leaves the email sent with its evidence
+  // unlocked, so the next person on the ladder gets the same hook and the two
+  // of them compare notes. The `WHERE status <> 'sent'` guard makes it
+  // idempotent: the repair sweep and the send path can both arrive here for the
+  // same row, and only the first does anything.
+  const recorded = await transaction(async (tx) => {
+    const changed = await tx.execute(
+      `UPDATE outreach
+          SET status = 'sent', gmail_message_id = ?, gmail_thread_id = ?,
+              sent_body_verbatim = ?, sent_at = ?, sent_date_uae = ?,
+              references_chain = ?, updated_at = ?
+        WHERE id = ? AND status <> 'sent'`,
+      [
+        input.gmailMessageId,
+        input.gmailThreadId,
+        input.body,
+        at,
+        sentDateUae,
+        JSON.stringify([...input.references, input.messageId]),
+        at,
+        outreach.id,
+      ]
+    );
+    if (changed === 0) return false;
 
-  await execute(`UPDATE person SET status = 'in_sequence', updated_at = ? WHERE id = ?`, [at, input.personId]);
+    // Never over a reply. A message that arrived while the Gmail call was in
+    // flight has already been recorded by the poller, and forcing the person
+    // back to `in_sequence` would erase it — the sequence then carries on
+    // chasing somebody who has already answered.
+    await tx.execute(
+      `UPDATE person SET status = 'in_sequence', updated_at = ?
+        WHERE id = ? AND status IN ('ready', 'queued', 'in_sequence')`,
+      [at, input.personId]
+    );
+
+    // The cross-client ledger. Redundant with one user, which is the point.
+    await tx.execute(
+      `INSERT INTO contact_ledger (id, person_id, user_id, outreach_id, evidence_ids, sent_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [newId('ledger'), input.personId, input.userId, outreach.id, outreach.evidence_ids, at]
+    );
+    return true;
+  });
+
+  if (!recorded) return;
 
   // The hook is spent for this company. Rotation now needs a different one.
   await lockEvidenceForSend(evidenceIds, input.personId, input.userId);
-
-  // The cross-client ledger. Redundant with one user, which is the point.
-  await execute(
-    `INSERT INTO contact_ledger (id, person_id, user_id, outreach_id, evidence_ids, sent_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [newId('ledger'), input.personId, input.userId, outreach.id, outreach.evidence_ids, at]
-  );
 
   const person = await queryOne<{ contact_type: string }>('SELECT contact_type FROM person WHERE id = ?', [
     input.personId,
@@ -313,11 +335,17 @@ async function recordSent(
   });
 }
 
-/** Did Gmail accept a message carrying our Message-ID? */
+/**
+ * Did Gmail accept a message carrying our Message-ID?
+ *
+ * Returns the send time as well, because a recovery can happen a day after the
+ * fact: dating it "now" would move the whole cadence a day and spend the wrong
+ * day's budget on an email that went out yesterday.
+ */
 async function probeForSentMessage(
   userId: string,
   messageId: string
-): Promise<{ id: string; threadId: string } | null> {
+): Promise<{ id: string; threadId: string; internalDate?: string } | null> {
   try {
     const bare = messageId.replace(/^<|>$/g, '');
     const result = await gmailRequest<{ messages?: Array<{ id: string; threadId: string }> }>(
@@ -326,7 +354,16 @@ async function probeForSentMessage(
       { query: { q: `rfc822msgid:${bare}`, maxResults: '1' } }
     );
     const hit = result.messages?.[0];
-    return hit ? { id: hit.id, threadId: hit.threadId } : null;
+    if (!hit) return null;
+
+    try {
+      const full = await gmailRequest<{ internalDate?: string }>(userId, `/users/me/messages/${hit.id}`, {
+        query: { format: 'metadata' },
+      });
+      return { id: hit.id, threadId: hit.threadId, internalDate: full.internalDate };
+    } catch {
+      return { id: hit.id, threadId: hit.threadId };
+    }
   } catch {
     return null;
   }
@@ -348,6 +385,13 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
     `SELECT * FROM outreach WHERE status = 'sending' AND user_id = ?`,
     [userId]
   );
+  if (stuck.length === 0) return { recovered: 0, reverted: 0, pending: 0 };
+
+  const owner = await queryOne<{ signature_block: string | null; canonical_name: string | null; name: string }>(
+    'SELECT signature_block, canonical_name, name FROM app_user WHERE id = ?',
+    [userId]
+  );
+  const signature = owner?.signature_block ?? null;
 
   let recovered = 0;
   let reverted = 0;
@@ -362,15 +406,21 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
 
     const found = row.rfc822_message_id ? await probeForSentMessage(userId, row.rfc822_message_id) : null;
     if (found) {
+      const sentAt = found.internalDate ? new Date(Number(found.internalDate)) : now;
       await recordSent(row, {
         gmailMessageId: found.id,
         gmailThreadId: found.threadId,
         messageId: row.rfc822_message_id!,
-        body: row.body ?? '',
+        // The signature went out with it, so the verbatim record has to include
+        // it — this column is what follow-up generation and any later dispute
+        // read, and "what we think we sent" is not good enough for either.
+        body: withSignature(row.body ?? '', signature, owner?.canonical_name ?? owner?.name ?? null),
         references: JSON.parse(row.references_chain),
         userId,
         personId: row.person_id,
         now,
+        // Dated when it actually went out, which may be yesterday.
+        sentDateUae: toUaeDate(sentAt),
       });
       recovered++;
       continue;
@@ -506,7 +556,7 @@ export async function sendReply(
     }
   }
 
-  const body = withSignature(reply.body, user.signatureBlock);
+  const body = withSignature(reply.body, user.signatureBlock, user.canonicalName ?? user.name);
   const references: string[] = JSON.parse(reply.references_chain);
 
   // Answer whoever actually wrote, not whoever we originally wrote to.
@@ -598,10 +648,18 @@ export async function sendReply(
 
 /** Approves a draft. Separate from sending: approval is the human's act. */
 export async function approveDraft(outreachId: string, editedBody?: string): Promise<boolean> {
+  // `stale` is deliberately absent unless the user rewrote it themselves.
+  //
+  // Stale means the wording is out of date — the gap it references has grown,
+  // or a holiday moved underneath it — and it is waiting to be regenerated.
+  // Approving one as-is sends "since my note last week" two weeks late. An
+  // edited body is different: the user has just read and rewritten it, so it is
+  // theirs and current by definition.
+  const allowed = editedBody ? "('drafted', 'stale', 'approved')" : "('drafted', 'approved')";
   const changed = await execute(
     `UPDATE outreach
         SET status = 'approved', body = COALESCE(?, body), updated_at = ?
-      WHERE id = ? AND status IN ('drafted', 'stale', 'approved')`,
+      WHERE id = ? AND status IN ${allowed}`,
     [editedBody ?? null, nowIso(), outreachId]
   );
   return changed === 1;

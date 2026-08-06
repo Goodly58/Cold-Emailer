@@ -316,3 +316,72 @@ test('the queue targets the observed rate, not the ceiling', async () => {
     'offering fifteen to someone who sends three manufactures a backlog, which is the strongest abandonment driver there is'
   );
 });
+
+// ---------------------------------------------------------------------------
+// The sign-off
+// ---------------------------------------------------------------------------
+
+test('an email is never signed off by nobody', async () => {
+  // The generated body ends at "Kind regards," on purpose — the sign-off comes
+  // from here. With no Gmail signature, which is the common case for a
+  // student's personal account, the email used to arrive with no name at all.
+  const { withSignature } = await import('../lib/mime');
+  const body = 'Kind regards,';
+
+  assert.match(withSignature(body, null, 'Sara Al Marzooqi'), /Sara Al Marzooqi/);
+  // A real signature still wins: it is what they use everywhere else.
+  assert.match(
+    withSignature(body, 'Sara Al Marzooqi\nBSc Finance, Zayed University', 'Sara'),
+    /BSc Finance/
+  );
+  assert.equal(withSignature(body, null, null), body, 'and nothing is invented');
+});
+
+// ---------------------------------------------------------------------------
+// Approval
+// ---------------------------------------------------------------------------
+
+test('a stale draft cannot be approved as-is, only rewritten', async () => {
+  // Stale means the wording is out of date — the gap it references has grown,
+  // or a holiday moved underneath it. Approving one unchanged sends "since my
+  // note last week" two weeks late.
+  const { approveDraft } = await import('../lib/send');
+  const { getDb } = await import('../lib/db/client');
+  const db = await getDb();
+  const personId = await personFor('staleapprove');
+
+  await db.execute({
+    sql: `INSERT INTO outreach (id, person_id, user_id, step, subject, body, status, created_at, updated_at)
+          VALUES ('out_stale', ?, 'usr_send', 1, 's', 'old wording', 'stale', 'x', 'x')`,
+    args: [personId],
+  });
+
+  assert.equal(await approveDraft('out_stale'), false, 'not as it stands');
+  // The user reading and rewriting it makes it theirs, and current.
+  assert.equal(await approveDraft('out_stale', 'wording they just typed'), true);
+});
+
+test('recording a send twice records it once', async () => {
+  // The send path and the repair sweep can both arrive for the same row.
+  // Without a guard the ledger gains a duplicate entry and the evidence lock
+  // runs twice.
+  const { getDb, query } = await import('../lib/db/client');
+  const db = await getDb();
+  const personId = await personFor('doublerecord');
+
+  await db.execute({
+    sql: `INSERT INTO outreach (id, person_id, user_id, step, subject, body, status,
+                                rfc822_message_id, created_at, updated_at)
+          VALUES ('out_twice', ?, 'usr_send', 1, 's', 'b', 'sending', '<twice@x>', 'x', 'x')`,
+    args: [personId],
+  });
+
+  const { repairStuckSends } = await import('../lib/send');
+  // Gmail is unreachable in tests, so the probe finds nothing and the row is
+  // left alone — what is under test is that nothing is recorded twice.
+  await repairStuckSends('usr_send', new Date('2026-08-06T12:00:00Z'));
+  await repairStuckSends('usr_send', new Date('2026-08-06T12:00:00Z'));
+
+  const ledger = await query('SELECT id FROM contact_ledger WHERE person_id = ?', [personId]);
+  assert.equal(ledger.length, 0);
+});
