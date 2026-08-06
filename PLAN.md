@@ -1,195 +1,160 @@
-# Emirati Cold-Outreach Engine — v2 Plan
+# Emirati Cold-Outreach Engine — Plan v3
 
-**Goal:** land interviews for one Emirati candidate (your friend) via personalized cold email, leveraging the structural advantage Emiratisation quotas and Nafis create. Build it friend-first as a pipeline you operate; commercialise only after it demonstrably produces interviews.
+**Goal:** land interviews for Emirati candidates via personalized cold email, leveraging the structural advantage Emiratisation quotas and Nafis create. Build for one friend first; the same build is the seed of the commercial product.
 
-This plan supersedes everything previously in this repo.
-
----
-
-## 1. Reframing the problem: it's three subsystems, not two
-
-Your notebook splits the problem into (a) collect data and (b) write emails. That's right at a high level, but there's a third subsystem that campaigns live or die on, and it's the one your notebook only touches with "Rule: send first email, follow up 2x with good spacing":
-
-1. **Data collection** — companies → people → *evidence* (the raw material for personalization).
-2. **Email generation** — evidence + template → reviewed draft.
-3. **Outreach state machine** — scheduling, follow-ups, reply detection, stop rules, tracking.
-
-Most replies in cold outreach come from follow-ups 1 and 2, not the first email. If follow-up state is tracked in someone's head, it silently decays after week two. So subsystem 3 is a first-class build item, not a rule scribbled in the margin.
+**Core product assumption (from founder):** users are lazy and tech-shy. Every flow must be embarrassingly easy — connect email in one click, answer a few questions, review, send. If a step feels like "setup," it's designed wrong. This makes the minimal UI a v1 requirement, not a later phase.
 
 ---
 
-## 2. Locked assumptions (defaults chosen; overridable)
+## 1. The three subsystems
 
-These were open questions; you didn't get a chance to answer, so the plan locks in the safest defaults. Changing any of them changes scope, so flag early if one is wrong.
+1. **Data collection** — companies → people → *evidence* (raw-source facts for personalization).
+2. **Email generation** — evidence + template → draft, with a clarify-&-refuse contract (§6).
+3. **Outreach state machine** — working-day countdowns, UAE-holiday awareness, follow-ups, person rotation within a company, reply detection (§5).
 
-| Decision | Default | Why |
-|---|---|---|
-| Sending | **Drafts written into the friend's real mailbox (Gmail API), human hits send** | Best deliverability (real account, real sending history), a human quality gate against hallucinated personalization, and the follow-up engine can read the same mailbox for replies. No auto-send in v1, ever. |
-| Contact sourcing | **Manual LinkedIn browsing + email-pattern inference + verification API** | Automated LinkedIn scraping violates ToS, gets accounts restricted fast, and creates UAE PDPL exposure the moment you commercialise. Paid enrichment APIs (Apollo etc.) have weak GCC coverage. Manual sourcing is fine at friend-scale (30–50 companies) and produces *better* evidence anyway. |
-| Target market | **Pluggable company list; decide segment with the friend in week 1** | Banking/finance has the hardest quotas; private multinationals respond to the Nafis cost argument; gov/semi-gov is where an Arabic template would matter. The pipeline doesn't care — the list is an input. |
-| Operating model | **You drive the scripts; friend only reviews drafts and forwards replies** | Zero UI to build. The "product" in v1 is a pipeline + a database. Fastest route to the only question that matters: does this produce interviews? |
-| Stack | **SQLite + Python scripts (or TS scripts — pick whichever you'll actually maintain), no web app** | The previous repo's dashboard was premature. A UI is a commercialisation artifact; build it after the pipeline has proven itself on one user. |
+The tone target for subsystem 3, in the founder's words: *grit and continuous chasing, but never annoying.*
 
 ---
 
-## 3. Data model
+## 2. Product shape: three screens
 
-Five tables. The important design decision is that **evidence is a separate entity from emails** — this is also what makes the "same person gets 10 identical AI emails" collision problem solvable later (see §8).
+### Screen 1 — Onboard (once, < 10 minutes)
+1. **Connect Gmail** — one-click Google OAuth (`gmail.compose` + `gmail.readonly` + `gmail.send`). Gmail only in v1; most users' personal mail.
+2. **Profile interview** — short structured questions: who you are, education, one credibility marker, what roles you want, industries, cities, tone preferences. Output: a candidate profile that seeds the email template and the targeting queue.
+3. Done. The system starts building their company/people queue behind the scenes.
+
+### Screen 2 — Review & Send (daily, the core loop)
+Split view:
+- **Left:** the email exactly as it will send (editable).
+- **Right:** the evidence panel — every personalized claim in the draft, each with the **raw-source quote and a link to where it came from**. The user can judge in 10 seconds whether the personalization is real.
+- One button: **Send** (via their Gmail account through the API — same deliverability as sending by hand, but no tab-switching). Every send is human-approved; there is no auto-send.
+- Follow-ups appear in the same queue when their countdown hits zero, pre-drafted, same evidence panel, same one-click send.
+
+### Screen 3 — Dashboard
+- Companies reached, per-company timeline (who, when, which step).
+- **Next actions:** who is due for follow-up and in how many working days; who is next in the queue.
+- Reply/bounce status per thread (read from Gmail).
+
+---
+
+## 3. Sourcing pyramid (contact discovery)
+
+Work each company top-down; stop at the first tier that yields the right person. Every contact records which tier it came from.
+
+- **Tier 1 — Regulatory & official registers.** Honest caveat: the UAE has no free Companies-House equivalent that lists officers for ordinary companies. Tier 1 is strong only for specific segments:
+  - **DFSA Public Register** (DIFC financial firms — lists authorized individuals with roles)
+  - **ADGM/FSRA Financial Services Register** (same, for ADGM firms)
+  - **DFM / ADX listed-company disclosures + annual reports** (board and senior management)
+  - **Central Bank / SCA licensed-entity lists** (institutions, not people — company-level only)
+  - Government/semi-gov entities: official org pages, WAM (state news agency) announcements
+  - For everything else, Tier 1 will miss → fall through. (The National Economic Register has license data but no people.)
+- **Tier 2 — The company's own pages.** Leadership/team pages, press releases, "our people," Emiratisation/careers pages (these often name the Emiratisation or early-careers lead — the highest-value contact in this niche, see §4).
+- **Tier 3 — Search-engine-indexed LinkedIn.** Query Google/Bing for `site:linkedin.com/in "<company>" "head of <function>"` etc. This reads public search results without touching LinkedIn itself — no automation against LinkedIn, no detection problem, ToS-clean.
+- **Tier 4 — Manual LinkedIn browsing (last resort, human-only).** A person browses normally and pastes the profile URL/details into a quick capture form; the tool structures it. **Hard rule: no automated LinkedIn crawling, "undetected" or otherwise.** It's an account ban plus legal exposure (UAE PDPL) waiting to happen, and at our volumes the human path is fast enough.
+
+**Staleness defense** (LinkedIn lies — people who left don't update): every contact needs either a second corroborating source or one source fresher than ~90 days before drafting. Email verification (below) is itself a departure check — a bounce on a verified pattern often means they're gone; log it and rotate.
+
+**Email addresses:** infer the company pattern (first.last@domain dominates UAE corporates), verify with an API (NeverBounce/ZeroBounce class, ~$10–30). Only `verified` addresses ever get a draft.
+
+---
+
+## 4. Contact strategy within a company
+
+Per company, build a ranked ladder of 2–4 people, then walk it one person at a time:
+
+- **Specific open role found** (via job description — JD text often names the team/reporting line) → the hiring manager of that team, then a senior person in the same function.
+- **Generalist route** → the **Emiratisation / Nafis program lead if one exists** (most large UAE employers have one; their KPI is literally hiring Emiratis — likely the highest-reply contact type in this niche), then HR/talent acquisition.
+
+**Sequencing rules (no carpet-bombing):**
+1. Only **one live sequence per company** at a time.
+2. A person's sequence = email 1 → follow-up 1 → follow-up 2 (breakup). If it closes with no reply, wait a **cooldown of ~5 working days**, then start the next person on the ladder — with a *fresh angle and fresh evidence*, never referencing that someone else ignored us.
+3. Never email two people at the same company on the same day (they talk; twin emails in one office is worse than none).
+4. After the ladder is exhausted (max 3 people), the company goes dormant for 60–90 days.
+
+---
+
+## 5. Follow-up engine: working-day countdown, UAE-aware
+
+- Cadence: **Day 0 → +4 working days → +5 more working days (breakup)**. Counts skip:
+  - **Sat–Sun** (the UAE weekend since 2022 — not Fri–Sat)
+  - **UAE public holidays:** Eid al-Fitr, Eid al-Adha + Arafat Day, Islamic New Year, Prophet's Birthday, Commemoration Day + National Day (Dec 1–3). Islamic dates shift on moon-sighting — store them as windows and confirm near the date.
+  - A send-pause window through late Ramadan.
+- **Holiday-aware warmth:** a follow-up whose countdown crosses a holiday reschedules to just after it and gets a contextual opening line ("Eid Mubarak — hope you had a good break with family") instead of a generic bump. This is the "grit without being annoying" mechanic: persistent, but human.
+- Follow-ups add one new thing each time (a new evidence item, a relevant link, a sharper ask). The breakup email is polite and leaves the door open. Never "just bumping this."
+- **Reply detection:** poll the connected Gmail; any reply (or bounce) stops the person's sequence immediately and surfaces the thread on the dashboard.
+
+---
+
+## 6. Email generation: the clarify-&-refuse contract
+
+- Template skeleton (search-fund pyramid, adapted): **personal hook** (highest-tier evidence available) → **2-sentence intro** with one credibility marker → **the Emirati angle** (see §7) → **one ask** (coffee chat by default; direct job ask only when a specific open role triggered the email) → sign-off. Under 120 words. No attachments on email 1.
+- The generator receives **only structured evidence rows, each with a source URL**, and may not state any fact not present in them.
+- If the best evidence is generic (industry-level) or stale, it **refuses and emits a collection request** ("need one recent post or company event for X") instead of hallucinating. That request goes into the sourcing queue.
+- Every draft stores which evidence IDs it used — that's what powers the Review screen's side-by-side evidence panel.
+- English template in v1. Arabic variant deferred until gov/semi-gov targets justify it (UAE corporate hiring runs in English, even Emirati-to-Emirati).
+
+## 7. Using the Emiratisation / Nafis angle
+
+- **To HR / Emiratisation leads:** state it plainly — quota contribution + Nafis salary support is their KPI.
+- **To hiring managers:** lead with fit and interest in their team's work; Emirati/Nafis status at most as a factual closer, or omitted.
+- **Never** open with the subsidy. The personal hook always comes first.
+
+---
+
+## 8. Stack
+
+**TypeScript end-to-end** (decision — answers "Python or TS?"):
+- The product now includes a real UI, and this repo is already Next.js/TS: one language for UI, API routes, and pipeline jobs, one deploy.
+- Gmail API, Google OAuth, and the Anthropic SDK are all first-class in TS.
+- Python would win only for heavy scraping/data science, which we've explicitly ruled out.
+
+Components: **Next.js** (3 screens + API routes) · **SQLite** via Prisma/Drizzle (single-file DB, easy backup) · **Gmail API** (OAuth, draft/send, reply polling) · **Claude API** (generation + evidence structuring) · a **scheduler job** (cron/queue) for countdowns and follow-up drafting.
+
+## 9. Data model
 
 ```
-company    id, name, domain, industry, tier (dream/target/backup),
-           emiratisation_pressure (high/med/low), notes, status
-
-person     id, company_id, name, role_title, seniority,
-           contact_type (hiring_manager | hr | emiratisation_lead | exec),
-           linkedin_url, email, email_status (guessed → verified → bounced),
-           source_of_email (pattern_inferred | listed_publicly | ...)
-
-evidence   id, person_id (nullable), company_id, 
-           tier (1=they_wrote_it, 2=they_engaged_with_it, 3=shared_connection/common_ground,
-                 4=company_news, 5=industry_generic),
-           content, source_url (REQUIRED), collected_date
-
-outreach   id, person_id, sequence_step (1|2|3), language (en|ar),
-           template_version, subject, body,
-           status (draft → approved → sent → replied | bounced | closed),
-           evidence_ids_used, scheduled_date, sent_date, replied_date
-
-campaign_log   append-only: every state change, for debugging and later analytics
+user           id, name, gmail_oauth_tokens, profile (interview answers), template_prefs
+company        id, name, domain, industry, emiratisation_flag, tier, status
+               (active | dormant_until | exhausted)
+person         id, company_id, ladder_rank, name, role_title,
+               contact_type (hiring_manager | emiratisation_lead | hr | exec),
+               source_tier (1–4), source_urls[], freshness_date,
+               email, email_status (guessed → verified → bounced)
+evidence       id, person_id?, company_id, tier (1=wrote_it, 2=engaged, 3=common_ground,
+               4=company_news, 5=generic), quote, source_url (REQUIRED), collected_date
+outreach       id, person_id, step (1|2|3), subject, body, evidence_ids[],
+               status (queued → drafted → approved_sent → replied | bounced | closed),
+               due_working_day_count, scheduled_date, sent_date
+calendar       UAE holiday windows + weekend rules (drives all countdowns)
+log            append-only state changes (debugging + later analytics)
 ```
 
-Your notebook's many-to-one company→people relation is the `person.company_id` FK; the generic-vs-specific branching lives in `contact_type`.
+## 10. Hard rules
 
-### Contact-selection rule (from your notebook, made precise)
+1. No auto-send — every email is human-approved on the Review screen.
+2. No fabricated personalization — every claim traces to an evidence row with a source URL.
+3. Verified emails only.
+4. Volume ceiling: 10–15 first-emails/day per user (mailbox warmup + realistic evidence throughput).
+5. One live sequence per company; ladder rotation per §4; company dormancy after exhaustion.
+6. Countdown in UAE working days; holiday-aware rescheduling per §5.
+7. No LinkedIn automation, ever. Tier 4 is human-only with a capture form.
 
-Per company, find **1–3 people**, chosen by this branch:
+## 11. Build order
 
-- **A specific role is open** (found via job description) → the hiring manager of that team (job descriptions often name the team/reporting line; LinkedIn maps the team) + optionally one senior person in the same function.
-- **No specific role / generic interest** → HR lead, and specifically the **Emiratisation or Nafis program lead if one exists** — most large UAE employers have one, and they are *paid to find people like your friend*. This contact type is the single biggest structural edge this niche has; generic HR is the fallback, not the target.
+**Week 1 — Skeleton + onboarding.** Next.js app, SQLite schema, Google OAuth + Gmail connect, profile interview flow, UAE calendar table. Seed the friend's profile and 30–50 companies (any segment with Emiratisation/Nafis exposure; rank ladder per company).
+**Week 2 — Sourcing tooling.** Capture form (Tiers 2–4), search-engine Tier-3 helper, email pattern inference + verification, evidence store.
+**Week 3 — Generate + Review screen.** Clarify-&-refuse generator, split-view Review & Send via Gmail API. First 10 real sends with the friend, calibrating voice.
+**Week 4 — Cadence engine + Dashboard.** Working-day scheduler, follow-up pre-drafting, reply polling, holiday-aware openers, dashboard timeline. Full list live at the ceiling.
+**Weeks 5–6 — Learn.** Reply rate by evidence tier / contact type / template variant. Iterate templates, not architecture.
 
-Never contact two people at the same company in the same week (they talk to each other; two near-identical emails in one office is worse than none).
+**Success bar before commercialising:** ≥ 8–10% reply rate and ≥ 2 interviews or serious intro calls within 6 weeks for the friend.
 
----
+## 12. Deferred (commercialisation phase)
 
-## 4. Pipeline stages (with human gates marked ✋)
+Multi-tenant + payments + onboarding polish · Arabic template · the **personalization-collision defense** (per-person evidence locking + a cross-client contact ledger enforcing spacing — the ledger is a moat: the biggest coordinated pool spams least) · UAE PDPL compliance work (needed before storing third-party personal data at commercial scale) · Outlook support.
 
-```
-Stage 0  INTAKE        friend's profile, CV, target roles, constraints, voice sample
-Stage 1  COMPANIES     seed 30–50 companies manually with the friend  ✋
-Stage 2  PEOPLE        manual LinkedIn browse → apply contact-selection rule
-                       → infer email (first.last@domain is the dominant UAE
-                       corporate pattern) → verify via API (NeverBounce/ZeroBounce,
-                       ~$10–30 total) → only `verified` emails proceed
-Stage 3  EVIDENCE      per person, collect 2–3 evidence items with source URLs,
-                       highest pyramid tier available
-Stage 4  GENERATE      LLM drafts email from template + evidence (see §5–6)
-Stage 5  REVIEW        drafts land in friend's Gmail Drafts; friend edits/sends  ✋
-Stage 6  CADENCE       state machine schedules follow-ups, detects replies, stops
-Stage 7  LEARN         weekly: reply rate by template / evidence tier / contact type
-```
+## 13. Open items
 
-Stages 2–3 are deliberately manual-with-tooling in v1. The tooling accelerates (pattern inference, verification, evidence capture form), the human sources. Automate only what proved to be the bottleneck.
-
----
-
-## 5. The email template (search-fund pyramid, formalized)
-
-Structure per email, matching what worked for you at Carlyle:
-
-1. **Personal hook (1–2 sentences)** — drawn from the *highest available evidence tier*:
-   - T1: something they wrote/said recently (post, article, panel)
-   - T2: something they engaged with
-   - T3: genuine common ground (university, mutual connection, shared interest)
-   - T4: company-level event (expansion, deal, new program)
-   - T5: industry-generic — **if this is the best available, the generator refuses to draft** (see §6). A generic opener is worse than no email; it burns the contact.
-2. **Quick intro (2 sentences)** — who the friend is, one concrete credibility marker.
-3. **The Emirati angle (0–1 sentence, contact-type dependent)** — see §7.
-4. **One ask** — default **coffee chat / 15-minute call**; the direct job ask only when a specific open role was the trigger. Coffee-chat asks convert better cold and are how your Carlyle path actually worked.
-5. Sign-off. Total length: under 120 words. No attachments on email 1.
-
-**Follow-up templates** (steps 2 and 3) are short, reference the first email, add *one new piece of value or evidence*, and step 3 is a polite breakup note. They are separate templates, not "bumping this to the top of your inbox."
-
-**Arabic template:** deferred to phase 2, and only if the week-1 segment decision includes gov/semi-gov. English is the working language of UAE corporate hiring; Arabic outreach is a differentiator in government contexts specifically.
-
----
-
-## 6. The generator's "clarify & refuse" contract
-
-Your notebook's "prompt that clarifies & refuses" is the right instinct — make it a hard contract, because hallucinated personalization is the single fastest way to destroy this project's credibility:
-
-- The generator receives **only** structured evidence rows (each with a source URL). It is instructed it may not reference any fact not present in the input.
-- If the best evidence is tier 5, or evidence is stale (> ~60 days for T1/T2), it **refuses and emits a request** for what to collect instead — that request goes back onto your Stage 3 to-do list.
-- Every generated draft stores `evidence_ids_used`, so a bad email is traceable to bad evidence, not a mystery.
-- Human review at Stage 5 is the backstop, not the primary defense.
-
----
-
-## 7. Using the Emiratisation / Nafis angle without cheapening it
-
-This is positioning, and it's easy to get wrong. The subsidy argument ("hiring me costs you less and helps your quota") is compelling to exactly one audience and mildly insulting to another:
-
-- **To HR / Emiratisation leads:** state it plainly — quota contribution + Nafis salary support is their KPI. This is the segment where the niche's economics genuinely differ from generic cold-email tools.
-- **To hiring managers:** lead with competence and interest in *their team's work*; mention Emirati status at most as a factual closer ("as a UAE national I'm also eligible under Nafis"), or omit it. A manager choosing someone for their team responds to fit, not subsidies.
-- **Never** make the subsidy the opening line. The pyramid hook always comes first.
-
----
-
-## 8. The personalization-collision problem (acknowledged, deferred, but designed for)
-
-You correctly flagged that when 10 clients use the same tool, the same Emiratisation lead at FAB gets 10 structurally identical emails. Deferred for v1 (one client = no collisions), but the v1 design already contains the two mechanisms that solve it later:
-
-1. **Evidence diversity:** because personalization is drawn from a per-person evidence *pool* rather than baked into a template, two clients emailing the same person can draw different hooks. Add a rule later: an evidence item used for person X is locked for N weeks across all clients.
-2. **A central contact ledger:** the `outreach` table, made multi-tenant, becomes a registry of who-was-contacted-when across your whole client base — you can enforce spacing between *your own clients'* emails to the same person. Competitors without this coordination will spam; you won't. The collision problem is actually a **moat** for whoever operates the largest coordinated pool.
-
----
-
-## 9. Hard rules (what makes this rigid)
-
-1. **No auto-send.** Drafts only. A human clicks send in v1, always.
-2. **No fabricated personalization.** Every claim in an email traces to an evidence row with a source URL, or the email doesn't get drafted.
-3. **Verified emails only.** `guessed` never gets a draft; bounces poison mailbox reputation.
-4. **Volume ceiling:** max 10–15 new first-emails per day from the friend's account (cold-start mailbox warmup; also matches realistic evidence-collection throughput).
-5. **Cadence:** Day 0 → Day 4 (±1) → Day 9–10 breakup. Stop immediately on reply or bounce. Nothing sends Fri–Sat (UAE weekend) or during late Ramadan/Eid windows.
-6. **One live contact per company at a time;** second contact only after the first sequence closes.
-7. **No LinkedIn automation.** Ever, in any phase. It's the part of the system that must stay human.
-
----
-
-## 10. Build order (friend-first milestones)
-
-**Week 1 — Foundations + decisions.** Intake session with the friend (profile, targets, voice). Decide the segment (bank/finance vs multinationals vs gov). Build: SQLite schema, seed scripts, evidence-capture helper (a tiny CLI/form that makes logging a LinkedIn find take 20 seconds). Seed 30–50 companies.
-
-**Week 2 — People + evidence.** Source 1–3 contacts for the top 20 companies; verify emails; collect evidence for the top 20 people. Build: email-pattern inference + verification integration.
-
-**Week 3 — First sends.** Build: generator with the clarify/refuse contract + Gmail API draft-writer. Draft 10, review together with the friend (calibrate voice), send. This is the first real feedback.
-
-**Week 4 — Cadence engine + full run.** Build: scheduler + reply detection (poll the mailbox) + follow-up drafting. Take the full list live at the volume ceiling.
-
-**Weeks 5–6 — Learn.** Weekly reply-rate readout by template variant / evidence tier / contact type. Iterate the template, not the architecture.
-
-**Success bar before any commercialisation:** ≥ 8–10% reply rate and **≥ 2 interviews or serious intro calls within 6 weeks**. If the pipeline can't do this for one motivated user with you hand-driving it, a SaaS wrapper won't fix it.
-
----
-
-## 11. Explicitly NOT building in v1
-
-- Web UI / dashboard (the previous repo's mistake — UI before proof)
-- Auto-send or auto-follow-up without human approval
-- LinkedIn scraping or browser automation
-- Arabic template (phase 2, segment-dependent)
-- Multi-tenant anything, payments, onboarding
-- Apply-wide / ATS job-board ingestion (different product; the old plan conflated the two motions)
-
-## 12. Risks to keep visible
-
-- **Mailbox reputation** — one spam complaint from a UAE bank's HR inbox hurts every future send; the volume ceiling and verified-only rules exist for this.
-- **UAE PDPL (data protection law)** — storing third parties' personal data (contacts, evidence) is fine at personal-use scale but needs a real basis + retention policy before commercialising. Budget for this at that point, not now.
-- **Hallucinated personalization** — handled by §6, but stay paranoid in week-3 reviews.
-- **The friend's follow-through** — the human-in-the-loop gate is also the failure point; if drafts sit unsent for a week, the cadence engine's schedule is fiction. Make "review drafts" a standing 20-min daily slot.
-
-## 13. Open questions still needing your input
-
-1. Which segment for the first 30–50 companies (banking / multinationals / gov)? — blocks week 1.
-2. Python or TypeScript for the pipeline scripts? (Repo is currently Next.js/TS; scripts don't need to care.)
-3. Does the friend use Gmail or Outlook? (Determines drafts API; both are fine, Gmail assumed.)
-4. What's the friend's degree/background and target function? (Shapes the intro line and contact-selection.)
+1. Confirm the UAE Tier-1 register list above covers the segments we care about (strong for finance/listed/gov; thin elsewhere — Tier 2 carries the rest).
+2. Nafis program rules (subsidy amounts, quota thresholds) to be verified at template-writing time — they shift year to year.
+3. Exact UAE holiday calendar for the build year (Islamic dates finalize on moon-sighting).
