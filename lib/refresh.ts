@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { updateDb } from './store';
+import { readDb, updateDb } from './store';
 import { fetchJobs, isPlatform, matchesKeywords, type AtsJob } from './ats';
 import { mapWithConcurrency, normalizeUrl } from './http';
 import { scoreRole } from './scoring';
@@ -64,9 +64,10 @@ export async function refreshAllSources(
   const deadline = startMs + budgetMs;
   const today = startedAt.slice(0, 10);
 
-  const all = await updateDb((db) =>
-    db.jobSources.filter((s) => s.enabled && (!onlyId || s.id === onlyId))
-  );
+  // A plain read — the write happens once at the end, after all the network
+  // work, so a slow board never holds a write open.
+  const { jobSources } = await readDb();
+  const all = jobSources.filter((s) => s.enabled && (!onlyId || s.id === onlyId));
 
   // Stalest first: if the budget runs out, the sources that have gone longest
   // without a check are the ones that got done. Over successive runs every
