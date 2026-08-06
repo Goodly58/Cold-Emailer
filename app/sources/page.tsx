@@ -17,6 +17,7 @@ interface RefreshReport {
   added: number;
   closed: number;
   failed: number;
+  skipped: number;
   ranAt: string;
   details: Array<{ company: string; added: number; total: number; error?: string }>;
 }
@@ -197,6 +198,12 @@ export default function Sources() {
               </span>
               {report.closed > 0 && <span className="muted"> · {report.closed} closed</span>}
               {report.failed > 0 && <span className="error"> · {report.failed} failed</span>}
+              {report.skipped > 0 && (
+                <span className="muted">
+                  {' '}
+                  · {report.skipped} left for the next run (time budget)
+                </span>
+              )}
             </p>
             <ul style={{ paddingLeft: 18, marginTop: 6 }}>
               {report.details.map((d, i) => (

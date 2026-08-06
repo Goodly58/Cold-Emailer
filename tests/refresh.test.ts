@@ -216,3 +216,54 @@ test('applies a per-source keyword filter', async () => {
   const report = await refreshAllSources();
   assert.equal(report.added, 1, 'only the Dubai role should pass the filter');
 });
+
+test('respects the time budget and leaves stale sources for the next run', async () => {
+  // Two sources, a budget of zero: nothing should be fetched, and crucially
+  // no source state should be touched, so the next run still sees them stale.
+  const file = process.env.DB_PATH!;
+  const db = JSON.parse(await fs.readFile(file, 'utf8'));
+  db.jobSources.push({
+    id: 's2',
+    companyName: 'Beta',
+    platform: 'greenhouse',
+    slug: 'beta',
+    enabled: true,
+    createdAt: '2026-01-01T00:00:00Z',
+  });
+  await fs.writeFile(file, JSON.stringify(db));
+
+  const { refreshAllSources, readDb } = await load();
+  const report = await refreshAllSources({ budgetMs: 0 });
+
+  assert.equal(report.skipped, 2);
+  assert.equal(report.checked, 0);
+  assert.equal(report.added, 0);
+
+  const after = await readDb();
+  for (const s of after.jobSources) {
+    assert.equal(s.lastCheckedAt, undefined, 'a skipped source must stay unchecked');
+  }
+});
+
+test('checks the stalest source first when the budget is tight', async () => {
+  const file = process.env.DB_PATH!;
+  const db = JSON.parse(await fs.readFile(file, 'utf8'));
+  db.jobSources[0].lastCheckedAt = '2026-08-01T00:00:00Z'; // recently checked
+  db.jobSources.push({
+    id: 's2',
+    companyName: 'Beta',
+    platform: 'greenhouse',
+    slug: 'beta',
+    enabled: true,
+    lastCheckedAt: '2026-01-01T00:00:00Z', // long overdue
+    createdAt: '2026-01-01T00:00:00Z',
+  });
+  await fs.writeFile(file, JSON.stringify(db));
+
+  const { refreshAllSources, readDb } = await load();
+  await refreshAllSources();
+
+  const after = await readDb();
+  const beta = after.jobSources.find((s: { id: string }) => s.id === 's2');
+  assert.notEqual(beta.lastCheckedAt, '2026-01-01T00:00:00Z', 'the overdue source should have run');
+});

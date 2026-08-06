@@ -17,6 +17,8 @@ const PRUNE_CLOSED_AFTER_DAYS = 30;
 export interface RefreshReport {
   runId: string;
   checked: number;
+  /** Sources left for the next run because the time budget ran out. */
+  skipped: number;
   added: number;
   updated: number;
   closed: number;
@@ -31,7 +33,16 @@ interface FetchOutcome {
   source: JobSource;
   jobs: AtsJob[];
   error?: string;
+  /** Ran out of time budget — left untouched for the next run. */
+  skipped?: boolean;
 }
+
+/**
+ * Wall-clock budget for one invocation. Vercel's Hobby tier caps serverless
+ * functions at 60s, so we stop fetching in time to still write results
+ * instead of being killed mid-run with nothing saved.
+ */
+const DEFAULT_BUDGET_MS = 45_000;
 
 function daysBetween(a: string, b: string): number {
   return Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 86_400_000;
@@ -45,18 +56,32 @@ function daysBetween(a: string, b: string): number {
  * updated in a single pass so a slow board can't hold a write open.
  */
 export async function refreshAllSources(
-  opts: { onlyId?: string; trigger?: 'cron' | 'manual' } = {}
+  opts: { onlyId?: string; trigger?: 'cron' | 'manual'; budgetMs?: number } = {}
 ): Promise<RefreshReport> {
-  const { onlyId, trigger = 'manual' } = opts;
+  const { onlyId, trigger = 'manual', budgetMs = DEFAULT_BUDGET_MS } = opts;
   const startedAt = new Date().toISOString();
   const startMs = Date.now();
+  const deadline = startMs + budgetMs;
   const today = startedAt.slice(0, 10);
 
-  const sources = await updateDb((db) =>
+  const all = await updateDb((db) =>
     db.jobSources.filter((s) => s.enabled && (!onlyId || s.id === onlyId))
   );
 
+  // Stalest first: if the budget runs out, the sources that have gone longest
+  // without a check are the ones that got done. Over successive runs every
+  // source is covered even when there are more than fit in one invocation.
+  const sources = [...all].sort((a, b) =>
+    String(a.lastCheckedAt || '').localeCompare(String(b.lastCheckedAt || ''))
+  );
+
+  let skipped = 0;
+
   const fetched: FetchOutcome[] = await mapWithConcurrency(sources, CONCURRENCY, async (source) => {
+    if (Date.now() > deadline) {
+      skipped += 1;
+      return { source, jobs: [], skipped: true };
+    }
     if (!isPlatform(source.platform)) {
       return { source, jobs: [], error: `unknown platform "${source.platform}"` };
     }
@@ -71,7 +96,8 @@ export async function refreshAllSources(
   return updateDb((db) => {
     const report: RefreshReport = {
       runId: randomUUID(),
-      checked: fetched.length,
+      checked: fetched.length - skipped,
+      skipped,
       added: 0,
       updated: 0,
       closed: 0,
@@ -92,8 +118,12 @@ export async function refreshAllSources(
 
     const companyByName = new Map(db.companies.map((c) => [c.name.trim().toLowerCase(), c]));
 
-    for (const { source, jobs, error } of fetched) {
+    for (const { source, jobs, error, skipped: wasSkipped } of fetched) {
       const live = db.jobSources.find((s) => s.id === source.id);
+
+      // Left for the next run — don't touch its state, so it stays at the
+      // front of the stalest-first queue.
+      if (wasSkipped) continue;
 
       if (error) {
         report.failed += 1;
