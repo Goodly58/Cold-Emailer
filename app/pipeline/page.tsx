@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { create, list, patch, remove } from '@/lib/client';
 import { STAGES, STAGE_LABELS, type Application, type Stage } from '@/lib/types';
+import { scoreBand } from '@/lib/scoring';
 
 /** Cards rendered per column before "show more" — the scraper can import
  *  hundreds of roles and rendering them all makes the board unusable. */
@@ -33,6 +34,7 @@ export default function Pipeline() {
   const [onlyNew, setOnlyNew] = useState(false);
   const [onlyUae, setOnlyUae] = useState(false);
   const [hideClosed, setHideClosed] = useState(true);
+  const [sortByScore, setSortByScore] = useState(true);
   const [shown, setShown] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
 
@@ -86,7 +88,7 @@ export default function Pipeline() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return apps.filter((a) => {
+    const matched = apps.filter((a) => {
       if (onlyNew && !a.isNew) return false;
       if (onlyUae && !a.emiratiAngle) return false;
       if (hideClosed && a.closed) return false;
@@ -98,7 +100,10 @@ export default function Pipeline() {
         (a.location || '').toLowerCase().includes(q)
       );
     });
-  }, [apps, query, onlyNew, onlyUae, hideClosed]);
+    if (!sortByScore) return matched;
+    // Scored roles first, best first; unscored (manually added) keep their place after.
+    return [...matched].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  }, [apps, query, onlyNew, onlyUae, hideClosed, sortByScore]);
 
   const newCount = apps.filter((a) => a.isNew).length;
 
@@ -251,6 +256,10 @@ export default function Pipeline() {
             <input type="checkbox" style={{ width: 'auto' }} checked={hideClosed} onChange={(e) => setHideClosed(e.target.checked)} />
             Hide closed
           </label>
+          <label className="fixed flex" style={{ marginBottom: 0 }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={sortByScore} onChange={(e) => setSortByScore(e.target.checked)} />
+            Best first
+          </label>
           <span className="fixed muted" style={{ alignSelf: 'center' }}>
             {filtered.length} of {apps.length}
           </span>
@@ -284,13 +293,23 @@ export default function Pipeline() {
               </h3>
               {cards.map((a) => (
                 <div className="kanban-card" key={a.id}>
-                  <div className="role">
-                    {a.jobUrl ? (
-                      <a href={a.jobUrl} target="_blank" rel="noreferrer">
-                        {a.roleTitle}
-                      </a>
-                    ) : (
-                      a.roleTitle
+                  <div className="flex spread" style={{ alignItems: 'flex-start', gap: 6 }}>
+                    <div className="role">
+                      {a.jobUrl ? (
+                        <a href={a.jobUrl} target="_blank" rel="noreferrer">
+                          {a.roleTitle}
+                        </a>
+                      ) : (
+                        a.roleTitle
+                      )}
+                    </div>
+                    {a.score !== undefined && (
+                      <span
+                        className={`badge badge-${scoreBand(a.score) === 'strong' ? 'uae' : scoreBand(a.score) === 'good' ? 'target' : 'backup'}`}
+                        title={a.scoreReasons?.join(' · ') || ''}
+                      >
+                        {a.score}
+                      </span>
                     )}
                   </div>
                   <div className="company">

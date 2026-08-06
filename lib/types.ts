@@ -121,6 +121,9 @@ export interface Application {
   sourceId?: string;
   isNew?: boolean;
   lastSeenAt?: string;
+  /** Relevance 0-100, computed on import. */
+  score?: number;
+  scoreReasons?: string[];
   /** Posting disappeared from the board — likely filled or pulled. */
   closed?: boolean;
   createdAt: string;
@@ -195,6 +198,12 @@ export interface Profile {
   headline: string;
   phone: string;
   linkedinUrl: string;
+  /** What you're looking for — drives relevance scoring of scraped roles. */
+  targetTitles?: string;
+  targetKeywords?: string;
+  excludeKeywords?: string;
+  /** 0 intern, 1 junior, 2 mid, 3 senior, 4 leadership. */
+  targetSeniority?: number;
 }
 
 export interface Db {

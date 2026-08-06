@@ -68,7 +68,62 @@ export default function Templates() {
               />
             </div>
           </div>
-          <div className="flex">
+          <h3 style={{ fontSize: 13, textTransform: 'uppercase', color: 'var(--muted)', margin: '18px 0 8px' }}>
+            What you&apos;re looking for
+          </h3>
+          <p className="muted mb" style={{ fontSize: 13 }}>
+            The scraper scores every imported role against this, so the best matches float to the
+            top of your pipeline instead of drowning in volume.
+          </p>
+          <div className="form-row">
+            <div>
+              <label>Target job titles (comma separated)</label>
+              <input
+                value={profile.targetTitles || ''}
+                onChange={(e) => setProfile({ ...profile, targetTitles: e.target.value })}
+                placeholder="data analyst, business analyst, data scientist"
+              />
+            </div>
+            <div>
+              <label>Bonus keywords</label>
+              <input
+                value={profile.targetKeywords || ''}
+                onChange={(e) => setProfile({ ...profile, targetKeywords: e.target.value })}
+                placeholder="python, sql, banking, strategy"
+              />
+            </div>
+          </div>
+          <div className="form-row">
+            <div>
+              <label>Exclude anything containing</label>
+              <input
+                value={profile.excludeKeywords || ''}
+                onChange={(e) => setProfile({ ...profile, excludeKeywords: e.target.value })}
+                placeholder="sales, nurse, driver, commission"
+              />
+            </div>
+            <div>
+              <label>Target seniority</label>
+              <select
+                value={profile.targetSeniority ?? ''}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    targetSeniority: e.target.value === '' ? undefined : Number(e.target.value),
+                  })
+                }
+              >
+                <option value="">Any</option>
+                <option value="0">Intern</option>
+                <option value="1">Graduate / Junior</option>
+                <option value="2">Mid-level</option>
+                <option value="3">Senior</option>
+                <option value="4">Manager / Leadership</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex mt">
             <button className="primary" type="submit">
               Save profile
             </button>

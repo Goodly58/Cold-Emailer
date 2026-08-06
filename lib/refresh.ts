@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { updateDb } from './store';
 import { fetchJobs, isPlatform, matchesKeywords, type AtsJob } from './ats';
 import { mapWithConcurrency, normalizeUrl } from './http';
+import { scoreRole } from './scoring';
 import type { Application, JobSource, RefreshRun } from './types';
 
 /** How many boards to poll at once. Keeps us polite and within socket limits. */
@@ -89,6 +90,8 @@ export async function refreshAllSources(
       if (app.jobUrl) byUrl.set(normalizeUrl(app.jobUrl), app);
     }
 
+    const companyByName = new Map(db.companies.map((c) => [c.name.trim().toLowerCase(), c]));
+
     for (const { source, jobs, error } of fetched) {
       const live = db.jobSources.find((s) => s.id === source.id);
 
@@ -130,6 +133,18 @@ export async function refreshAllSources(
           continue;
         }
 
+        const company = companyByName.get(source.companyName.trim().toLowerCase());
+        const { score, reasons } = scoreRole(
+          {
+            roleTitle: job.title,
+            companyName: source.companyName,
+            location: job.location,
+            division: job.department,
+          },
+          db.profile,
+          company
+        );
+
         const app: Application = {
           id: randomUUID(),
           companyName: source.companyName,
@@ -140,6 +155,8 @@ export async function refreshAllSources(
           source: source.platform,
           sourceId: source.id,
           stage: 'found',
+          score,
+          scoreReasons: reasons,
           emiratiAngle: /uae|u\.a\.e|dubai|abu dhabi|sharjah|ajman|fujairah|ras al|umm al|emirat/i.test(
             job.location || ''
           ),
