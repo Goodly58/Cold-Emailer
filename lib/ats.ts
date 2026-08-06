@@ -1,101 +1,39 @@
 // Public ATS board APIs. These power companies' own careers pages, so polling
 // them is exactly what they're published for — no scraping, no ToS problem.
+//
+// Platform definitions live in ats-registry.ts; this module holds the slug
+// derivation and discovery logic built on top of them.
 
-import { fetchJson, mapWithConcurrency } from './http';
+import { mapWithConcurrency } from './http';
+import {
+  PLATFORM_DEFS,
+  PLATFORMS,
+  fetchJobsFor,
+  getPlatform,
+  isPlatform,
+  validSlug,
+  type AtsJob,
+  type Platform,
+  type PlatformDef,
+} from './ats-registry';
 
-export const PLATFORMS = [
-  'greenhouse',
-  'lever',
-  'ashby',
-  'workable',
-  'smartrecruiters',
-  'recruitee',
-] as const;
-
-export type Platform = (typeof PLATFORMS)[number];
-
-export interface AtsJob {
-  title: string;
-  location: string;
-  url: string;
-  /** Team/department when the board exposes it — becomes the division. */
-  department?: string;
-}
-
-export function isPlatform(x: string): x is Platform {
-  return (PLATFORMS as readonly string[]).includes(x);
-}
-
-export function validSlug(slug: string): boolean {
-  return /^[a-z0-9][a-z0-9-]{0,60}$/.test(slug);
-}
-
-const ENDPOINTS: Record<Platform, (slug: string) => string> = {
-  greenhouse: (s) => `https://boards-api.greenhouse.io/v1/boards/${s}/jobs`,
-  lever: (s) => `https://api.lever.co/v0/postings/${s}?mode=json`,
-  ashby: (s) => `https://api.ashbyhq.com/posting-api/job-board/${s}`,
-  workable: (s) => `https://apply.workable.com/api/v1/widget/accounts/${s}`,
-  smartrecruiters: (s) => `https://api.smartrecruiters.com/v1/companies/${s}/postings`,
-  recruitee: (s) => `https://${s}.recruitee.com/api/offers/`,
+export {
+  PLATFORM_DEFS,
+  PLATFORMS,
+  fetchJobsFor,
+  getPlatform,
+  isPlatform,
+  validSlug,
 };
+export type { AtsJob, Platform, PlatformDef };
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const PARSERS: Record<Platform, (data: any, slug: string) => AtsJob[]> = {
-  greenhouse: (d) =>
-    (d?.jobs || []).map((j: any) => ({
-      title: j.title,
-      location: j.location?.name || '',
-      url: j.absolute_url,
-      department: j.departments?.[0]?.name || j.metadata?.department || '',
-    })),
-  lever: (d) =>
-    (Array.isArray(d) ? d : []).map((j: any) => ({
-      title: j.text,
-      location: j.categories?.location || '',
-      url: j.hostedUrl,
-      department: j.categories?.team || j.categories?.department || '',
-    })),
-  ashby: (d) =>
-    (d?.jobs || []).map((j: any) => ({
-      title: j.title,
-      location: j.location || '',
-      url: j.jobUrl || j.applyUrl || '',
-      department: j.department || j.team || '',
-    })),
-  workable: (d) =>
-    (d?.jobs || []).map((j: any) => ({
-      title: j.title,
-      location: [j.city, j.country].filter(Boolean).join(', '),
-      url: j.url,
-      department: j.department || '',
-    })),
-  smartrecruiters: (d, slug) =>
-    (d?.content || []).map((j: any) => ({
-      title: j.name,
-      location: [j.location?.city, j.location?.country].filter(Boolean).join(', '),
-      url: `https://jobs.smartrecruiters.com/${slug}/${j.id}`,
-      department: j.department?.label || j.function?.label || '',
-    })),
-  recruitee: (d) =>
-    (d?.offers || []).map((j: any) => ({
-      title: j.title,
-      location: j.location || '',
-      url: j.careers_url || '',
-      department: j.department || '',
-    })),
-};
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-/** Fetch every open role from one company's board. Throws on a bad slug. */
-export async function fetchJobs(platform: Platform, slug: string): Promise<AtsJob[]> {
-  const data = await fetchJson(ENDPOINTS[platform](slug));
-  return PARSERS[platform](data, slug).filter((j) => j.title && j.url);
-}
-
-export interface DiscoveredBoard {
-  platform: Platform;
-  slug: string;
-  jobCount: number;
+/** Fetch a board identified by a single slug (the common case). */
+export async function fetchJobs(
+  platform: string,
+  slug: string,
+  config: Record<string, string> = {}
+): Promise<AtsJob[]> {
+  return fetchJobsFor(platform, { ...config, slug });
 }
 
 /** Plausible board slugs for a company name, most likely first. */
@@ -132,43 +70,53 @@ export function slugCandidates(companyName: string): string[] {
   return [...out];
 }
 
+export interface DiscoveredBoard {
+  platform: Platform;
+  slug: string;
+  jobCount: number;
+}
+
 /**
  * Work out which ATS a company uses by trying its name as a slug on each
- * platform. Bounded so a bulk sweep can't open hundreds of sockets, and
- * retries are disabled — a wrong guess should fail fast, not back off.
+ * discoverable platform. Bounded so a bulk sweep can't open hundreds of
+ * sockets, and retries are off — a wrong guess should fail fast.
+ *
+ * Enterprise platforms (Workday, Oracle) are excluded: they need identifiers
+ * that can't be guessed from a company name, so probing them would be pure
+ * wasted requests.
  */
 export async function discoverBoards(
   companyName: string,
   concurrency = 8
 ): Promise<DiscoveredBoard[]> {
   const candidates = slugCandidates(companyName);
+  const discoverable = PLATFORM_DEFS.filter((p) => p.discoverable);
 
-  const attempts: Array<{ platform: Platform; slug: string }> = [];
-  for (const platform of PLATFORMS) {
+  const attempts: Array<{ platform: string; slug: string }> = [];
+  for (const def of discoverable) {
     for (const slug of candidates) {
-      attempts.push({ platform, slug });
+      attempts.push({ platform: def.id, slug });
     }
   }
 
   const results = await mapWithConcurrency(attempts, concurrency, async ({ platform, slug }) => {
     try {
-      const jobs = await fetchJson(ENDPOINTS[platform](slug), { retries: 0, timeoutMs: 8000 });
-      const parsed = PARSERS[platform](jobs, slug).filter((j) => j.title && j.url);
-      return parsed.length > 0 ? { platform, slug, jobCount: parsed.length } : null;
+      const jobs = await fetchJobsFor(platform, { slug }, { retries: 0, timeoutMs: 8000 });
+      return jobs.length > 0 ? { platform, slug, jobCount: jobs.length } : null;
     } catch {
       return null;
     }
   });
 
-  const found = results.filter((r): r is DiscoveredBoard => r !== null);
-  // Prefer the board with the most roles when a company matches twice.
-  return found.sort((a, b) => b.jobCount - a.jobCount);
+  return results
+    .filter((r): r is DiscoveredBoard => r !== null)
+    .sort((a, b) => b.jobCount - a.jobCount);
 }
 
-/** Does this role look relevant / UAE-based? Used for optional filtering. */
+/** Does this role match the source's keyword filter? Blank filter keeps all. */
 export function matchesKeywords(job: AtsJob, keywords?: string): boolean {
   if (!keywords?.trim()) return true;
-  const haystack = `${job.title} ${job.location}`.toLowerCase();
+  const haystack = `${job.title} ${job.location} ${job.department || ''}`.toLowerCase();
   return keywords
     .split(',')
     .map((k) => k.trim().toLowerCase())

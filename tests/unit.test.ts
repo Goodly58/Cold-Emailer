@@ -300,3 +300,67 @@ test('gmailComposeUrl encodes recipient, subject and body', () => {
   assert.ok(url.includes('to=a%40b.com'));
   assert.ok(url.includes('Hello+%26+welcome'));
 });
+
+/* --------------------------------------------------------- ats registry */
+
+test('every platform definition builds a well-formed request', async () => {
+  const { PLATFORM_DEFS } = await import('../lib/ats-registry');
+  for (const def of PLATFORM_DEFS) {
+    const cfg: Record<string, string> = { slug: 'acme' };
+    for (const f of def.fields) cfg[f.key] = f.placeholder;
+    const req = def.build(cfg);
+    assert.ok(req.url.startsWith('https://'), `${def.id} produced a non-https URL: ${req.url}`);
+    assert.ok(!req.url.includes('{'), `${def.id} left an unsubstituted placeholder: ${req.url}`);
+    if (req.method === 'POST') {
+      assert.ok(req.body, `${def.id} is POST but sends no body`);
+      assert.doesNotThrow(() => JSON.parse(req.body!), `${def.id} body is not valid JSON`);
+    }
+  }
+});
+
+test('every platform parser tolerates empty and malformed responses', async () => {
+  const { PLATFORM_DEFS } = await import('../lib/ats-registry');
+  for (const def of PLATFORM_DEFS) {
+    const cfg: Record<string, string> = { slug: 'acme' };
+    for (const f of def.fields) cfg[f.key] = f.placeholder;
+    // A board with no openings, and a response shaped nothing like expected,
+    // must both yield an empty list rather than throwing mid-refresh.
+    assert.deepEqual(def.parse({}, cfg), [], `${def.id} choked on {}`);
+    assert.deepEqual(def.parse(null, cfg), [], `${def.id} choked on null`);
+    assert.deepEqual(def.parse({ unexpected: 'shape' }, cfg), [], `${def.id} choked on a wrong shape`);
+  }
+});
+
+test('workday builds tenant/datacentre/site into its URL', async () => {
+  const { getPlatform } = await import('../lib/ats-registry');
+  const wd = getPlatform('workday')!;
+  const req = wd.build({ slug: 'acmecorp', dc: 'wd3', site: 'External_Careers' });
+  assert.equal(req.method, 'POST');
+  assert.ok(req.url.includes('acmecorp.wd3.myworkdayjobs.com'));
+  assert.ok(req.url.includes('/wday/cxs/acmecorp/External_Careers/jobs'));
+});
+
+test('workday parses postings into absolute apply URLs', async () => {
+  const { getPlatform } = await import('../lib/ats-registry');
+  const wd = getPlatform('workday')!;
+  const jobs = wd.parse(
+    { jobPostings: [{ title: 'Data Analyst', locationsText: 'Dubai', externalPath: '/job/Dubai/Data-Analyst_R-1' }] },
+    { slug: 'acmecorp', dc: 'wd3', site: 'External_Careers' }
+  );
+  assert.equal(jobs.length, 1);
+  assert.equal(jobs[0].title, 'Data Analyst');
+  assert.ok(jobs[0].url.startsWith('https://acmecorp.wd3.myworkdayjobs.com/en-US/External_Careers/job/'));
+});
+
+test('fetchJobsFor refuses a platform missing a required field', async () => {
+  const { fetchJobsFor } = await import('../lib/ats-registry');
+  await assert.rejects(() => fetchJobsFor('workday', { slug: 'acme' }), /Data centre/);
+});
+
+test('discovery skips platforms whose identifiers cannot be guessed', async () => {
+  const { PLATFORM_DEFS } = await import('../lib/ats-registry');
+  const workday = PLATFORM_DEFS.find((p) => p.id === 'workday')!;
+  const greenhouse = PLATFORM_DEFS.find((p) => p.id === 'greenhouse')!;
+  assert.equal(workday.discoverable, false, 'probing Workday by name would be wasted requests');
+  assert.equal(greenhouse.discoverable, true);
+});

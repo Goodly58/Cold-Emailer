@@ -161,6 +161,9 @@ export interface JobSource {
   companyName: string;
   platform: string;
   slug: string;
+  /** Extra identifiers for platforms that need more than a slug
+   *  (Workday: dc + site; Oracle: host + site). */
+  config?: Record<string, string>;
   enabled: boolean;
   /** Comma-separated filter, e.g. "dubai, abu dhabi, analyst". Blank = all. */
   keywords?: string;

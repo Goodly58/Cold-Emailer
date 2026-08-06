@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
-import { PLATFORMS } from '@/lib/ats';
+import { PLATFORM_DEFS, getPlatform } from '@/lib/ats';
 import type { Company, JobSource } from '@/lib/types';
 
 interface Discovered {
@@ -41,6 +41,7 @@ export default function Sources() {
   const [sources, setSources] = useState<JobSource[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [form, setForm] = useState({ companyName: '', platform: 'greenhouse', slug: '', keywords: '' });
+  const [extra, setExtra] = useState<Record<string, string>>({});
 
   const [discoverName, setDiscoverName] = useState('');
   const [discovering, setDiscovering] = useState(false);
@@ -68,8 +69,16 @@ export default function Sources() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!form.companyName || !form.slug) return;
-    await addSource(form);
+    const def = getPlatform(form.platform);
+    const missing = (def?.fields || []).filter((f) => f.required && !extra[f.key]);
+    if (missing.length) {
+      setErr(`${def?.label} also needs: ${missing.map((f) => f.label).join(', ')}`);
+      return;
+    }
+    setErr('');
+    await addSource({ ...form, config: Object.keys(extra).length ? extra : undefined });
     setForm({ companyName: '', platform: 'greenhouse', slug: '', keywords: '' });
+    setExtra({});
   }
 
   async function runDiscover(e: React.FormEvent) {
@@ -335,19 +344,30 @@ export default function Sources() {
           <select
             className="fixed"
             value={form.platform}
-            onChange={(e) => setForm({ ...form, platform: e.target.value })}
+            onChange={(e) => {
+              setForm({ ...form, platform: e.target.value });
+              setExtra({});
+            }}
           >
-            {PLATFORMS.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {PLATFORM_DEFS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}
               </option>
             ))}
           </select>
           <input
-            placeholder="Board slug"
+            placeholder="Board slug / tenant"
             value={form.slug}
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
           />
+          {(getPlatform(form.platform)?.fields || []).map((f) => (
+            <input
+              key={f.key}
+              placeholder={`${f.label} (${f.placeholder})`}
+              value={extra[f.key] || ''}
+              onChange={(e) => setExtra({ ...extra, [f.key]: e.target.value })}
+            />
+          ))}
           <input
             placeholder="Filter keywords (optional), e.g. dubai, analyst"
             value={form.keywords}
@@ -357,6 +377,9 @@ export default function Sources() {
             Add
           </button>
         </form>
+        <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+          {getPlatform(form.platform)?.hint}
+        </p>
       </div>
 
       <div className="card">

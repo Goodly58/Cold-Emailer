@@ -86,7 +86,7 @@ export async function refreshAllSources(
       return { source, jobs: [], error: `unknown platform "${source.platform}"` };
     }
     try {
-      const jobs = await fetchJobs(source.platform, source.slug);
+      const jobs = await fetchJobs(source.platform, source.slug, source.config || {});
       return { source, jobs: jobs.filter((j) => matchesKeywords(j, source.keywords)) };
     } catch (e) {
       return { source, jobs: [], error: e instanceof Error ? e.message : 'fetch failed' };
