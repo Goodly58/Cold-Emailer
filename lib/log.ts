@@ -7,8 +7,8 @@
  * minutes/send, sends/positive-reply, replies/interview — are one query by
  * week 6 rather than an archaeology project.
  */
-import { execute } from './db/client.ts';
-import { newId, nowIso } from './ids.ts';
+import { execute } from './db/client';
+import { newId, nowIso } from './ids';
 
 /**
  * Every event the system may record. Adding a name here is a deliberate act;

@@ -31,7 +31,7 @@ import {
   todayUae,
   workingDaysBetween,
   type WorkingCalendar,
-} from '../lib/calendar.ts';
+} from '../lib/calendar';
 
 function calendarOf(...windows: WorkingCalendar['windows']): WorkingCalendar {
   return { windows, version: 1 };

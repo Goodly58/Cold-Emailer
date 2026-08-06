@@ -17,10 +17,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { ensureCalendarSeeded } from '../lib/calendar-store.ts';
-import { execute, queryOne } from '../lib/db/client.ts';
-import { newId, nowIso } from '../lib/ids.ts';
-import { logEvent } from '../lib/log.ts';
+import { ensureCalendarSeeded } from '../lib/calendar-store';
+import { execute, queryOne } from '../lib/db/client';
+import { newId, nowIso } from '../lib/ids';
+import { logEvent } from '../lib/log';
 
 interface SeedCompany {
   name: string;

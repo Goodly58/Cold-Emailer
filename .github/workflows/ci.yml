@@ -6,14 +6,14 @@ on:
   pull_request:
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
@@ -22,15 +22,51 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Run tests
+      # Hard rule 15: lib/calendar.ts is the only module allowed to do date
+      # arithmetic. A UTC server doing its own anchors day 0 to the wrong day,
+      # and the bug is invisible until a follow-up lands on a Saturday.
+      - name: No date arithmetic outside the calendar module
+        run: npm run check:dates
+
+      # The suite runs under TZ=America/New_York (see package.json), so a
+      # timezone assumption fails here rather than in a recipient's inbox.
+      - name: Tests
         run: npm test
 
       - name: Build
         run: npm run build
         env:
-          # Build without touching a real database — the app falls back to the
-          # bundled seed when no Turso credentials are present.
           NEXT_TELEMETRY_DISABLED: '1'
 
-      - name: Check the seed database is valid JSON
-        run: node -e "const d=require('./data/db.json'); const need=['profile','companies','contacts','applications','outreach','templates','jobSources','runs']; for (const k of need) if (!(k in d)) { console.error('missing key:', k); process.exit(1) } console.log('seed ok:', d.companies.length, 'companies')"
+      # The seed is what week 1 ships as a working set; a malformed entry would
+      # only surface when the founder ran the seeder by hand.
+      - name: Validate the company seed
+        run: |
+          node -e "
+            const rows = require('./seed/companies.json');
+            if (!Array.isArray(rows) || rows.length < 30) {
+              console.error('expected at least 30 seed companies, got', rows.length);
+              process.exit(1);
+            }
+            const domains = new Set();
+            for (const r of rows) {
+              for (const field of ['name', 'domain', 'segment']) {
+                if (!r[field]) { console.error('missing', field, 'on', r.name); process.exit(1); }
+              }
+              if (r.segment === 'free_zone_only') {
+                console.error('free-zone-only entity in the seed:', r.name);
+                process.exit(1);
+              }
+              if (domains.has(r.domain)) { console.error('duplicate domain:', r.domain); process.exit(1); }
+              domains.add(r.domain);
+            }
+            console.log('seed ok:', rows.length, 'companies');
+          "
+
+      # A migration that cannot be applied from scratch is a migration that
+      # cannot be recovered from a backup.
+      - name: Migrate and seed a fresh database
+        run: |
+          DB_PATH=/tmp/ci.db npm run db:migrate
+          DB_PATH=/tmp/ci.db npm run db:seed
+          DB_PATH=/tmp/ci.db npm run db:seed

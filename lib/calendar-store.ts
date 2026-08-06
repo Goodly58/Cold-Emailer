@@ -7,10 +7,10 @@
  * unconfirmed window counts as fully non-working. Being a day too cautious
  * costs one working day; being a day wrong sends "Eid Mubarak" before Eid.
  */
-import { assertUaeDate, type CalendarWindow, type WorkingCalendar, type WindowKind } from './calendar.ts';
-import { execute, query, queryOne } from './db/client.ts';
-import { newId, nowIso } from './ids.ts';
-import { logEvent } from './log.ts';
+import { assertUaeDate, type CalendarWindow, type WorkingCalendar, type WindowKind } from './calendar';
+import { execute, query, queryOne } from './db/client';
+import { newId, nowIso } from './ids';
+import { logEvent } from './log';
 
 interface WindowRow {
   id: string;

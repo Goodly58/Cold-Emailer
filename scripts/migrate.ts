@@ -1,5 +1,5 @@
 /** Applies pending migrations and prints what happened. `npm run db:migrate`. */
-import { databaseUrl, getDb, query } from '../lib/db/client.ts';
+import { databaseUrl, getDb, query } from '../lib/db/client';
 
 async function main() {
   console.log(`database: ${databaseUrl()}`);

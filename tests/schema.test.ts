@@ -20,13 +20,13 @@ before(() => {
 });
 
 after(async () => {
-  const { closeDb } = await import('../lib/db/client.ts');
+  const { closeDb } = await import('../lib/db/client');
   await closeDb();
   rmSync(dir, { recursive: true, force: true });
 });
 
 async function db() {
-  return (await import('../lib/db/client.ts')).getDb();
+  return (await import('../lib/db/client')).getDb();
 }
 
 /** Runs a statement and reports whether the database refused it. */
@@ -305,7 +305,7 @@ test('company domain and person email are unique across all users', async () => 
 
 test('editing a calendar window bumps the version stamp', async () => {
   const { ensureCalendarSeeded, addWindow, updateWindow, currentCalendarVersion } = await import(
-    '../lib/calendar-store.ts'
+    '../lib/calendar-store'
   );
   await ensureCalendarSeeded();
 
@@ -334,15 +334,15 @@ test('editing a calendar window bumps the version stamp', async () => {
 });
 
 test('a window that ends before it starts is refused', async () => {
-  const { addWindow } = await import('../lib/calendar-store.ts');
+  const { addWindow } = await import('../lib/calendar-store');
   await assert.rejects(() =>
     addWindow({ name: 'Backwards', kind: 'public_holiday', start: '2026-09-05', end: '2026-09-01', confirmed: true })
   );
 });
 
 test('the seed round-trips into the shape nextDue() consumes', async () => {
-  const { loadCalendar } = await import('../lib/calendar-store.ts');
-  const { nextDue } = await import('../lib/calendar.ts');
+  const { loadCalendar } = await import('../lib/calendar-store');
+  const { nextDue } = await import('../lib/calendar');
   const calendar = await loadCalendar();
 
   assert.ok(calendar.windows.length > 0);
@@ -354,7 +354,7 @@ test('the seed round-trips into the shape nextDue() consumes', async () => {
 });
 
 test('every Islamic window ships unconfirmed, so nothing warm fires on a guessed date', async () => {
-  const { SEED_WINDOWS } = await import('../lib/calendar-store.ts');
+  const { SEED_WINDOWS } = await import('../lib/calendar-store');
   for (const w of SEED_WINDOWS) {
     if (/estimated/i.test(w.name)) {
       assert.equal(w.confirmed, false, `${w.name} must ship unconfirmed`);
