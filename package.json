@@ -1,15 +1,20 @@
 {
-  "name": "job-search-engine",
+  "name": "emirati-cold-outreach-engine",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "tsx --test tests/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "TZ=America/New_York tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check:dates": "node scripts/check-date-arithmetic.mjs",
+    "check": "npm run typecheck && npm run check:dates && npm test",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.0",
     "@libsql/client": "^0.17.4",
     "next": "^15.5.22",
     "react": "19.0.0",

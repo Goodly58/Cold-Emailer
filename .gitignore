@@ -4,3 +4,7 @@ out/
 *.tsbuildinfo
 .env*
 .DS_Store
+
+# The SQLite database — never committed (it holds tokens and third-party data)
+data/*.db
+data/*.db-*
