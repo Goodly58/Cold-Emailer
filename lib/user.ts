@@ -4,6 +4,7 @@
  * global-keyed and the multi-user shape must not need a rewrite later.
  */
 import { execute, queryOne } from './db/client';
+import { POLL_STALENESS_MS } from './durations';
 import { newId, nowIso } from './ids';
 import { logEvent } from './log';
 
@@ -160,7 +161,7 @@ export async function advanceOnboarding(id: string, to: OnboardingStep): Promise
  * six hours old. A reply we cannot see is a follow-up fired at someone who
  * already answered.
  */
-export const POLL_STALENESS_LIMIT_MS = 6 * 60 * 60 * 1000;
+export const POLL_STALENESS_LIMIT_MS = POLL_STALENESS_MS;
 
 export interface SendBlock {
   blocked: boolean;

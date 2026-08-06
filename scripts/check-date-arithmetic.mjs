@@ -15,7 +15,16 @@ import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
 const SEARCH_DIRS = ['app', 'lib', 'scripts'];
-const ALLOWED = new Set(['lib/calendar.ts', 'scripts/check-date-arithmetic.mjs']);
+// lib/durations.ts holds millisecond constants for *elapsed time* — "six hours
+// since the last poll", "stuck for a day". Those are instant questions a UTC
+// clock answers correctly. Calendar questions (which day is this due? how many
+// working days apart?) still belong to lib/calendar.ts, and this guard is what
+// keeps the two from blurring.
+const ALLOWED = new Set([
+  'lib/calendar.ts',
+  'lib/durations.ts',
+  'scripts/check-date-arithmetic.mjs',
+]);
 
 /** Calendar-field access and day arithmetic. Instant handling is not listed. */
 const BANNED = [

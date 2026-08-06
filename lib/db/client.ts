@@ -48,6 +48,11 @@ function rawClient(): Client {
 
 async function runMigrations(c: Client): Promise<void> {
   await c.execute('PRAGMA foreign_keys = ON');
+  // Two tabs pressing Send at the same moment is a real, expected race. Without
+  // this, the loser gets SQLITE_BUSY thrown at it and the user sees an error
+  // instead of "sent from another device". Waiting is the correct behaviour:
+  // the compare-and-swap then resolves it properly a few milliseconds later.
+  await c.execute('PRAGMA busy_timeout = 5000');
   await c.execute(`
     CREATE TABLE IF NOT EXISTS _migration (
       name       TEXT PRIMARY KEY,
@@ -129,21 +134,48 @@ export async function transaction<T>(
     query: <R = Row>(sql: string, args?: InArgs) => Promise<R[]>;
   }) => Promise<T>
 ): Promise<T> {
-  const db = await getDb();
-  const tx = await db.transaction('write');
+  // Write transactions are serialized in-process.
+  //
+  // Two tabs pressing Send at the same moment is a real, expected race, and one
+  // connection cannot interleave two write transactions — the loser gets
+  // SQLITE_BUSY thrown at it, which the user would see as an error rather than
+  // "sent from another device". Queueing makes the compare-and-swap decide the
+  // race instead of the driver: the second transaction runs a few milliseconds
+  // later, finds the row already `sending`, and returns the right sentence.
+  //
+  // This is not a performance compromise. Every write here is a handful of rows
+  // on a local file, and the whole product sends at most twenty-five emails a
+  // day. `busy_timeout` above covers the separate case of another process
+  // holding the file.
+  const previous = writeQueue;
+  let release: () => void = () => {};
+  writeQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await previous;
+
   try {
-    const result = await fn({
-      execute: async (sql, args = []) => Number((await tx.execute({ sql, args })).rowsAffected),
-      query: async <R,>(sql: string, args: InArgs = []) =>
-        (await tx.execute({ sql, args })).rows as unknown as R[],
-    });
-    await tx.commit();
-    return result;
-  } catch (e) {
-    await tx.rollback();
-    throw e;
+    const db = await getDb();
+    const tx = await db.transaction('write');
+    try {
+      const result = await fn({
+        execute: async (sql, args = []) => Number((await tx.execute({ sql, args })).rowsAffected),
+        query: async <R,>(sql: string, args: InArgs = []) =>
+          (await tx.execute({ sql, args })).rows as unknown as R[],
+      });
+      await tx.commit();
+      return result;
+    } catch (e) {
+      await tx.rollback().catch(() => {});
+      throw e;
+    }
+  } finally {
+    release();
   }
 }
+
+let writeQueue: Promise<void> = Promise.resolve();
 
 /** Close the connection. Tests use this; the app does not. */
 export async function closeDb(): Promise<void> {
