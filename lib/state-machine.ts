@@ -102,13 +102,29 @@ async function setCompanyState(
  * this prevents.
  */
 async function freezeSiblings(userId: string, companyId: string, exceptPersonId: string, at: string): Promise<number> {
+  // Scoped to the organisation, not the company row. Conflict detection, ladder
+  // rotation and the spacing rules all key on org_group; freezing only one
+  // company row left the sibling entity — "Alpha Bank Capital" to the parent's
+  // "Alpha Bank" — still sending after a reply, a rejection, or a removal
+  // request. Two emails into one office is the failure all of this exists to
+  // prevent, and it does not care which legal entity sent them.
   return execute(
     `UPDATE outreach
         SET status = 'paused_pending_reply', updated_at = ?
       WHERE user_id = ?
         AND status IN ('queued', 'drafted', 'stale', 'needs_fact', 'approved')
-        AND person_id IN (SELECT id FROM person WHERE company_id = ? AND id <> ?)`,
-    [at, userId, companyId, exceptPersonId]
+        AND person_id IN (
+          SELECT p.id FROM person p JOIN company c ON c.id = p.company_id
+           WHERE c.org_group_id IN (
+                   SELECT org_group_id FROM company WHERE id = ?
+                   UNION SELECT parent_org_group_id FROM org_group_link
+                          WHERE child_org_group_id = (SELECT org_group_id FROM company WHERE id = ?)
+                   UNION SELECT child_org_group_id FROM org_group_link
+                          WHERE parent_org_group_id = (SELECT org_group_id FROM company WHERE id = ?)
+                 )
+             AND p.id <> ?
+        )`,
+    [at, userId, companyId, companyId, companyId, exceptPersonId]
   );
 }
 

@@ -598,17 +598,7 @@ export async function sendReply(
         WHERE id = ?`,
       [response.id, response.threadId, body, at, at, replyId]
     );
-    // The actions that sending this reply actually discharges — and only
-    // those. Resolving everything open for the person would silently clear the
-    // "mark this as Not Spam" prompt, which is the one that trains Gmail and is
-    // not done by replying, and any "add their successor" note.
-    await execute(
-      `UPDATE next_action SET resolved_at = ?
-        WHERE user_id = ? AND person_id = ? AND resolved_at IS NULL
-          AND kind IN ('reply_assist', 'reply_assist_cv', 'warm_reply', 'confirm_removal',
-                       'apologise_once', 'answer_provenance', 'thank_you', 'honest_pivot')`,
-      [at, user.id, reply.person_id]
-    );
+    await resolveReplyActions(user.id, reply.person_id, at);
 
     await logEvent({
       event: 'sent',
@@ -622,16 +612,30 @@ export async function sendReply(
   } catch (e) {
     const found = await probeForSentMessage(user.id, messageId);
     if (found) {
+      // It went out; only the response was lost. Everything the happy path does
+      // has to happen here too, or the user is left looking at a card asking
+      // them to reply to somebody they have already replied to.
       await execute(
         `UPDATE reply_draft SET status = 'sent', gmail_message_id = ?, sent_body_verbatim = ?,
                                 sent_at = ?, updated_at = ? WHERE id = ?`,
         [found.id, body, at, at, replyId]
       );
+      await resolveReplyActions(user.id, reply.person_id, at);
+      await logEvent({
+        event: 'sent',
+        userId: user.id,
+        entityType: 'reply',
+        entityId: replyId,
+        detail: { classification: reply.classification, attachedCv: attachment !== null, recovered: true },
+      });
       return { ok: true, outreachId: replyId, gmailMessageId: found.id, message: 'Sent.' };
     }
 
-    // Back to approved, not left in `sending`: unlike a cold send, the user is
-    // standing here waiting and needs the button to work again.
+    // Back to approved so the button works again — the user is standing here
+    // waiting, unlike a cold send. The Message-ID is deliberately kept on the
+    // row: the next attempt reuses it, so if this one did in fact reach Gmail
+    // and only the response was lost, the probe above finds it and the retry
+    // records rather than duplicates.
     await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [at, replyId]);
     await logError('error', e, { userId: user.id, entityType: 'reply', entityId: replyId });
     return {
@@ -644,6 +648,23 @@ export async function sendReply(
       reason: 'gmail_error',
     };
   }
+}
+
+/**
+ * The actions that sending a reply discharges — and only those.
+ *
+ * Resolving everything open for the person would silently clear the "mark this
+ * as Not Spam" prompt, which is the one that trains Gmail and is not done by
+ * replying, and any "add their successor" note.
+ */
+async function resolveReplyActions(userId: string, personId: string, at: string): Promise<void> {
+  await execute(
+    `UPDATE next_action SET resolved_at = ?
+      WHERE user_id = ? AND person_id = ? AND resolved_at IS NULL
+        AND kind IN ('reply_assist', 'reply_assist_cv', 'warm_reply', 'confirm_removal',
+                     'apologise_once', 'answer_provenance', 'thank_you', 'honest_pivot')`,
+    [at, userId, personId]
+  );
 }
 
 /** Approves a draft. Separate from sending: approval is the human's act. */
