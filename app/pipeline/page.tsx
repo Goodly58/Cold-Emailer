@@ -1,8 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { create, list, patch, remove } from '@/lib/client';
 import { STAGES, STAGE_LABELS, type Application, type Stage } from '@/lib/types';
+
+/** Cards rendered per column before "show more" — the scraper can import
+ *  hundreds of roles and rendering them all makes the board unusable. */
+const PAGE = 25;
 
 interface ImportedJob {
   title: string;
@@ -24,6 +28,13 @@ export default function Pipeline() {
   const [importJobs, setImportJobs] = useState<ImportedJob[] | null>(null);
   const [importError, setImportError] = useState('');
   const [importing, setImporting] = useState(false);
+
+  const [query, setQuery] = useState('');
+  const [onlyNew, setOnlyNew] = useState(false);
+  const [onlyUae, setOnlyUae] = useState(false);
+  const [hideClosed, setHideClosed] = useState(true);
+  const [shown, setShown] = useState<Record<string, number>>({});
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     list<Application>('applications').then(setApps);
@@ -72,6 +83,24 @@ export default function Pipeline() {
     await remove('applications', id);
     setApps((prev) => prev.filter((a) => a.id !== id));
   }
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return apps.filter((a) => {
+      if (onlyNew && !a.isNew) return false;
+      if (onlyUae && !a.emiratiAngle) return false;
+      if (hideClosed && a.closed) return false;
+      if (!q) return true;
+      return (
+        a.roleTitle.toLowerCase().includes(q) ||
+        a.companyName.toLowerCase().includes(q) ||
+        (a.division || '').toLowerCase().includes(q) ||
+        (a.location || '').toLowerCase().includes(q)
+      );
+    });
+  }, [apps, query, onlyNew, onlyUae, hideClosed]);
+
+  const newCount = apps.filter((a) => a.isNew).length;
 
   async function runImport(e: React.FormEvent) {
     e.preventDefault();
@@ -203,13 +232,55 @@ export default function Pipeline() {
         )}
       </div>
 
+      <div className="card mb">
+        <div className="form-row" style={{ marginBottom: 0 }}>
+          <input
+            placeholder="Search role, company, division or location…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <label className="fixed flex" style={{ marginBottom: 0 }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
+            New only
+          </label>
+          <label className="fixed flex" style={{ marginBottom: 0 }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={onlyUae} onChange={(e) => setOnlyUae(e.target.checked)} />
+            UAE only
+          </label>
+          <label className="fixed flex" style={{ marginBottom: 0 }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={hideClosed} onChange={(e) => setHideClosed(e.target.checked)} />
+            Hide closed
+          </label>
+          <span className="fixed muted" style={{ alignSelf: 'center' }}>
+            {filtered.length} of {apps.length}
+          </span>
+          {newCount > 0 && (
+            <button
+              className="fixed"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                const targets = apps.filter((a) => a.isNew);
+                await Promise.all(targets.map((a) => patch<Application>('applications', a.id, { isNew: false })));
+                setApps((prev) => prev.map((a) => (a.isNew ? { ...a, isNew: false } : a)));
+                setBusy(false);
+              }}
+            >
+              Mark {newCount} seen
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="kanban">
         {STAGES.map((stage) => {
-          const cards = apps.filter((a) => a.stage === stage);
+          const all = filtered.filter((a) => a.stage === stage);
+          const limit = shown[stage] ?? PAGE;
+          const cards = all.slice(0, limit);
           return (
             <div className="kanban-col" key={stage}>
               <h3>
-                {STAGE_LABELS[stage]} <span>{cards.length}</span>
+                {STAGE_LABELS[stage]} <span>{all.length}</span>
               </h3>
               {cards.map((a) => (
                 <div className="kanban-card" key={a.id}>
@@ -264,6 +335,15 @@ export default function Pipeline() {
                   </div>
                 </div>
               ))}
+              {all.length > cards.length && (
+                <button
+                  className="small"
+                  style={{ width: '100%' }}
+                  onClick={() => setShown((s) => ({ ...s, [stage]: limit + PAGE }))}
+                >
+                  Show {Math.min(PAGE, all.length - cards.length)} more of {all.length - cards.length}
+                </button>
+              )}
             </div>
           );
         })}
