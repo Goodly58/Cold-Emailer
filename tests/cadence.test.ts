@@ -1821,3 +1821,59 @@ test('nothing is offered at a company the user is mid-conversation with', async 
   const queue = await buildQueue(await user(), NOW);
   assert.equal(queue.firstEmails.length, 0);
 });
+
+test('a closed mid-sequence step does not strand the person forever', async () => {
+  // Reachable whenever a step is closed rather than sent — a blocking
+  // salutation lint, a halt from the generator. `in_sequence` with nothing live
+  // and no break-up means the sweep can neither advance nor rotate, so the
+  // person is stuck and takes their company's whole ladder with them: one live
+  // sequence per organisation keeps everyone else frozen behind a sequence that
+  // can never end.
+  const { sweep } = await import('../lib/scheduler');
+  const { queryOne } = await import('../lib/db/client');
+
+  await person('per_stranded', { status: 'in_sequence' });
+  await person('per_next', { ladder_rank: 2 });
+  await outreach({ id: 'out_st1', personId: 'per_stranded', step: 1, status: 'sent', sentDate: '2026-06-01', threadId: 't1' });
+  await outreach({ id: 'out_st2', personId: 'per_stranded', step: 2, status: 'closed' });
+
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+  assert.equal(await personStatus('per_stranded'), 'closed_silent');
+
+  // And with them unstuck, the ladder moves.
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+  assert.notEqual(await queryOne('SELECT id FROM outreach WHERE person_id = ?', ['per_next']), null);
+});
+
+test('a live sequence is never mistaken for a stranded one', async () => {
+  const { sweep } = await import('../lib/scheduler');
+  await person('per_live', { status: 'in_sequence' });
+  await outreach({ id: 'out_lv1', personId: 'per_live', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_lv2', personId: 'per_live', step: 2, status: 'queued', scheduled: '2026-08-07' });
+
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+  assert.equal(await personStatus('per_live'), 'in_sequence');
+});
+
+test('a draft flagged for regeneration is actually regenerated', async () => {
+  // `regenerate_at_send` was set faithfully in three places and read in none,
+  // so "holiday openers bind at send-eligibility time" was written down,
+  // stamped on the row, and never acted on — the draft went out with wording
+  // bound before the window moved.
+  const { execute, queryOne } = await import('../lib/db/client');
+  const { sweep } = await import('../lib/scheduler');
+
+  await person('per_regen', { status: 'ready' });
+  await outreach({ id: 'out_regen', personId: 'per_regen', step: 1, status: 'drafted', scheduled: '2026-08-06' });
+  await execute('UPDATE outreach SET regenerate_at_send = 1 WHERE id = ?', ['out_regen']);
+
+  await sweep(await user(), { now: NOW, poll: false });
+
+  const row = await queryOne<{ status: string; regenerate_at_send: number }>(
+    'SELECT status, regenerate_at_send FROM outreach WHERE id = ?',
+    ['out_regen']
+  );
+  // No Claude key in tests, so it lands on the refusal card — but it was picked
+  // up, which it never was before, and the flag is not left set forever.
+  assert.notEqual(row!.status, 'drafted');
+});

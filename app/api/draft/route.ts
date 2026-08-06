@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { todayUae } from '@/lib/calendar';
 import { previewCadence } from '@/lib/derived-dates';
 import { loadCalendar } from '@/lib/calendar-store';
 import { execute, query, queryOne } from '@/lib/db/client';
@@ -74,7 +75,9 @@ export async function GET(request: NextRequest) {
     alsoFound,
     permission,
     eligibility: await personEligibility(outreach.person_id),
-    cadence: previewCadence(new Date().toISOString().slice(0, 10), await loadCalendar()),
+    // The Dubai date, not the server's. Between 20:00 and midnight UTC they
+    // disagree, and the preview is about the recipient's calendar.
+    cadence: previewCadence(todayUae(), await loadCalendar()),
   });
 }
 

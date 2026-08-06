@@ -212,6 +212,36 @@ async function enforceInvariants(user: User, now: Date): Promise<number> {
     [at, user.id]
   );
 
+  // A person left mid-sequence with nothing live and no way forward.
+  //
+  // Reachable whenever a step is closed rather than sent — a blocking
+  // salutation lint, a manual close, a halt from the generator. `in_sequence`
+  // with no live row and no third touch means `advanceSequences` will not
+  // create anything (`ON CONFLICT DO NOTHING` on the closed row) and
+  // `rotateLadders` will not move on (it requires the sequence to be finished),
+  // so the person is stranded forever and takes their company's ladder with
+  // them: one-live-sequence-per-organisation keeps everybody else frozen behind
+  // a sequence that can never end.
+  fixed += await execute(
+    `UPDATE person SET status = 'closed_silent', updated_at = ?
+      WHERE status = 'in_sequence'
+        AND EXISTS (SELECT 1 FROM outreach o WHERE o.person_id = person.id AND o.user_id = ?)
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach o
+           WHERE o.person_id = person.id
+             AND o.status IN ('queued', 'drafted', 'stale', 'needs_fact', 'approved',
+                              'sending', 'paused_pending_reply')
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach o
+           WHERE o.person_id = person.id AND o.step = 3 AND o.status IN ('sent', 'replied', 'bounced')
+        )
+        AND EXISTS (
+          SELECT 1 FROM outreach o WHERE o.person_id = person.id AND o.status = 'closed'
+        )`,
+    [at, user.id]
+  );
+
   // Anything live for a person who is no longer approachable. Suppression is
   // checked before drafting too; this catches rows that were already sitting in
   // the queue when the suppression landed.
@@ -248,6 +278,25 @@ async function enforceInvariants(user: User, now: Date): Promise<number> {
 
   for (const conflict of conflicts) {
     if (!conflict.keep_person) continue;
+
+    // Visible and resolvable, not just paused. Setting rows to
+    // `paused_pending_reply` with no company state and no card left the loser
+    // frozen with nothing anywhere to explain it or release it — the dashboard
+    // only renders a decision for companies in `reply_conflict`.
+    const company = await queryOne<{ id: string }>(
+      'SELECT company_id AS id FROM person WHERE id = ?',
+      [conflict.keep_person]
+    );
+    if (company) {
+      await execute(
+        `INSERT INTO user_company_state (user_id, company_id, status, created_at, updated_at)
+         VALUES (?, ?, 'reply_conflict', ?, ?)
+         ON CONFLICT (user_id, company_id) DO UPDATE SET status = 'reply_conflict', updated_at = excluded.updated_at
+         WHERE user_company_state.status NOT IN ('suppressed_by_request', 'dormant', 'in_conversation')`,
+        [user.id, company.id, at, at]
+      );
+    }
+
     fixed += await execute(
       `UPDATE outreach SET status = 'paused_pending_reply', updated_at = ?
         WHERE user_id = ?
@@ -578,11 +627,23 @@ async function predraftDue(user: User, now: Date): Promise<{ drafted: number; re
   const today = todayUae(now);
   const horizon = nextDue(today, PREDRAFT_HORIZON_WORKING_DAYS, calendar);
 
-  const due = await query<{ id: string; person_id: string; step: number; scheduled_date: string | null }>(
+  // `regenerate_at_send` is why `drafted` appears here alongside `queued` and
+  // `stale`. It marks a draft whose wording was bound before a holiday window
+  // moved underneath it — the flag was set faithfully in three places and read
+  // in none, so the "holiday openers bind at send-eligibility time" rule was
+  // written down, stamped on the row, and never acted on. A draft carrying it
+  // is rewritten here, once, and the flag cleared.
+  const due = await query<{
+    id: string;
+    person_id: string;
+    step: number;
+    scheduled_date: string | null;
+  }>(
     `SELECT o.id, o.person_id, o.step, o.scheduled_date
        FROM outreach o
        JOIN person p ON p.id = o.person_id
-      WHERE o.user_id = ? AND o.status IN ('queued', 'stale')
+      WHERE o.user_id = ?
+        AND (o.status IN ('queued', 'stale') OR (o.status = 'drafted' AND o.regenerate_at_send = 1))
         AND p.status IN ('ready', 'queued', 'in_sequence')
         AND o.countdown_paused = 0
         AND (o.scheduled_date IS NULL OR o.scheduled_date <= ?)
@@ -653,7 +714,8 @@ async function predraftDue(user: User, now: Date): Promise<{ drafted: number; re
     await execute(
       `UPDATE outreach
           SET subject = COALESCE(subject, ?), body = ?, evidence_ids = ?, template_version = ?,
-              subject_variant = ?, premise_tier = ?, status = 'drafted', updated_at = ?
+              subject_variant = ?, premise_tier = ?, status = 'drafted',
+              regenerate_at_send = 0, updated_at = ?
         WHERE id = ?`,
       [
         outcome.draft.subject,

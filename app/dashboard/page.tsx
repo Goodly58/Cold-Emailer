@@ -43,12 +43,18 @@ export default async function DashboardPage() {
     // ever post an incomplete request.
     query<{ company_id: string; name: string; keep_person_id: string | null; keep_person: string | null }>(
       `SELECT s.company_id, c.name,
+              -- Whoever replied, or failing that the oldest live sequence: the
+              -- sweep raises this state for two live sequences at one
+              -- organisation, where nobody has replied at all and the keeper is
+              -- simply the one that started first.
               (SELECT p.id FROM person p
-                WHERE p.company_id = s.company_id AND p.status = 'replied'
-                ORDER BY p.updated_at DESC LIMIT 1) AS keep_person_id,
+                WHERE p.company_id = s.company_id AND p.status IN ('replied', 'in_sequence')
+                ORDER BY CASE p.status WHEN 'replied' THEN 0 ELSE 1 END, p.updated_at DESC
+                LIMIT 1) AS keep_person_id,
               (SELECT p.full_name_raw FROM person p
-                WHERE p.company_id = s.company_id AND p.status = 'replied'
-                ORDER BY p.updated_at DESC LIMIT 1) AS keep_person
+                WHERE p.company_id = s.company_id AND p.status IN ('replied', 'in_sequence')
+                ORDER BY CASE p.status WHEN 'replied' THEN 0 ELSE 1 END, p.updated_at DESC
+                LIMIT 1) AS keep_person
          FROM user_company_state s
          JOIN company c ON c.id = s.company_id
         WHERE s.user_id = ? AND s.status = 'reply_conflict'`,

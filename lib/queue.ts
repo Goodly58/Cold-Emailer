@@ -104,7 +104,11 @@ export async function budgetFor(user: User, now: Date = new Date()): Promise<Bud
       WHERE user_id = ? AND step = 1 AND sent_date_uae >= ?`,
     [user.id, addDays(today, -7)]
   );
-  const observedPerDay = Math.max(1, Math.round((trailing?.n ?? 0) / 7));
+  // Divided by the days sending is actually possible on, not by seven. Sends
+  // only happen Monday to Thursday (CULTURE.md §9), so a seven-day divisor
+  // understated a steady sender by nearly half and offered them a smaller queue
+  // than they had shown they wanted.
+  const observedPerDay = Math.max(1, Math.round((trailing?.n ?? 0) / 4));
   const target = Math.min(ceiling, Math.max(2, Math.ceil(observedPerDay * 1.2)));
 
   return {
