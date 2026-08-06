@@ -770,7 +770,8 @@
       "emiratisationNotes": "ADQ group; national talent programs.",
       "domain": "adports.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "careersUrl": "https://www.adports.ae/careers/"
     },
     {
       "id": "c62",
@@ -782,7 +783,8 @@
       "emiratisationNotes": "Quota-liable mainland employer.",
       "domain": "aramex.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "careersUrl": "https://www.aramex.com/careers"
     },
     {
       "id": "c63",
@@ -1103,7 +1105,8 @@
       "emiratisationNotes": "Abu Dhabi's flagship developer; national programs.",
       "domain": "aldar.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "careersUrl": "https://www.aldar.com/en/careers"
     },
     {
       "id": "c91",
@@ -1139,7 +1142,10 @@
       "location": "Dubai",
       "tier": "backup",
       "emiratisation": true,
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "domain": "damacproperties.com",
+      "emailPattern": "first.last",
+      "emiratisationNotes": "Large mainland private developer; MoHRE Emiratisation quota applies."
     },
     {
       "id": "c94",
@@ -1174,7 +1180,9 @@
       "tier": "backup",
       "emiratisation": true,
       "emiratisationNotes": "Quota-liable; construction is a designated sector.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "domain": "aecom.com",
+      "emailPattern": "first.last"
     },
     {
       "id": "c97",
@@ -2647,7 +2655,8 @@
       "emiratisation": true,
       "domain": "dubaiinvestments.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "DFM-listed holding with property and building-materials subsidiaries; quota-liable."
     },
     {
       "id": "c224",
@@ -3866,7 +3875,8 @@
       "emiratisation": true,
       "domain": "moei.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Federal ministry; UAE nationals only for most positions."
     },
     {
       "id": "c327",
@@ -4128,7 +4138,8 @@
       "emiratisation": true,
       "domain": "dmt.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Abu Dhabi Government; Emirati-first hiring across planning and transport roles."
     },
     {
       "id": "c351",
@@ -4498,7 +4509,8 @@
       "emiratisation": true,
       "domain": "dubailand.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Dubai Government department; near-exclusive Emirati hiring for core roles."
     },
     {
       "id": "c383",
@@ -4629,7 +4641,8 @@
       "emiratisation": true,
       "domain": "dubaisouth.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Dubai Government master developer; Emirati talent pipeline programmes."
     },
     {
       "id": "c394",
@@ -4766,7 +4779,8 @@
       "emiratisation": true,
       "domain": "dubaitaxi.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "RTA subsidiary listed on DFM; Emirati hiring priority."
     },
     {
       "id": "c406",
@@ -5230,7 +5244,8 @@
       "emiratisation": true,
       "domain": "fujmun.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Fujairah Government entity; Emirati-first hiring."
     },
     {
       "id": "c449",
@@ -5356,7 +5371,8 @@
       "location": "Umm Al Quwain",
       "tier": "backup",
       "emiratisation": true,
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "UAQ Government entity; Emirati-first hiring."
     },
     {
       "id": "c461",
@@ -6045,7 +6061,8 @@
       "emiratisation": true,
       "domain": "bayut.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Free-zone entity; not MoHRE quota-liable."
     },
     {
       "id": "c523",
@@ -10158,6 +10175,1330 @@
       "emiratisation": true,
       "domain": "nandos.ae",
       "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c864",
+      "name": "Emaar Properties",
+      "sector": "Master Developer / Real Estate Development",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Large mainland listed developer; MoHRE quota-liable and runs UAE national graduate/leadership intakes.",
+      "careersUrl": "https://www.emaar.com/en/careers/",
+      "domain": "emaar.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c865",
+      "name": "Majid Al Futtaim Properties",
+      "sector": "Shopping Mall & Mixed-Use Development",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Major mainland employer; dedicated UAE national talent attraction stream.",
+      "careersUrl": "https://www.majidalfuttaim.com/en/careers",
+      "domain": "majidalfuttaim.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c866",
+      "name": "Sobha Realty",
+      "sector": "Luxury Residential Development",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "sobharealty.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c867",
+      "name": "Azizi Developments",
+      "sector": "Residential Real Estate Development",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "azizidevelopments.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c868",
+      "name": "Deyaar Development",
+      "sector": "Real Estate Development & Property Management",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Listed on DFM; mainland entity subject to Emiratisation quotas.",
+      "domain": "deyaar.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c869",
+      "name": "Binghatti Developers",
+      "sector": "Residential Real Estate Development",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-founded family developer; mainland quota-liable.",
+      "domain": "binghatti.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c870",
+      "name": "OMNIYAT",
+      "sector": "Ultra-Luxury Real Estate Development",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "omniyat.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c871",
+      "name": "Ellington Properties",
+      "sector": "Design-Led Residential Development",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "ellingtonproperties.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c872",
+      "name": "Danube Properties",
+      "sector": "Affordable Residential Development",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "danubeproperties.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c873",
+      "name": "Samana Developers",
+      "sector": "Residential Real Estate Development",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "samanadevelopers.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c874",
+      "name": "Nshama",
+      "sector": "Master-Planned Community Development",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "nshama.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c875",
+      "name": "Union Properties",
+      "sector": "Real Estate Development & Investment",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "DFM-listed mainland developer; quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c876",
+      "name": "Select Group",
+      "sector": "Waterfront Residential Development",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c877",
+      "name": "Modon Properties",
+      "sector": "Master Developer / Urban Development",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi government-linked master developer; strong Emirati hiring focus.",
+      "domain": "modon.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c878",
+      "name": "Bloom Holding",
+      "sector": "Real Estate Development & Education Assets",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "bloomholding.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c879",
+      "name": "IMKAN Properties",
+      "sector": "Real Estate Development",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "imkan.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c880",
+      "name": "Eagle Hills",
+      "sector": "International Real Estate Development",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "eaglehills.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c881",
+      "name": "Reportage Properties",
+      "sector": "Residential Real Estate Development",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "reportageuae.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c882",
+      "name": "Q Holding",
+      "sector": "Real Estate Development & Investment",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi government-linked developer (Reem Island, Al Falah); Emirati hiring priority.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c883",
+      "name": "Arada",
+      "sector": "Master-Planned Community Development",
+      "location": "Sharjah, Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Sharjah's largest developer; mainland quota-liable with UAE national recruitment drive.",
+      "domain": "arada.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c884",
+      "name": "Alef Group",
+      "sector": "Real Estate Development",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "alefgroup.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c885",
+      "name": "RAK Properties",
+      "sector": "Real Estate Development",
+      "location": "Ras Al Khaimah",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "ADX-listed RAK developer with RAK Government shareholding.",
+      "domain": "rakproperties.net",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c886",
+      "name": "Al Hamra Real Estate Development",
+      "sector": "Mixed-Use & Resort Real Estate Development",
+      "location": "Ras Al Khaimah",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "alhamra.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c887",
+      "name": "Aqaar (Ajman Real Estate & Investment)",
+      "sector": "Real Estate Development & Investment",
+      "location": "Ajman",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c888",
+      "name": "Dubai Development Authority",
+      "sector": "Free Zone / Urban District Regulation",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "dda.gov.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c889",
+      "name": "Sharjah Roads and Transport Authority",
+      "sector": "Public Transport & Roads Authority",
+      "location": "Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "srta.gov.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c890",
+      "name": "Emirates Transport",
+      "sector": "School & Corporate Transport / Fleet Services",
+      "location": "Abu Dhabi, Dubai, Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal government corporation; strong Emiratisation mandate.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c891",
+      "name": "Keolis MHI",
+      "sector": "Metro & Tram Operations",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Operates Dubai Metro and Tram under RTA concession; Emirati operations trainee intakes.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c892",
+      "name": "Alstom Middle East",
+      "sector": "Rail Systems & Rolling Stock",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "alstom.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c893",
+      "name": "Serco Middle East",
+      "sector": "Public Services & Transport Operations Outsourcing",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Runs air traffic control and transport contracts for UAE government clients; active Emiratisation team.",
+      "domain": "serco.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c894",
+      "name": "Jebel Ali Free Zone (JAFZA)",
+      "sector": "Industrial Free Zone & Logistics Real Estate",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "DP World subsidiary; government-linked Emirati hiring.",
+      "domain": "jafza.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c895",
+      "name": "Gulftainer",
+      "sector": "Container Terminal Operations",
+      "location": "Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Sharjah-headquartered terminal operator; mainland quota-liable.",
+      "domain": "gulftainer.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c896",
+      "name": "Sharjah Ports Authority",
+      "sector": "Port Authority & Maritime Services",
+      "location": "Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c897",
+      "name": "Gulf Navigation Holding",
+      "sector": "Shipping & Marine Transport",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "DFM-listed UAE shipping company.",
+      "domain": "gulfnav.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c898",
+      "name": "Tristar Group",
+      "sector": "Fuel Logistics, Road Transport & Shipping",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "tristar-transport.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c899",
+      "name": "DHL Express UAE",
+      "sector": "International Express Courier",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Mainland operations quota-liable; regional Emiratisation programme.",
+      "domain": "dhl.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c900",
+      "name": "FedEx Express UAE",
+      "sector": "International Express Courier",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "fedex.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c901",
+      "name": "iMile Delivery",
+      "sector": "Last-Mile E-Commerce Delivery",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "imile.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c902",
+      "name": "Agility Logistics",
+      "sector": "Contract Logistics & Freight Forwarding",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "agility.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c903",
+      "name": "GAC Group (Gulf Agency Company)",
+      "sector": "Shipping Agency & Integrated Logistics",
+      "location": "Dubai, Abu Dhabi, Fujairah",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "gac.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c904",
+      "name": "Kuehne+Nagel UAE",
+      "sector": "Freight Forwarding & Supply Chain",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "kuehne-nagel.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c905",
+      "name": "DSV UAE",
+      "sector": "Freight Forwarding & Contract Logistics",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "dsv.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c906",
+      "name": "DB Schenker UAE",
+      "sector": "Freight Forwarding & Logistics",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "dbschenker.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c907",
+      "name": "CEVA Logistics UAE",
+      "sector": "Contract Logistics & Freight Management",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "cevalogistics.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c908",
+      "name": "Hellmann Worldwide Logistics UAE",
+      "sector": "Freight Forwarding & Logistics",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "hellmann.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c909",
+      "name": "Emirates SkyCargo",
+      "sector": "Air Cargo & Freight",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirates Group (ICD-owned) runs UAE national cadet, graduate trainee and Emirati leadership programmes.",
+      "careersUrl": "https://www.emiratesgroupcareers.com",
+      "domain": "emirates.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c910",
+      "name": "ALEC Engineering and Contracting",
+      "sector": "Main Contracting / Construction",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Owned by Investment Corporation of Dubai; Emirati engineering graduate intake.",
+      "careersUrl": "https://www.alec.ae/careers/",
+      "domain": "alec.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c911",
+      "name": "Khansaheb",
+      "sector": "Main Contracting & Civil Engineering",
+      "location": "Dubai, Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Long-established UAE family contractor (Interserve JV heritage); mainland quota-liable.",
+      "domain": "khansaheb.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c912",
+      "name": "Al Naboodah Group Enterprises",
+      "sector": "Civil Engineering & Infrastructure Contracting",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-owned diversified group; mainland quota-liable with national development schemes.",
+      "domain": "alnaboodah.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c913",
+      "name": "ASGC Construction",
+      "sector": "Main Contracting / Construction",
+      "location": "Dubai, Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "asgcgroup.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c914",
+      "name": "Six Construct (BESIX Group)",
+      "sector": "Main Contracting & Marine Construction",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "besix.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c915",
+      "name": "Al Habtoor Group",
+      "sector": "Construction, Hospitality & Diversified Contracting",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-owned conglomerate; mainland quota-liable.",
+      "domain": "habtoor.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c916",
+      "name": "Trojan Holding",
+      "sector": "Construction & Contracting",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "IHC-linked Abu Dhabi contractor; mainland quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c917",
+      "name": "Arabian Construction Company (ACC)",
+      "sector": "High-Rise Main Contracting",
+      "location": "Abu Dhabi, Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c918",
+      "name": "Al Jaber Group",
+      "sector": "Civil Contracting, Heavy Lifting & Infrastructure",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c919",
+      "name": "Ali & Sons Holding",
+      "sector": "Contracting, Oilfield Services & Diversified Group",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-owned Abu Dhabi group; quota-liable mainland employer.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c920",
+      "name": "China State Construction Engineering Corporation Middle East",
+      "sector": "International Main Contracting",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c921",
+      "name": "Wade Adams Contracting",
+      "sector": "Roads, Infrastructure & Civil Contracting",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "wadeadams.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c922",
+      "name": "Depa Group",
+      "sector": "Interior Fit-Out & Joinery Contracting",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "depa.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c923",
+      "name": "Summertown Interiors",
+      "sector": "Sustainable Interior Fit-Out Contracting",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "summertown.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c924",
+      "name": "Al Rostamani Group",
+      "sector": "Construction, Automotive & Diversified Contracting",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-owned conglomerate with contracting arm (ARTIC); quota-liable.",
+      "domain": "alrostamanigroup.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c925",
+      "name": "Al-Futtaim Engineering & Technologies",
+      "sector": "MEP Engineering & Building Systems Contracting",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Al-Futtaim Group runs a dedicated UAE national talent programme.",
+      "domain": "alfuttaim.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c926",
+      "name": "Dar Al-Handasah (Dar Group)",
+      "sector": "Engineering & Architectural Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "dar.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c927",
+      "name": "WSP Middle East",
+      "sector": "Multidisciplinary Engineering Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "wsp.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c928",
+      "name": "AtkinsRéalis (Atkins Middle East)",
+      "sector": "Engineering & Design Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "atkinsrealis.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c929",
+      "name": "Jacobs",
+      "sector": "Program Management & Infrastructure Consultancy",
+      "location": "Abu Dhabi, Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://careers.jacobs.com",
+      "domain": "jacobs.com",
+      "emailPattern": "first.last",
+      "ats": "workday",
+      "atsSlug": "jacobs",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c930",
+      "name": "Parsons Corporation",
+      "sector": "Infrastructure Program Management & Engineering",
+      "location": "Abu Dhabi, Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Long-standing UAE government infrastructure programmes; Emirati engineer development track.",
+      "domain": "parsons.com",
+      "emailPattern": "first.last",
+      "ats": "workday",
+      "atsSlug": "parsons",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c931",
+      "name": "Hill International",
+      "sector": "Construction Project & Cost Management",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "hillintl.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c932",
+      "name": "Mott MacDonald",
+      "sector": "Engineering & Development Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "mottmac.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c933",
+      "name": "Arup",
+      "sector": "Structural & Multidisciplinary Engineering Design",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "arup.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c934",
+      "name": "Buro Happold",
+      "sector": "Structural & Building Services Engineering",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "burohappold.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c935",
+      "name": "Ramboll Middle East",
+      "sector": "Engineering & Sustainability Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "ramboll.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c936",
+      "name": "KEO International Consultants",
+      "sector": "Architecture, Engineering & Project Management",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "keoic.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c937",
+      "name": "Khatib & Alami",
+      "sector": "Engineering & Urban Planning Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "khatibalami.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c938",
+      "name": "Turner & Townsend",
+      "sector": "Cost & Project Management Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "turnerandtownsend.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c939",
+      "name": "Currie & Brown",
+      "sector": "Quantity Surveying & Project Management",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "curriebrown.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c940",
+      "name": "Mace Group",
+      "sector": "Construction Consultancy & Programme Management",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "macegroup.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c941",
+      "name": "Egis Middle East",
+      "sector": "Infrastructure & Mobility Engineering Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "egis-group.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c942",
+      "name": "SYSTRA Middle East",
+      "sector": "Rail & Transport Engineering Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "systra.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c943",
+      "name": "Stantec Middle East",
+      "sector": "Buildings & Infrastructure Design Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "stantec.com",
+      "emailPattern": "first.last",
+      "ats": "workday",
+      "atsSlug": "stantec",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c944",
+      "name": "Woods Bagot",
+      "sector": "Architecture & Interior Design",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "woodsbagot.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c945",
+      "name": "Gensler Middle East",
+      "sector": "Architecture & Workplace Design",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "gensler.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c946",
+      "name": "HOK Middle East",
+      "sector": "Architecture & Master Planning",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "hok.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c947",
+      "name": "Perkins&Will",
+      "sector": "Architecture & Sustainable Design",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "perkinswill.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c948",
+      "name": "Godwin Austen Johnson (GAJ)",
+      "sector": "Architecture & Interior Design",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "gaj-uae.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c949",
+      "name": "Dewan Architects + Engineers",
+      "sector": "Architecture & Engineering Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "dewan-architects.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c950",
+      "name": "SSH International",
+      "sector": "Architecture, Engineering & Project Management",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "sshic.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c951",
+      "name": "Meinhardt Group",
+      "sector": "Structural & MEP Engineering Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "meinhardtgroup.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c952",
+      "name": "NORR Group",
+      "sector": "Architecture & Engineering Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "norr.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c953",
+      "name": "Emrill Services",
+      "sector": "Integrated Facilities Management",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Large mainland FM employer; quota-liable.",
+      "domain": "emrill.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c954",
+      "name": "Farnek Services",
+      "sector": "Facilities Management & Technical Services",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "farnek.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c955",
+      "name": "EFS Facilities Services Group",
+      "sector": "Integrated Facilities Management",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "efsme.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c956",
+      "name": "Imdaad",
+      "sector": "Facilities Management & Waste Solutions",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai government-linked FM group; Emirati hiring focus.",
+      "domain": "imdaad.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c957",
+      "name": "Enova Facilities Management Services",
+      "sector": "Energy & Facilities Management",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Veolia / Majid Al Futtaim joint venture; mainland quota-liable.",
+      "domain": "enova-me.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c958",
+      "name": "Khidmah",
+      "sector": "Facilities & Property Management",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "khidmah.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c959",
+      "name": "Ejadah Asset Management Group",
+      "sector": "Facilities Management & Community Services",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai Holding subsidiary.",
+      "domain": "ejadah.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c960",
+      "name": "CBRE Middle East",
+      "sector": "Commercial Real Estate Services & Advisory",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "careersUrl": "https://careers.cbre.com",
+      "domain": "cbre.com",
+      "emailPattern": "first.last",
+      "ats": "workday",
+      "atsSlug": "cbre",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c961",
+      "name": "JLL MENA",
+      "sector": "Commercial Real Estate Services & Advisory",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "jll.com",
+      "emailPattern": "first.last",
+      "ats": "workday",
+      "atsSlug": "jll",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c962",
+      "name": "Knight Frank Middle East",
+      "sector": "Real Estate Advisory & Valuation",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c963",
+      "name": "Savills Middle East",
+      "sector": "Real Estate Advisory & Property Management",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c964",
+      "name": "Asteco Property Management",
+      "sector": "Property Management & Real Estate Advisory",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "asteco.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c965",
+      "name": "Cavendish Maxwell",
+      "sector": "Property Valuation & Real Estate Consultancy",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "cavendishmaxwell.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c966",
+      "name": "Betterhomes",
+      "sector": "Residential Real Estate Brokerage",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "bhomes.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c967",
+      "name": "Allsopp & Allsopp",
+      "sector": "Residential Real Estate Brokerage",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "allsoppandallsopp.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c968",
+      "name": "Espace Real Estate",
+      "sector": "Residential Real Estate Brokerage",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "espace.ae",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c969",
+      "name": "Danube Group",
+      "sector": "Building Materials Distribution",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "domain": "danubegroup.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c970",
+      "name": "National Paints",
+      "sector": "Paints & Coatings Manufacturing",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "nationalpaints.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c971",
+      "name": "Jotun UAE",
+      "sector": "Protective & Decorative Coatings",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "jotun.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c972",
+      "name": "Al Ghurair Group",
+      "sector": "Aluminium, Construction Products & Diversified Industry",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-owned conglomerate; quota-liable mainland employer.",
+      "domain": "al-ghurair.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c973",
+      "name": "Fujairah Building Industries",
+      "sector": "Concrete Blocks & Construction Products",
+      "location": "Fujairah",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c974",
+      "name": "KEZAD Group",
+      "sector": "Industrial Zones & Logistics Real Estate",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "AD Ports Group subsidiary; Emirati graduate pipeline.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c975",
+      "name": "SAIF Zone (Sharjah Airport International Free Zone)",
+      "sector": "Free Zone Authority & Industrial Real Estate",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
+      "domain": "saif-zone.com",
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c976",
+      "name": "Sharjah Asset Management",
+      "sector": "Government Investment & Real Estate Assets",
+      "location": "Sharjah",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Investment arm of the Government of Sharjah.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c977",
+      "name": "Tilal Properties",
+      "sector": "Master-Planned Community Development",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c978",
+      "name": "Manazel",
+      "sector": "Residential Real Estate Development",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "ADX-listed developer of Emirati national housing projects.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c979",
+      "name": "Al Fara'a Group",
+      "sector": "Integrated Construction & Building Materials",
+      "location": "Abu Dhabi, Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c980",
+      "name": "Al Shirawi Group",
+      "sector": "MEP Contracting & Engineering Services",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Emirati-owned engineering group; mainland quota-liable.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c981",
+      "name": "Ghantoot Group",
+      "sector": "Civil Contracting & Infrastructure",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c982",
+      "name": "P&O Maritime Logistics",
+      "sector": "Marine Logistics & Offshore Vessel Services",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "DP World subsidiary; Emirati maritime cadet opportunities.",
+      "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c983",
+      "name": "Momentum Logistics",
+      "sector": "Third-Party Logistics & Freight Transport",
+      "location": "Sharjah",
+      "tier": "backup",
+      "emiratisation": true,
       "createdAt": "2026-08-06T00:00:00Z"
     }
   ],
