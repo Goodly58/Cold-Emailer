@@ -70,6 +70,19 @@ async function load() {
   return { refreshAllSources, readDb };
 }
 
+/** Find a record that must exist, failing the test clearly if it doesn't. */
+function must<T>(value: T | undefined, what: string): T {
+  assert.ok(value, `expected to find ${what}`);
+  return value;
+}
+
+function byUrl<T extends { jobUrl?: string }>(apps: T[], url: string): T {
+  return must(
+    apps.find((a) => a.jobUrl === url),
+    `application ${url}`
+  );
+}
+
 test.beforeEach(async () => {
   board = [
     { title: 'Data Analyst', location: { name: 'Dubai, UAE' }, absolute_url: 'https://x.co/1', departments: [{ name: 'Technology' }] },
@@ -92,8 +105,8 @@ test('imports open roles and tags UAE ones', async () => {
   assert.equal(report.failed, 0);
 
   const db = await readDb();
-  const dubai = db.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/1');
-  const london = db.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/2');
+  const dubai = byUrl(db.applications, 'https://x.co/1');
+  const london = byUrl(db.applications, 'https://x.co/2');
 
   assert.equal(dubai.emiratiAngle, true, 'a Dubai role should carry the Emirati angle');
   assert.equal(london.emiratiAngle, false);
@@ -127,8 +140,7 @@ test('propagates a title edited upstream', async () => {
   assert.equal(report.added, 0);
   assert.ok(report.updated >= 1);
   const db = await readDb();
-  const role = db.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/1');
-  assert.equal(role.roleTitle, 'Senior Data Analyst');
+  assert.equal(byUrl(db.applications, 'https://x.co/1').roleTitle, 'Senior Data Analyst');
 });
 
 test('marks vanished postings closed and reopens them if they return', async () => {
@@ -141,12 +153,12 @@ test('marks vanished postings closed and reopens them if they return', async () 
   assert.equal(closedRun.closed, 1);
 
   let db = await readDb();
-  assert.equal(db.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/2').closed, true);
+  assert.equal(byUrl(db.applications, 'https://x.co/2').closed, true);
 
   board = [board[0], removed];
   await refreshAllSources();
   db = await readDb();
-  assert.equal(db.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/2').closed, false);
+  assert.equal(byUrl(db.applications, 'https://x.co/2').closed, false);
 });
 
 test('never auto-closes a role you have already applied to', async () => {
@@ -156,16 +168,17 @@ test('never auto-closes a role you have already applied to', async () => {
   await refreshAllSources();
 
   const file = process.env.DB_PATH!;
-  const db = JSON.parse(await fs.readFile(file, 'utf8'));
-  const target = db.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/2');
-  target.stage = 'applied';
+  const db = JSON.parse(await fs.readFile(file, 'utf8')) as {
+    applications: Array<{ jobUrl?: string; stage: string }>;
+  };
+  byUrl(db.applications, 'https://x.co/2').stage = 'applied';
   await fs.writeFile(file, JSON.stringify(db));
 
   board = [board[0]];
   await refreshAllSources();
 
   const after = await readDb();
-  const applied = after.applications.find((a: { jobUrl?: string }) => a.jobUrl === 'https://x.co/2');
+  const applied = byUrl(after.applications, 'https://x.co/2');
   assert.equal(applied.stage, 'applied');
   assert.ok(!applied.closed, 'an applied role must survive disappearing from the board');
 });
@@ -180,7 +193,7 @@ test('records a source failure instead of throwing', async () => {
 
   const db = await readDb();
   assert.equal(db.jobSources[0].consecutiveFailures, 1);
-  assert.match(db.jobSources[0].lastError, /404/);
+  assert.match(String(db.jobSources[0].lastError), /404/);
 });
 
 test('clears the failure counter once a source recovers', async () => {
@@ -264,6 +277,6 @@ test('checks the stalest source first when the budget is tight', async () => {
   await refreshAllSources();
 
   const after = await readDb();
-  const beta = after.jobSources.find((s: { id: string }) => s.id === 's2');
+  const beta = must(after.jobSources.find((s) => s.id === 's2'), 'source s2');
   assert.notEqual(beta.lastCheckedAt, '2026-01-01T00:00:00Z', 'the overdue source should have run');
 });
