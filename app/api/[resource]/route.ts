@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { readDb, updateDb } from '@/lib/store';
 import { COLLECTIONS, type CollectionName } from '@/lib/types';
+import { ValidationError, assertRoom, sanitize, stripProtected } from '@/lib/validate';
+
+export const runtime = 'nodejs';
 
 function validResource(resource: string): resource is CollectionName {
   return (COLLECTIONS as string[]).includes(resource);
@@ -27,10 +30,25 @@ export async function POST(
   if (!validResource(resource)) {
     return NextResponse.json({ error: 'unknown resource' }, { status: 404 });
   }
-  const body = await req.json();
-  const item = { ...body, id: randomUUID(), createdAt: new Date().toISOString() };
-  await updateDb((db) => {
-    (db[resource] as unknown[]).unshift(item);
-  });
-  return NextResponse.json(item, { status: 201 });
+
+  try {
+    const raw = await req.json();
+    const fields = stripProtected(sanitize(raw));
+    const item = { ...fields, id: randomUUID(), createdAt: new Date().toISOString() };
+
+    await updateDb((db) => {
+      assertRoom(resource, (db[resource] as unknown[]).length);
+      (db[resource] as unknown[]).unshift(item);
+    });
+
+    return NextResponse.json(item, { status: 201 });
+  } catch (e) {
+    if (e instanceof ValidationError) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+    if (e instanceof SyntaxError) {
+      return NextResponse.json({ error: 'body was not valid JSON' }, { status: 400 });
+    }
+    throw e;
+  }
 }
