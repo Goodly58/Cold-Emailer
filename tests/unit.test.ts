@@ -364,3 +364,38 @@ test('discovery skips platforms whose identifiers cannot be guessed', async () =
   assert.equal(workday.discoverable, false, 'probing Workday by name would be wasted requests');
   assert.equal(greenhouse.discoverable, true);
 });
+
+/* --------------------------------------------------------------- sectors */
+
+test('sectorGroup classifies the seeded company sectors', async () => {
+  const { sectorGroup } = await import('../lib/sectors');
+  const db = await import('../data/db.json');
+  const companies = (db as unknown as { companies: Array<{ sector: string }> }).companies;
+
+  const unclassified = companies.filter((c) => sectorGroup(c.sector) === 'Other');
+  const share = unclassified.length / companies.length;
+  // The filter is only useful if nearly everything lands in a real group.
+  assert.ok(share < 0.05, `${(share * 100).toFixed(1)}% unclassified — filter would be noisy`);
+});
+
+test('sectorGroup maps representative sectors correctly', async () => {
+  const { sectorGroup } = await import('../lib/sectors');
+  const cases: Array<[string, string]> = [
+    ['Islamic Banking', 'Banking & Finance'],
+    ['Money Exchange & Remittance', 'Banking & Finance'],
+    ['Oil & Gas Upstream', 'Energy & Utilities'],
+    ['District Cooling', 'Energy & Utilities'],
+    ['Private University', 'Education'],
+    ['Municipal Services', 'Government & Public'],
+    ['Hospital Group', 'Healthcare'],
+    ['Master Developer', 'Real Estate & Construction'],
+    ['Ports & Terminals', 'Transport & Logistics'],
+    ['Hypermarket Chain', 'Retail & Consumer'],
+    ['Hotel Operator', 'Hospitality & Tourism'],
+    ['Management Consulting', 'Professional Services'],
+    ['Aluminium Smelting', 'Industry & Manufacturing'],
+  ];
+  for (const [sector, expected] of cases) {
+    assert.equal(sectorGroup(sector), expected, `"${sector}" grouped wrongly`);
+  }
+});

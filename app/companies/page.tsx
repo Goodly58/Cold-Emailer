@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api, create, list, patch, remove } from '@/lib/client';
 import { PATTERN_ORDER, divisionsForSector, generateCandidates } from '@/lib/email-finder';
+import { SECTOR_GROUPS, sectorGroup } from '@/lib/sectors';
 import type { Company, Tier } from '@/lib/types';
 
 const TIERS: Tier[] = ['dream', 'target', 'backup'];
@@ -28,6 +29,7 @@ export default function Companies() {
   const [emiratisation, setEmiratisation] = useState(true);
   const [filter, setFilter] = useState('');
   const [tierFilter, setTierFilter] = useState('');
+  const [groupFilter, setGroupFilter] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -88,7 +90,11 @@ export default function Companies() {
       c.name.toLowerCase().includes(q) ||
       c.sector.toLowerCase().includes(q) ||
       c.location.toLowerCase().includes(q);
-    return matchesText && (!tierFilter || c.tier === tierFilter);
+    return (
+      matchesText &&
+      (!tierFilter || c.tier === tierFilter) &&
+      (!groupFilter || sectorGroup(c.sector) === groupFilter)
+    );
   });
 
   return (
@@ -185,6 +191,17 @@ export default function Companies() {
               {t} ({companies.filter((c) => c.tier === t).length})
             </option>
           ))}
+        </select>
+        <select className="fixed" value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)}>
+          <option value="">All sectors</option>
+          {SECTOR_GROUPS.map((g) => {
+            const n = companies.filter((c) => sectorGroup(c.sector) === g).length;
+            return n === 0 ? null : (
+              <option key={g} value={g}>
+                {g} ({n})
+              </option>
+            );
+          })}
         </select>
         <button className="fixed" onClick={syncStarterList} disabled={syncing}>
           {syncing ? 'Syncing…' : 'Sync starter list'}
