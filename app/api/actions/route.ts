@@ -5,7 +5,7 @@ import { todayUae } from '@/lib/calendar';
 import { nowIso } from '@/lib/ids';
 import { logEvent } from '@/lib/log';
 import { openActions, resolveAction } from '@/lib/poller';
-import { resolveReplyConflict } from '@/lib/state-machine';
+import { gatewayCleared, resolveReplyConflict } from '@/lib/state-machine';
 import { currentUser, updateUser } from '@/lib/user';
 
 export const dynamic = 'force-dynamic';
@@ -97,6 +97,14 @@ export async function POST(request: NextRequest) {
           ? `Congratulations. ${closed} quiet sequences closed without a word, and ${warm!.n} people who replied to you are worth a short note — they are in your queue.`
           : `Congratulations. ${closed} quiet sequences closed without a word. Nothing further will send.`,
     });
+  }
+
+  if (action === 'gateway_cleared') {
+    // The card said "one click and the sequence restarts from day zero". This
+    // is the click.
+    const personId = String(payload.personId ?? '');
+    const result = await gatewayCleared(user.id, personId);
+    return NextResponse.json({ ok: true, message: result.summary });
   }
 
   if (action === 'reply_conflict') {

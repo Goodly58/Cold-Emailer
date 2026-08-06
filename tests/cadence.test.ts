@@ -1312,3 +1312,131 @@ test('display names are kept, and a bare address never becomes one', async () =>
     { name: null, email: 'plain@bank.ae' },
   ]);
 });
+
+// ---------------------------------------------------------------------------
+// The poller cannot blind itself
+// ---------------------------------------------------------------------------
+
+test('a thread that failed five times is retried daily, not retired forever', async () => {
+  // `failures` is only reset by a successful fetch, so excluding failed threads
+  // outright meant they could never succeed again. An hour of Gmail 500s across
+  // five sweeps would have blinded the poller to every thread it had — silently,
+  // permanently — while the countdowns kept running.
+  const { execute, query } = await import('../lib/db/client');
+  const at = '2026-08-04T06:00:00.000Z';
+  await execute(
+    `INSERT INTO thread_poll (gmail_thread_id, user_id, failures, active, last_polled_at, created_at, updated_at)
+     VALUES ('t_dead', 'usr_c', 9, 1, ?, ?, ?)`,
+    [at, at, at]
+  );
+
+  const { pollReplies } = await import('../lib/poller');
+  const result = await pollReplies(await user(), NOW);
+  assert.equal(result.threadsExamined, 1, 'yesterday it failed; today it gets another try');
+
+  // And after a try today, it waits a day rather than being hammered.
+  const same = await pollReplies(await user(), NOW);
+  assert.equal(same.threadsExamined, 0);
+  assert.equal((await query('SELECT 1 FROM thread_poll WHERE gmail_thread_id = ?', ['t_dead'])).length, 1);
+});
+
+test('a live thread nobody has read in six hours means blind, not healthy', async () => {
+  // Hard rule 10 has no exception for "technically nothing failed". A thread
+  // that has been erroring all morning is one we cannot see, whether or not
+  // this particular pass happened to try it — and reporting healthy would
+  // refresh the poll timestamp and unblock sending.
+  const { execute } = await import('../lib/db/client');
+  const { pollReplies } = await import('../lib/poller');
+  const at = '2026-08-06T06:00:00.000Z';
+
+  await person('per_blind', { status: 'in_sequence' });
+  await outreach({
+    id: 'out_blind',
+    personId: 'per_blind',
+    step: 1,
+    status: 'sent',
+    sentDate: '2026-08-03',
+    threadId: 't_blind',
+  });
+  await execute(
+    `INSERT INTO thread_poll (gmail_thread_id, user_id, failures, active, last_polled_at, created_at, updated_at)
+     VALUES ('t_blind', 'usr_c', 99, 1, ?, ?, ?)`,
+    [at, at, at]
+  );
+
+  // Eight hours later, still nothing readable from it.
+  const result = await pollReplies(await user(), new Date('2026-08-06T14:00:00.000Z'));
+  assert.equal(result.healthy, false, 'blind is blind');
+});
+
+test('a genuinely empty watch list is healthy', async () => {
+  // A brand-new user has sent nothing. There is nothing to be blind about.
+  const { pollReplies } = await import('../lib/poller');
+  const result = await pollReplies(await user(), NOW);
+  assert.equal(result.threadsExamined, 0);
+  assert.equal(result.healthy, true);
+});
+
+// ---------------------------------------------------------------------------
+// The gateway promise
+// ---------------------------------------------------------------------------
+
+test('clearing a gateway challenge restarts the sequence from today', async () => {
+  // The card promises "one click, and the sequence restarts from day zero".
+  // Nothing cleared `countdown_paused`, so the best contact at the company was
+  // frozen until the five-day timeout dropped them.
+  const { gatewayCleared } = await import('../lib/state-machine');
+  const { queryOne } = await import('../lib/db/client');
+  const { recordAction } = await import('../lib/poller');
+
+  await person('per_gc', { status: 'in_sequence' });
+  await outreach({ id: 'out_gc1', personId: 'per_gc', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_gc2', personId: 'per_gc', step: 2, status: 'queued', scheduled: '2026-08-06' });
+
+  const transition = await apply(classification({ classification: 'gateway_challenge' }), 'per_gc');
+  await recordAction('usr_c', 'per_gc', 'cmp_c', transition, null, NOW);
+
+  await gatewayCleared('usr_c', 'per_gc', NOW);
+
+  const row = await queryOne<{ countdown_paused: number; scheduled_date: string; regenerate_at_send: number }>(
+    'SELECT countdown_paused, scheduled_date, regenerate_at_send FROM outreach WHERE id = ?',
+    ['out_gc2']
+  );
+  assert.equal(row!.countdown_paused, 0, 'the clock starts again');
+  // Day zero is today, not the original send: the recipient has only just been
+  // handed the email.
+  assert.equal(row!.scheduled_date, '2026-08-12');
+  assert.equal(row!.regenerate_at_send, 1);
+
+  const open = await queryOne('SELECT id FROM next_action WHERE person_id = ? AND resolved_at IS NULL', [
+    'per_gc',
+  ]);
+  assert.equal(open, null, 'and the card is gone');
+});
+
+// ---------------------------------------------------------------------------
+// The sweep respects the same gates the UI does
+// ---------------------------------------------------------------------------
+
+test('the sweep will not draft for someone the Review screen would refuse', async () => {
+  // `personEligibility` is time-dependent — evidence goes stale at ninety days
+  // — so a person who was eligible when sourced may not be when their turn
+  // comes round, which is exactly the case a nightly sweep creates.
+  const { execute, queryOne } = await import('../lib/db/client');
+  const { sweep } = await import('../lib/scheduler');
+
+  await person('per_el', { status: 'ready' });
+  // No anchor source: the most fundamental blocker there is.
+  await execute('UPDATE person SET anchor_source_url = NULL WHERE id = ?', ['per_el']);
+  await outreach({ id: 'out_el', personId: 'per_el', step: 1, status: 'queued' });
+
+  const result = await sweep(await user(), { now: NOW, poll: false });
+  assert.equal(result.refused >= 1, true);
+
+  const row = await queryOne<{ status: string; body: string }>(
+    'SELECT status, body FROM outreach WHERE id = ?',
+    ['out_el']
+  );
+  assert.equal(row!.status, 'needs_fact');
+  assert.ok(row!.body.length > 0, 'and it says what would unblock it');
+});

@@ -616,12 +616,23 @@ export async function loadContext(
     [personId]
   );
 
+  // How long it has actually been since they last heard from us, in working
+  // days, recomputed on every sweep. Past ten, "following up on my note" is
+  // wrong and the opener has to reintroduce instead — which is what an Eid
+  // pause or a fortnight away produces. Without reading it here that branch
+  // could never fire, however long the gap grew.
+  const gap = await queryOne<{ gap_working_days: number | null }>(
+    'SELECT gap_working_days FROM outreach WHERE person_id = ? AND step = ?',
+    [personId, step]
+  );
+
   return {
     person,
     company,
     profile: await generatorProfile(userId),
     introBlocks,
     step,
+    gapWorkingDays: gap?.gap_working_days ?? undefined,
     priorContactAtCompany: (prior?.n ?? 0) > 0,
     previousSubject: previous?.subject ?? null,
     previousBody: previous?.sent_body_verbatim ?? null,

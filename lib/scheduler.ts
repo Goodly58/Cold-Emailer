@@ -585,6 +585,22 @@ async function predraftDue(user: User, now: Date): Promise<{ drafted: number; re
     // A draft whose date has since moved past the horizon is not written now.
     if (row.scheduled_date && compareDates(row.scheduled_date, horizon) > 0) continue;
 
+    // The same gate the Review screen's generate action runs. Without it the
+    // sweep writes drafts the UI would have refused: `personEligibility` is
+    // time-dependent — evidence goes stale at ninety days — so a person who was
+    // eligible when they were sourced may not be eligible when their turn comes
+    // round, which is exactly the case a nightly sweep creates.
+    const { personEligibility } = await import('./people');
+    const eligibility = await personEligibility(row.person_id, now);
+    if (!eligibility.eligible) {
+      await execute(
+        `UPDATE outreach SET status = 'needs_fact', body = ?, updated_at = ? WHERE id = ?`,
+        [eligibility.blockers[0].message, nowIso(now), row.id]
+      );
+      refused++;
+      continue;
+    }
+
     const context = await loadContext(row.person_id, user.id, row.step as 1 | 2 | 3);
     if (!context) continue;
 

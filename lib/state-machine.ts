@@ -750,6 +750,57 @@ export async function markUserTookOver(personId: string, now: Date = new Date())
   };
 }
 
+/**
+ * The user completed a gateway challenge.
+ *
+ * The action card promises "one click, and the sequence restarts from day
+ * zero", and until this existed nothing in the codebase could deliver on it:
+ * `countdown_paused` was set by the challenge and cleared by nothing, so the
+ * best contact at the company was frozen until the five-working-day timeout
+ * dropped them. A promise the product could not keep, on the contact it most
+ * wanted to reach.
+ *
+ * Day zero is right, not a resumed countdown. The recipient has only just been
+ * handed the email; counting from when it was sent would make the follow-up due
+ * the same afternoon.
+ */
+export async function gatewayCleared(
+  userId: string,
+  personId: string,
+  now: Date = new Date()
+): Promise<TransitionResult> {
+  const at = nowIso(now);
+  const calendar = await loadCalendar();
+  const today = todayUae(now);
+
+  const resumed = await execute(
+    `UPDATE outreach
+        SET countdown_paused = 0, hold_until = ?, scheduled_date = ?,
+            regenerate_at_send = 1, status = 'stale', updated_at = ?
+      WHERE person_id = ? AND countdown_paused = 1`,
+    [nextDue(today, 4, calendar), nextDue(today, 4, calendar), at, personId]
+  );
+
+  await execute(
+    `UPDATE next_action SET resolved_at = ?
+      WHERE user_id = ? AND person_id = ? AND kind = 'gateway' AND resolved_at IS NULL`,
+    [at, userId, personId]
+  );
+
+  await logEvent({
+    event: 'reply',
+    userId,
+    entityType: 'person',
+    entityId: personId,
+    detail: { gatewayCleared: true, resumed },
+  });
+
+  return {
+    summary: 'Released from their gateway. The sequence restarts from today.',
+    superseded: 0,
+  };
+}
+
 /** Records an inbound message. Thread-first: the sender need not be known. */
 export async function recordInbound(input: {
   outreachId: string | null;

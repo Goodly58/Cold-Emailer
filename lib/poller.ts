@@ -22,7 +22,7 @@
  */
 import { classify, type InboundMessage } from './classifier';
 import { execute, query, queryOne } from './db/client';
-import { DAY_MS } from './durations';
+import { DAY_MS, POLL_STALENESS_MS } from './durations';
 import { gmailRequest, GmailError } from './gmail/client';
 import { newId, nowIso } from './ids';
 import { logEvent, logError } from './log';
@@ -259,13 +259,20 @@ export async function syncThreadWatchList(userId: string, now: Date = new Date()
 async function threadsDue(userId: string, now: Date): Promise<ThreadRow[]> {
   const cutoff = nowIso(new Date(now.getTime() - DORMANT_THREAD_INTERVAL_MS));
   return query<ThreadRow>(
+    // A retired thread is retried once a day, not abandoned. `failures` is only
+    // reset by a successful fetch, so excluding retired threads outright meant
+    // they could never succeed again and therefore never be un-retired: an hour
+    // of Gmail 500s across five sweeps would have permanently blinded the
+    // poller to every thread it had, silently, forever.
     `SELECT gmail_thread_id, last_history_id, last_polled_at, active, failures
        FROM thread_poll
       WHERE user_id = ?
-        AND failures < ?
-        AND (active = 1 OR last_polled_at IS NULL OR last_polled_at < ?)
+        AND (
+          (failures < ? AND (active = 1 OR last_polled_at IS NULL OR last_polled_at < ?))
+          OR (failures >= ? AND (last_polled_at IS NULL OR last_polled_at < ?))
+        )
       ORDER BY active DESC, last_polled_at IS NULL DESC, last_polled_at ASC`,
-    [userId, FAILURE_LIMIT, cutoff]
+    [userId, FAILURE_LIMIT, cutoff, FAILURE_LIMIT, cutoff]
   );
 }
 
@@ -342,6 +349,23 @@ export async function pollReplies(user: User, now: Date = new Date()): Promise<P
   // Any thread failing is not "blind": the rest were read. Only an auth failure
   // or a total wipe-out means we cannot trust what we know.
   if (threads.length > 0 && result.failures === threads.length) result.healthy = false;
+
+  // Healthy means "we can currently see every live conversation", which is what
+  // hard rule 10 is actually asserting when it unblocks sending. Counting a
+  // sweep as healthy because nothing happened to fail is not the same thing: a
+  // thread that has been erroring for hours is one we are blind to, whether or
+  // not this particular pass tried it.
+  //
+  // Only *active* threads count. A closed sequence polled yesterday is the
+  // documented once-a-day cadence, not blindness — the reply it might carry is
+  // weeks late already, and holding every send for it would be worse.
+  const [staleActive] = await query<{ n: number }>(
+    `SELECT count(*) AS n FROM thread_poll
+      WHERE user_id = ? AND active = 1
+        AND (last_polled_at IS NULL OR last_polled_at < ?)`,
+    [user.id, nowIso(new Date(now.getTime() - POLL_STALENESS_MS))]
+  );
+  if ((staleActive?.n ?? 0) > 0) result.healthy = false;
 
   if (result.healthy) {
     await execute('UPDATE app_user SET last_successful_poll_at = ?, updated_at = ? WHERE id = ?', [

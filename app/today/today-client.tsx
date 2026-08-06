@@ -499,7 +499,19 @@ function Review({
 
   const isFollowUp = detail.outreach.step > 1;
   const needsInterlock = isFollowUp && !interlockAnswered;
-  const canSend = checkedEvidence && !needsInterlock && detail.permission.allowed && !busy;
+
+  // The evidence speed bump applies only where there is evidence to check.
+  //
+  // A follow-up makes no new claims — touch 2 is a bump on the same thread and
+  // touch 3 is a clean close — so both carry an empty `evidenceIds`. Requiring
+  // a tap on a chip that does not exist made Send permanently disabled under
+  // the words "Check one source first", with nothing to check: two thirds of
+  // the cadence was unreachable through the UI.
+  //
+  // The follow-up's own speed bump is the interlock below, which asks the
+  // harder question anyway: has this person been in touch outside email?
+  const needsEvidenceCheck = detail.evidence.length > 0 && !checkedEvidence;
+  const canSend = !needsEvidenceCheck && !needsInterlock && detail.permission.allowed && !busy;
 
   async function runLint(next: string) {
     setBody(next);
@@ -659,9 +671,9 @@ function Review({
       )}
 
       <button className="primary" disabled={!canSend} onClick={() => void send()}>
-        {busy ? 'Sending…' : canSend ? 'Send' : !checkedEvidence ? 'Check one source first' : 'Send'}
+        {busy ? 'Sending…' : needsEvidenceCheck ? 'Check one source first' : 'Send'}
       </button>
-      {!checkedEvidence && (
+      {needsEvidenceCheck && (
         <p className="help">
           Tap one of the highlighted bits above to see exactly where it came from. Ten seconds, and
           it is the only thing standing between you and an email that gets a detail wrong.
