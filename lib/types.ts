@@ -161,8 +161,25 @@ export interface JobSource {
   lastCheckedAt?: string;
   lastResult?: string;
   lastError?: string;
+  /** Consecutive failed polls — surfaced so dead slugs get noticed. */
+  consecutiveFailures?: number;
   totalFound?: number;
   createdAt: string;
+}
+
+/** One execution of the refresh job — kept so failures are visible. */
+export interface RefreshRun {
+  id: string;
+  startedAt: string;
+  finishedAt?: string;
+  durationMs?: number;
+  trigger: 'cron' | 'manual';
+  checked: number;
+  added: number;
+  updated: number;
+  closed: number;
+  failed: number;
+  errors?: Array<{ company: string; error: string }>;
 }
 
 export interface Template {
@@ -188,6 +205,7 @@ export interface Db {
   outreach: Outreach[];
   templates: Template[];
   jobSources: JobSource[];
+  runs: RefreshRun[];
 }
 
 export type CollectionName =
@@ -196,7 +214,8 @@ export type CollectionName =
   | 'applications'
   | 'outreach'
   | 'templates'
-  | 'jobSources';
+  | 'jobSources'
+  | 'runs';
 
 export const COLLECTIONS: CollectionName[] = [
   'companies',
@@ -205,4 +224,5 @@ export const COLLECTIONS: CollectionName[] = [
   'outreach',
   'templates',
   'jobSources',
+  'runs',
 ];

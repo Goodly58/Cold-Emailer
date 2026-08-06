@@ -22,8 +22,10 @@ async function run(req: NextRequest) {
   }
 
   const onlyId = req.nextUrl.searchParams.get('sourceId') || undefined;
+  // Vercel Cron always sends the bearer header; anything else is a person.
+  const trigger = req.headers.get('authorization') ? 'cron' : 'manual';
   try {
-    const report = await refreshAllSources(onlyId);
+    const report = await refreshAllSources({ onlyId, trigger });
     return NextResponse.json(report);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'refresh failed';

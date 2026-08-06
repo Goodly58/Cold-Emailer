@@ -16,6 +16,8 @@ export interface AtsJob {
   title: string;
   location: string;
   url: string;
+  /** Team/department when the board exposes it — becomes the division. */
+  department?: string;
 }
 
 export function isPlatform(x: string): x is Platform {
@@ -42,36 +44,42 @@ const PARSERS: Record<Platform, (data: any, slug: string) => AtsJob[]> = {
       title: j.title,
       location: j.location?.name || '',
       url: j.absolute_url,
+      department: j.departments?.[0]?.name || j.metadata?.department || '',
     })),
   lever: (d) =>
     (Array.isArray(d) ? d : []).map((j: any) => ({
       title: j.text,
       location: j.categories?.location || '',
       url: j.hostedUrl,
+      department: j.categories?.team || j.categories?.department || '',
     })),
   ashby: (d) =>
     (d?.jobs || []).map((j: any) => ({
       title: j.title,
       location: j.location || '',
       url: j.jobUrl || j.applyUrl || '',
+      department: j.department || j.team || '',
     })),
   workable: (d) =>
     (d?.jobs || []).map((j: any) => ({
       title: j.title,
       location: [j.city, j.country].filter(Boolean).join(', '),
       url: j.url,
+      department: j.department || '',
     })),
   smartrecruiters: (d, slug) =>
     (d?.content || []).map((j: any) => ({
       title: j.name,
       location: [j.location?.city, j.location?.country].filter(Boolean).join(', '),
       url: `https://jobs.smartrecruiters.com/${slug}/${j.id}`,
+      department: j.department?.label || j.function?.label || '',
     })),
   recruitee: (d) =>
     (d?.offers || []).map((j: any) => ({
       title: j.title,
       location: j.location || '',
       url: j.careers_url || '',
+      department: j.department || '',
     })),
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */

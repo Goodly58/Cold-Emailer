@@ -18,6 +18,7 @@ const KEYS = [
   'outreach',
   'templates',
   'jobSources',
+  'runs',
 ] as const;
 
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'db.json');

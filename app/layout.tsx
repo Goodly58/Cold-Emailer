@@ -11,6 +11,7 @@ const NAV = [
   { href: '/', label: 'Overview' },
   { href: '/pipeline', label: 'Pipeline' },
   { href: '/sources', label: 'Sources' },
+  { href: '/runs', label: 'Health' },
   { href: '/companies', label: 'Companies' },
   { href: '/contacts', label: 'Contacts' },
   { href: '/outreach', label: 'Outreach' },

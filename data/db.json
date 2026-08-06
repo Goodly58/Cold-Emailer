@@ -1385,5 +1385,6 @@
       "body": "Hi {{firstName}},\n\nHope you're well! I'm applying for {{role}} at {{company}} and saw you're connected there.\n\n{{hook}}\n\nWould you be comfortable referring me, or introducing me to the hiring manager? Happy to send a short blurb + CV to make it zero-effort. And of course, tell me if it's awkward — no pressure at all.\n\nThanks either way,\n{{myName}}"
     }
   ],
-  "jobSources": []
+  "jobSources": [],
+  "runs": []
 }
