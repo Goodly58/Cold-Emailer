@@ -18,7 +18,7 @@ export class FetchError extends Error {
 function classify(status: number): { retryable: boolean; message: string } {
   if (status === 429) return { retryable: true, message: 'rate limited (429)' };
   if (status === 404) return { retryable: false, message: 'not found (404) — check the slug' };
-  if (status === 403) return { retryable: false, message: 'forbidden (403) — board may be private' };
+  if (status === 403) return { retryable: false, message: 'forbidden (403) — private, or the request was blocked' };
   if (status === 401) return { retryable: false, message: 'unauthorized (401)' };
   if (status >= 500) return { retryable: true, message: `server error (${status})` };
   return { retryable: false, message: `HTTP ${status}` };

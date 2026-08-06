@@ -51,6 +51,15 @@ export default function Sources() {
   const [report, setReport] = useState<RefreshReport | null>(null);
   const [err, setErr] = useState('');
 
+  const [aggregators, setAggregators] = useState<
+    Array<{ id: string; label: string; configured: boolean; envKeys: string[]; signupUrl: string; freeTier: string }>
+  >([]);
+  const [aggId, setAggId] = useState('themuse');
+  const [aggQuery, setAggQuery] = useState('');
+  const [aggLocation, setAggLocation] = useState('Dubai, United Arab Emirates');
+  const [aggBusy, setAggBusy] = useState(false);
+  const [aggMsg, setAggMsg] = useState('');
+
   const [sweeping, setSweeping] = useState(false);
   const [sweepLog, setSweepLog] = useState<string[]>([]);
   const [sweepStop, setSweepStop] = useState(false);
@@ -58,6 +67,13 @@ export default function Sources() {
   useEffect(() => {
     list<JobSource>('jobSources').then(setSources);
     list<Company>('companies').then(setCompanies);
+    api<{ aggregators: typeof aggregators }>('/api/aggregators')
+      .then((r) => {
+        setAggregators(r.aggregators);
+        const firstReady = r.aggregators.find((a) => a.configured);
+        if (firstReady) setAggId(firstReady.id);
+      })
+      .catch(() => {});
   }, []);
 
   async function addSource(fields: Partial<JobSource>) {
@@ -273,6 +289,73 @@ export default function Sources() {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      <div className="card mb">
+        <h2 style={{ marginTop: 0 }}>Search job aggregators</h2>
+        <p className="muted mb">
+          Aggregators cover the whole UAE market rather than one company&apos;s board — they surface
+          roles at employers you haven&apos;t thought to track. The Muse works with no setup; the
+          others need a free API key set as an environment variable.
+        </p>
+        <div className="form-row">
+          <select className="fixed" value={aggId} onChange={(e) => setAggId(e.target.value)}>
+            {aggregators.map((a) => (
+              <option key={a.id} value={a.id} disabled={!a.configured}>
+                {a.label} {a.configured ? '' : `(needs ${a.envKeys.join(' + ')})`}
+              </option>
+            ))}
+          </select>
+          <input
+            placeholder="Keywords, e.g. data analyst"
+            value={aggQuery}
+            onChange={(e) => setAggQuery(e.target.value)}
+          />
+          <input
+            placeholder="Location"
+            value={aggLocation}
+            onChange={(e) => setAggLocation(e.target.value)}
+          />
+          <button
+            className="primary fixed"
+            disabled={aggBusy || !aggregators.find((a) => a.id === aggId)?.configured}
+            onClick={async () => {
+              setAggBusy(true);
+              setErr('');
+              setAggMsg('');
+              try {
+                const r = await api<{ added: number; found: number }>('/api/aggregators', {
+                  method: 'POST',
+                  body: JSON.stringify({ id: aggId, query: aggQuery, location: aggLocation }),
+                });
+                setAggMsg(`Found ${r.found}, imported ${r.added} new.`);
+              } catch (e) {
+                setErr(e instanceof Error ? e.message : 'Search failed');
+              } finally {
+                setAggBusy(false);
+              }
+            }}
+          >
+            {aggBusy ? 'Searching…' : 'Search & import'}
+          </button>
+        </div>
+        {aggMsg && <p className="success">{aggMsg}</p>}
+        {aggregators.some((a) => !a.configured) && (
+          <p className="muted" style={{ fontSize: 12 }}>
+            To enable the rest, get a free key and add it in Vercel → Settings → Environment
+            Variables:{' '}
+            {aggregators
+              .filter((a) => !a.configured)
+              .map((a) => (
+                <span key={a.id}>
+                  <a href={a.signupUrl} target="_blank" rel="noreferrer">
+                    {a.label}
+                  </a>{' '}
+                  ({a.freeTier}){' '}
+                </span>
+              ))}
+          </p>
         )}
       </div>
 
