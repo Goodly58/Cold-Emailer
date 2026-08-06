@@ -539,6 +539,174 @@ the difference. (`lib/queue.ts`.)
 
 ---
 
+## The adversarial audit — twenty-eight defects, found by attacking the build
+
+Six auditors, one per hard rule and per subsystem, each finding sent to
+independent skeptics briefed to refute it. What follows survived. The pattern
+is worth naming: almost none of these are a piece of logic being wrong. They
+are two correct pieces meeting, a rule written down and never consulted, or a
+promise made in the interface that no code kept.
+
+### Reachable by a recipient
+
+**No follow-up or break-up could ever be sent** (critical) — the Review
+screen's evidence speed bump requires tapping a source chip. Touch 2 is a bump
+on the same thread and touch 3 is a clean close, so both carry an empty
+`evidenceIds`: no chips rendered, nothing was tappable, and Send stayed disabled
+under the words "Check one source first" with nothing to check. Two thirds of
+the cadence was unreachable through the interface.
+→ **Handled.** The speed bump applies where there is evidence; the follow-up's
+own speed bump is the interlock, which asks the harder question anyway.
+
+**The Review screen sent a different email from the one on screen** (critical)
+— Send posted the user's edit only while the editor was open. Tapping "Done
+editing" first, which is what the button invites, sent the original stored text
+while the screen displayed the rewrite. The exact inverse of this screen's one
+guarantee.
+→ **Handled.** Keyed on whether the body changed, not on whether the editor is
+open.
+
+**A bank's own footer suppressed the bank** (critical) — the complaint pattern
+matched a bare "legal", "compliance" or "data protection". Every Gulf corporate
+footer carries all three, so a warm reply followed by 200 words of
+confidentiality boilerplate would have permanently blacklisted the employer.
+→ **Handled.** Complaint patterns are sentences somebody chose to write,
+matched against the message with the footer stripped.
+
+**Every bounce was permanent** (critical) — a DSN carries `Status: 4.2.2` in a
+`message/delivery-status` part, which the body extractor drops. The soft-bounce
+branch could never fire, so a temporarily full mailbox closed a real contact and
+marked the whole domain's address pattern bounced. And the retry, when it did
+fire, updated only `approved` and `drafted` rows while the bounced message is
+`sent` — so it told the user "retrying Sunday" and retried nothing.
+→ **Handled**, both halves.
+
+**The transport blind-retried sends** (critical) — `gmailRequest` retries three
+times on 429 and 5xx. For `/messages/send` that means a response lost after
+Gmail accepted the message sends it twice, defeating the entire discipline of
+the send path, which exists to probe rather than retry.
+→ **Handled.** Sends are attempted once; reads still retry.
+
+**A reply could say "my CV is attached" with nothing attached** (critical) — if
+the CV was missing or unapproved.
+→ **Handled.** It refuses, naming which.
+
+**Replies were addressed and threaded wrongly** (high) — `In-Reply-To` carried
+`<{gmail_api_id}@mail.gmail.com>`, a header that has never existed anywhere, so
+every reply arrived as an orphan in the thread it answered. And the reply went
+to the person originally written to rather than whoever actually wrote, so an
+escalation from legal-compliance@ would have been answered to the wrong mailbox.
+→ **Handled.** Migration 005 stores the real RFC822 Message-ID and any Reply-To.
+
+**A late rejection undid a suppression** (high) — any human reply on a closed
+thread triggered the late-reply reopening, which sets `paused_late_reply` over
+the top of a dormancy or a permanent `suppressed_by_request`.
+→ **Handled.** The one state this product must never be able to undo is the one
+somebody explicitly asked for.
+
+**A delegating out-of-office lost the referral** (high) — "on leave until the
+12th, contact Sara meanwhile" classified as OOO and stopped, so Sara was never
+marked warm.
+→ **Handled.** Delegation is checked before the autoresponder.
+
+**Past dates were believed** (high) — an autoresponder still running from March
+says "until 20 August" of last year; a soft rejection's extracted date is
+format-checked, not sanity-checked. Both were written into a hold or a dormancy,
+where a past date is no hold at all.
+→ **Handled.** Future only, in both.
+
+**An email could be signed off by nobody** (medium) — the generated body ends at
+"Kind regards," because the sign-off is appended separately. With no Gmail
+signature, which is the common case for a student's personal account, the
+recipient got a message from an unnamed stranger.
+→ **Handled.** The confirmed name is the fallback.
+
+**An untranslated Arabic quote could be spliced into an English email**
+(medium), past every lint, because none of them read Arabic.
+→ **Handled** at the evidence store, with a reason the founder can act on.
+
+### The engine stopping, silently
+
+**The scheduler had a thirteen-month fuse** (critical) — `workingDaysBetween`
+threw past a 400-day span. A person sits in `closed_silent` forever and a user
+can come back after a year, so the throw never surfaced a bug; it would have
+detonated the sweep on one old row and stopped every follow-up in the system.
+→ **Handled.** A span beyond the search window reports the cap.
+
+**The poller could permanently blind itself** (critical) — a thread retired
+after five failures, and `failures` only resets on a successful fetch, so a
+retired thread was never fetched again and could never recover. An hour of Gmail
+500s across five sweeps would have blinded it to every thread, forever. **And it
+would have reported that as healthy**, unblocking sending while completely
+blind.
+→ **Handled.** Retired threads retry daily; health means no live thread unread
+past the staleness limit.
+
+**An overdue follow-up could never be sent** (critical) — the clamp pushed a
+past date to tomorrow, and the next sweep re-derived the same past date and
+clamped it again. Perpetually one day away; the queue only offers follow-ups
+whose date has arrived.
+→ **Handled.** The clamp applies only when a date actually moved earlier, which
+is the retroactive-edit case it was written for.
+
+**A closed mid-sequence step stranded its person forever** (medium) —
+`in_sequence` with nothing live and no break-up: the sweep can neither advance
+nor rotate, and one-live-sequence-per-organisation then froze that company's
+entire ladder behind a sequence that could never end. Reachable from a blocking
+salutation lint, which is a normal outcome.
+→ **Handled** as an invariant repair.
+
+**A gateway challenge before the follow-up existed paused nothing** (high) — it
+arrives within minutes of touch 1, when the only row is the sent one.
+→ **Handled.** The pause is marked on the sent message, which is what
+advancement checks.
+
+**`regenerate_at_send` was written in three places and read in none** (medium) —
+"holiday openers bind at send-eligibility time" was written down, stamped on the
+row, and never acted on.
+→ **Handled.**
+
+**`org_group_link` was written by nothing and read by nothing** (medium), and
+after the read path was added, conflict detection still grouped by raw
+org_group_id — where two linked groups holding one live sequence each count as
+one apiece, the exact case the link exists for.
+→ **Handled**, both times.
+
+### Promises the interface made and the code did not keep
+
+**The gateway card promised the sequence restarts from day zero.** Nothing
+cleared `countdown_paused`. **The reply-conflict buttons could only 500** —
+they posted no person id, because the query never selected one, so the decision
+card that unblocks a frozen company was unusable in both directions. **"I got
+the job" said everything could be picked back up** and nothing could. All three
+now do what they say.
+
+**Two screens had no way out** (high) — a failed queue fetch left the app on
+"Checking for replies first…" forever with nothing to tap; a failed draft fetch
+returned "Opening…" *above* the Back button. The onboarding identity step had
+the same shape on the way in, where it blocked setup entirely.
+→ **Handled.** All three show what happened and offer a retry.
+
+**Two destructive controls fired on one tap**, each sitting beside something
+harmless: "I handled it myself" next to Send, and "Skip this company" — a
+permanent blocklist entry — next to Edit.
+→ **Handled.** Both ask once.
+
+**The reply question loop had no failure path** (high) — the endpoint returns
+200 with `ok: false` when drafting fails, so silence looked like success and the
+user tapped the same button forever with a deadline running.
+
+### Introduced and caught in the same audit
+
+**The eligibility gate applied to follow-ups** — added one commit earlier to
+close a real gap in step 1, and applied to every step. Touches 2 and 3 assert
+nothing about the recipient, so a person whose evidence aged out had their live
+sequence stranded behind a card asking for a fact the follow-up was never going
+to use. Worth recording: the fix for one defect was itself a defect, and only
+the next audit round found it.
+
+---
+
 ## Deferrals summary
 
 Nothing critical is deferred without a dated reason. Updated at the end of week
