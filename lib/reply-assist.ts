@@ -120,6 +120,9 @@ interface InboundRow {
   person_id: string;
   gmail_thread_id: string;
   gmail_message_id: string;
+  rfc822_message_id: string | null;
+  reply_to_address: string | null;
+  from_address: string;
   subject: string | null;
   body_text: string | null;
   language: string | null;
@@ -357,10 +360,15 @@ async function store(input: {
   const at = nowIso(input.now);
   const id = input.existingId ?? newId('reply');
 
-  // The reply threads on the message it answers, not on our last send: the
-  // recipient may have replied from a different address, and their client
-  // threads on In-Reply-To.
-  const theirMessageId = `<${input.inbound.gmail_message_id}@mail.gmail.com>`;
+  // The reply threads on the message it answers, using its real RFC822
+  // Message-ID. Gmail's API message id is an opaque internal handle, and
+  // `<{that}@mail.gmail.com>` is a header that has never existed anywhere — a
+  // reply carrying it arrives as an orphan in the very thread it answers.
+  //
+  // Null when the header was missing, which is rarer than it sounds and better
+  // handled by omitting In-Reply-To than by inventing one: Gmail's own threadId
+  // still groups it in the user's mailbox, and the subject carries `Re:`.
+  const theirMessageId = input.inbound.rfc822_message_id?.trim() || null;
 
   await execute(
     `INSERT INTO reply_draft
@@ -383,7 +391,7 @@ async function store(input: {
       input.question,
       input.inbound.gmail_thread_id,
       theirMessageId,
-      JSON.stringify([theirMessageId]),
+      JSON.stringify(theirMessageId ? [theirMessageId] : []),
       input.due,
       at,
       at,

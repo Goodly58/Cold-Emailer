@@ -1535,3 +1535,185 @@ test('a link can be undone, and never links a group to itself', async () => {
   assert.equal(await unlinkOrgGroups('org_c', 'org_sub'), true);
   assert.equal((await orgFamilyKeys()).size, 0);
 });
+
+// ---------------------------------------------------------------------------
+// Things that must not be mistaken for each other
+// ---------------------------------------------------------------------------
+
+test('a bank footer does not suppress the bank', async () => {
+  // A complaint permanently blacklists an entire employer — the most
+  // destructive thing this product does unprompted. Matching a bare "legal" or
+  // "compliance" anywhere in the message meant a warm reply from any Gulf bank
+  // suppressed it, on the strength of its own signature block.
+  const { classifyByPattern } = await import('../lib/classifier');
+  const warm = {
+    from: 'k@bank.ae',
+    to: [],
+    cc: [],
+    subject: 'Re: Zayed University student',
+    body: `Happy to talk. Send me some times next week.
+
+Khalid Al Ketbi | Alpha Bank
+
+This e-mail and any attachments are confidential and may be legally privileged.
+If you are not the intended recipient please notify our compliance team and
+delete it. Alpha Bank is regulated by the Central Bank of the UAE. Personal data
+is handled in line with applicable data protection law.`,
+    headers: {},
+  };
+  assert.equal(classifyByPattern(warm), null, 'a footer is not a complaint');
+});
+
+test('a real complaint is still caught', async () => {
+  const { classifyByPattern } = await import('../lib/classifier');
+  for (const body of [
+    'I have reported this as spam.',
+    'We treat this as a PDPL matter and have referred it to our legal team.',
+    'This is unsolicited email. Cease and desist.',
+  ]) {
+    const result = classifyByPattern({ from: 'x@y.ae', to: [], cc: [], subject: '', body, headers: {} });
+    assert.equal(result?.classification, 'complaint_escalation', body);
+  }
+});
+
+test('a delegating out-of-office is a referral first', async () => {
+  // "On leave until the 12th, contact Sara meanwhile" is both. An OOO costs a
+  // rescheduled follow-up; a missed referral gets Sara a cold email days after
+  // she was introduced.
+  const { classifyByPattern } = await import('../lib/classifier');
+  const result = classifyByPattern({
+    from: 'k@bank.ae',
+    to: [],
+    cc: [],
+    subject: 'Automatic reply',
+    body: 'I am out of the office until 12 August. Please contact Sara Al Nuaimi in the meantime.',
+    headers: {},
+  });
+  assert.equal(result?.classification, 'referral');
+});
+
+test('a plain out-of-office is still an out-of-office', async () => {
+  const { classifyByPattern } = await import('../lib/classifier');
+  const result = classifyByPattern({
+    from: 'k@bank.ae',
+    to: [],
+    cc: [],
+    subject: 'Automatic reply',
+    body: 'I am out of the office until 12 August with limited access to email.',
+    headers: {},
+  });
+  assert.equal(result?.classification, 'auto_reply_ooo');
+});
+
+test('a full mailbox is a soft bounce, and the status lives outside the body', async () => {
+  // The DSN verdict is in a `message/delivery-status` part, which the body
+  // extractor deliberately drops. Without it every bounce read as permanent and
+  // a temporarily full mailbox burned a real contact for good.
+  const { extractDeliveryStatus } = await import('../lib/poller');
+  const { classifyByHeaders } = await import('../lib/classifier');
+
+  const status = extractDeliveryStatus({
+    mimeType: 'multipart/report',
+    parts: [
+      { mimeType: 'text/plain', body: { data: Buffer.from('Delivery has failed.').toString('base64url') } },
+      {
+        mimeType: 'message/delivery-status',
+        body: {
+          data: Buffer.from('Final-Recipient: rfc822; k@bank.ae\nAction: failed\nStatus: 4.2.2\n').toString(
+            'base64url'
+          ),
+        },
+      },
+    ],
+  });
+  assert.match(status, /Status: 4\.2\.2/);
+
+  const result = classifyByHeaders({
+    from: 'mailer-daemon@googlemail.com',
+    to: [],
+    cc: [],
+    subject: 'Delivery Status Notification (Failure)',
+    body: `Delivery has failed.\n${status}`,
+    headers: { 'content-type': 'multipart/report; report-type=delivery-status' },
+  });
+  assert.equal(result?.classification, 'bounce');
+  assert.match(result!.note, /soft/);
+});
+
+test('a soft bounce actually retries the message that bounced', async () => {
+  // The bounced step is `sent` — that is what a bounce means. Only touching
+  // approved and drafted rows told the user "retrying Sunday" and retried
+  // nothing, so a full mailbox silently ended the sequence.
+  const { queryOne } = await import('../lib/db/client');
+  await person('per_sb', { status: 'in_sequence' });
+  await outreach({ id: 'out_sb', personId: 'per_sb', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+
+  const result = await apply(classification({ classification: 'bounce', note: 'soft 4.2.2' }), 'per_sb');
+
+  const row = await queryOne<{ status: string; scheduled_date: string }>(
+    'SELECT status, scheduled_date FROM outreach WHERE id = ?',
+    ['out_sb']
+  );
+  assert.equal(row!.status, 'stale', 'it goes back to be redrafted and resent');
+  assert.equal(row!.scheduled_date, '2026-08-07');
+  assert.match(result.summary, /Retrying/);
+});
+
+test('a late rejection never undoes a suppression', async () => {
+  // `reopenForLateReply` sets `paused_late_reply`, which would overwrite a
+  // ninety-day dormancy or — far worse — a permanent removal request. The one
+  // state this product must never be able to undo is the one somebody asked for.
+  const { execute, queryOne } = await import('../lib/db/client');
+  await person('per_late', { status: 'closed_silent' });
+  await outreach({ id: 'out_late', personId: 'per_late', step: 1, status: 'sent', sentDate: '2026-06-01', threadId: 't1' });
+  await execute(
+    `INSERT INTO user_company_state (user_id, company_id, status, created_at, updated_at)
+     VALUES ('usr_c', 'cmp_c', 'suppressed_by_request', ?, ?)`,
+    [AT, AT]
+  );
+
+  await apply(classification({ classification: 'removal_request' }), 'per_late');
+
+  const state = await queryOne<{ status: string }>(
+    'SELECT status FROM user_company_state WHERE company_id = ?',
+    ['cmp_c']
+  );
+  assert.equal(state!.status, 'suppressed_by_request');
+});
+
+test('sending is never retried at the transport layer', async () => {
+  // A generic retry defeats the send path's entire discipline: a 429 or a
+  // dropped connection AFTER Gmail accepted the message would send it twice,
+  // and neither the caller nor the user would ever know.
+  const { gmailRequest } = await import('../lib/gmail/client');
+  const { execute } = await import('../lib/db/client');
+  const { encrypt } = await import('../lib/crypto');
+
+  await execute(
+    `INSERT INTO oauth_token (user_id, refresh_token_encrypted, access_token_encrypted,
+                              access_token_expires_at, granted_scopes, token_issued_at, updated_at)
+     VALUES ('usr_c', ?, ?, ?, '', ?, ?)
+     ON CONFLICT (user_id) DO UPDATE SET access_token_encrypted = excluded.access_token_encrypted,
+                                         access_token_expires_at = excluded.access_token_expires_at`,
+    [encrypt('r'), encrypt('a'), '2099-01-01T00:00:00.000Z', AT, AT]
+  );
+
+  const before = globalThis.fetch;
+  let sendAttempts = 0;
+  let getAttempts = 0;
+  globalThis.fetch = (async (url: unknown) => {
+    if (String(url).includes('/messages/send')) sendAttempts++;
+    else getAttempts++;
+    return new Response('busy', { status: 429 });
+  }) as typeof fetch;
+
+  try {
+    await gmailRequest('usr_c', '/users/me/messages/send', { method: 'POST', body: {} }).catch(() => {});
+    await gmailRequest('usr_c', '/users/me/profile').catch(() => {});
+  } finally {
+    globalThis.fetch = before;
+  }
+
+  assert.equal(sendAttempts, 1, 'a send is attempted exactly once, whatever the status code');
+  assert.ok(getAttempts > 1, 'a read is safe to retry');
+});

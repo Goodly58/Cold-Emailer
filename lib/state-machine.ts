@@ -513,11 +513,33 @@ const HANDLERS: Record<Classification, Handler> = {
     if (soft) {
       const calendar = await loadCalendar();
       const retryOn = nextDue(todayUae(now), 1, calendar);
+
+      // The message that bounced is `sent`, not `approved` — that is what a
+      // bounce means. Updating only approved and drafted rows told the user
+      // "retrying Sunday" and then retried nothing, so a full mailbox silently
+      // ended the sequence. The bounced step goes back to `stale` so it is
+      // redrafted and resent, and anything queued behind it moves with it.
+      const retried = await execute(
+        `UPDATE outreach
+            SET scheduled_date = ?, hold_until = ?, status = 'stale',
+                gmail_message_id = NULL, rfc822_message_id = NULL, updated_at = ?
+          WHERE person_id = ? AND status = 'sent'
+            AND step = (SELECT max(step) FROM outreach WHERE person_id = ? AND status = 'sent')`,
+        [retryOn, retryOn, at, personId, personId]
+      );
       await execute(
         `UPDATE outreach SET scheduled_date = ?, hold_until = ?, status = 'stale', updated_at = ?
           WHERE person_id = ? AND status IN ('approved', 'drafted')`,
         [retryOn, retryOn, at, personId]
       );
+      if (retried === 0) {
+        // Nothing to resend — the bounce arrived for a message that is no
+        // longer the live one. Say nothing about retrying.
+        return {
+          summary: 'Bounce, temporary. Their mailbox was full or their server was busy.',
+          superseded: 0,
+        };
+      }
       return {
         summary: `Bounce, temporary. Their mailbox was full or their server was busy. Retrying ${retryOn}.`,
         superseded: 0,
@@ -823,14 +845,19 @@ export async function recordInbound(input: {
   classification: ClassificationResult;
   /** Addresses with their display names. A referral's payload is the name. */
   participants?: Array<{ name: string | null; email: string }>;
+  /** Their RFC822 Message-ID. What a reply must thread on. */
+  rfc822MessageId?: string | null;
+  /** Where a reply should actually go, if they said. */
+  replyTo?: string | null;
 }): Promise<string> {
   const id = newId('inbound');
   await execute(
     `INSERT INTO inbound
        (id, outreach_id, person_id, gmail_thread_id, gmail_message_id, from_address, to_addresses,
-        cc_addresses, participants, subject, body_text, language, classification, classifier_note,
+        cc_addresses, participants, rfc822_message_id, reply_to_address, subject, body_text,
+        language, classification, classifier_note,
         extracted_date, extracted_successor, extracted_url, received_at, processed_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (gmail_message_id) DO NOTHING`,
     [
       id,
@@ -842,6 +869,8 @@ export async function recordInbound(input: {
       JSON.stringify(input.to),
       JSON.stringify(input.cc),
       JSON.stringify(input.participants ?? []),
+      input.rfc822MessageId ?? null,
+      input.replyTo ?? null,
       input.subject,
       input.body.slice(0, 20000),
       input.classification.language,

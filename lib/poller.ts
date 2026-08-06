@@ -142,6 +142,31 @@ export function extractBody(payload: GmailPart | undefined): string {
   return '';
 }
 
+/**
+ * The machine-readable half of a delivery status notification.
+ *
+ * A DSN carries its verdict in a `message/delivery-status` part — `Status:
+ * 4.2.2` for a full mailbox, `5.1.1` for an address that does not exist — and
+ * `extractBody` deliberately keeps only text/plain and text/html, so that part
+ * was invisible. The classifier's regex therefore never matched, every bounce
+ * fell through to "hard", and a mailbox that was merely full permanently burned
+ * a real contact along with the whole domain's address pattern.
+ */
+export function extractDeliveryStatus(payload: GmailPart | undefined): string {
+  if (!payload) return '';
+  const parts: string[] = [];
+
+  const walk = (part: GmailPart) => {
+    if (part.mimeType?.startsWith('message/') && part.body?.data) {
+      parts.push(decodeBase64Url(part.body.data));
+    }
+    for (const child of part.parts ?? []) walk(child);
+  };
+  walk(payload);
+
+  return parts.join('\n');
+}
+
 function stripHtml(html: string): string {
   return html
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -446,7 +471,18 @@ async function pollThread(
       ORDER BY step DESC`,
     [thread.gmail_thread_id]
   );
-  const ourMessageIds = new Set(ours.map((o) => o.gmail_message_id!));
+  // Replies this product sent are ours too. Without them the next sweep sees a
+  // message from the user's own address that is not in `outreach`, concludes
+  // they answered by hand in Gmail, and cancels the queued follow-ups — the
+  // product sabotaging itself for having been used.
+  const oursByReply = await query<{ gmail_message_id: string | null }>(
+    'SELECT gmail_message_id FROM reply_draft WHERE gmail_thread_id = ? AND gmail_message_id IS NOT NULL',
+    [thread.gmail_thread_id]
+  );
+  const ourMessageIds = new Set([
+    ...ours.map((o) => o.gmail_message_id!),
+    ...oursByReply.map((o) => o.gmail_message_id!),
+  ]);
   const latestOutreach = ours[0] ?? null;
 
   for (const message of messages) {
@@ -493,7 +529,12 @@ async function pollThread(
       to: addressList(headers.to),
       cc: addressList(headers.cc),
       subject: headers.subject ?? '',
-      body: extractBody(message.payload) || (message.snippet ?? ''),
+      // The delivery-status part is appended for DSNs only. It is what carries
+      // `Status: 4.2.2` versus `5.1.1` — the difference between retrying and
+      // burning a real contact — and it lives outside the readable body.
+      body: [extractBody(message.payload) || (message.snippet ?? ''), extractDeliveryStatus(message.payload)]
+        .filter(Boolean)
+        .join('\n'),
       headers,
     };
 
@@ -517,6 +558,12 @@ async function pollThread(
         : nowIso(now),
       classification,
       participants,
+      // The real header, not Gmail's internal id: `In-Reply-To` must carry
+      // what the recipient's client actually saw.
+      rfc822MessageId: headers['message-id'] ?? null,
+      // Honour Reply-To when they set one — a shared mailbox answering on
+      // somebody's behalf is exactly when it matters.
+      replyTo: addressOf(headers['reply-to']) || null,
     });
     outcome.newInbound++;
 
@@ -544,7 +591,7 @@ async function pollThread(
 
     // A real reply arriving on a closed sequence reopens it and un-dormants the
     // company. Auto-replies do not: an OOO on a dead thread is noise.
-    if (CLOSED_STATUSES.includes(person.status) && isRealReply(classification.classification)) {
+    if (CLOSED_STATUSES.includes(person.status) && reopensSequence(classification.classification)) {
       const reopened = await reopenForLateReply(user.id, personId, person.company_id, now);
       await recordAction(user.id, personId, person.company_id, reopened, inboundId, now);
       outcome.transitions.push({ personId, summary: reopened.summary });
@@ -585,8 +632,30 @@ async function pollThread(
   return outcome;
 }
 
-function isRealReply(classification: string): boolean {
-  return !['auto_reply_ooo', 'auto_ack_unmonitored', 'bounce', 'gateway_challenge'].includes(classification);
+/**
+ * A message that reopens a closed sequence.
+ *
+ * Not simply "any human reply". A rejection or a removal request arriving on a
+ * closed thread is a closed thread being closed harder, and treating it as a
+ * late reopening would set the company to `paused_late_reply` — overwriting a
+ * ninety-day dormancy, or worse, a permanent `suppressed_by_request`. The one
+ * state this product must never be able to undo is the one somebody explicitly
+ * asked for.
+ */
+function reopensSequence(classification: string): boolean {
+  return ![
+    'auto_reply_ooo',
+    'auto_ack_unmonitored',
+    'bounce',
+    'gateway_challenge',
+    // Every one of these is its own terminal handler, and each sets a company
+    // state that outranks "they came back to us".
+    'rejection_hard',
+    'rejection_soft',
+    'removal_request',
+    'complaint_escalation',
+    'departed',
+  ].includes(classification);
 }
 
 // ---------------------------------------------------------------------------

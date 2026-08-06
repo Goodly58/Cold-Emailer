@@ -439,7 +439,14 @@ export async function sendReply(
     in_reply_to: string | null;
     references_chain: string;
     status: string;
-  }>('SELECT * FROM reply_draft WHERE id = ? AND user_id = ?', [replyId, user.id]);
+    reply_to_address: string | null;
+    from_address: string | null;
+  }>(
+    `SELECT r.*, i.reply_to_address, i.from_address
+       FROM reply_draft r JOIN inbound i ON i.id = r.inbound_id
+      WHERE r.id = ? AND r.user_id = ?`,
+    [replyId, user.id]
+  );
 
   if (!reply) return { ok: false, outreachId: replyId, message: 'That one is no longer here.', reason: 'not_approved' };
   if (!reply.body?.trim()) {
@@ -477,16 +484,45 @@ export async function sendReply(
         attachment = { filename: file.filename, mimeType: file.mimeType, content: file.content };
       }
     }
+
+    // The drafted body says "my CV is attached", because that is what the
+    // intent line told the model to write. Sending that sentence with nothing
+    // attached is worse than not replying at all: it reads as careless to the
+    // one person who asked for something concrete, and the user only finds out
+    // when they do not hear back. Refuse rather than send it.
+    if (!attachment) {
+      await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [
+        nowIso(now),
+        replyId,
+      ]);
+      return {
+        ok: false,
+        outreachId: replyId,
+        message: current
+          ? 'This reply says your CV is attached, and your CV is not approved yet. Approve it first — it takes one look.'
+          : 'This reply says your CV is attached, and there is no CV on file yet. Add one and it will go with this.',
+        reason: 'no_address',
+      };
+    }
   }
 
   const body = withSignature(reply.body, user.signatureBlock);
   const references: string[] = JSON.parse(reply.references_chain);
 
+  // Answer whoever actually wrote, not whoever we originally wrote to.
+  // Thread-first matching is the whole design here: legal-compliance@ replying
+  // about a PDPL matter, or a colleague answering on someone's behalf, both
+  // attach to this outreach — and sending the answer to the original contact
+  // instead is worse than not answering, because the person who raised it never
+  // hears back and the person who did not raise it gets an apology.
+  const toEmail = reply.reply_to_address || reply.from_address || person.email;
+  const toName = toEmail.toLowerCase() === person.email.toLowerCase() ? person.full_name_raw : null;
+
   const mime = buildReplyMime({
     fromName: user.canonicalName ?? user.name,
     fromEmail: user.sendAsEmail ?? user.gmailAddress!,
-    toName: person.full_name_raw,
-    toEmail: person.email,
+    toName,
+    toEmail,
     subject: reply.subject ?? '',
     body,
     messageId,

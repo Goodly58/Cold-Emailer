@@ -189,7 +189,16 @@ export function classifyByPattern(message: InboundMessage): ClassificationResult
     };
   }
 
-  if (OOO_PATTERNS.some((p) => p.test(text))) {
+  // Out-of-office is checked AFTER delegation, not before.
+  //
+  // "I am on leave until the 12th — please contact Sara in the meantime" is
+  // both, and the half that matters is the half that names a person: an OOO
+  // costs a rescheduled follow-up, while a missed referral gets Sara a cold
+  // email days after she was introduced. Same reasoning for a CV request
+  // arriving inside an autoresponder.
+  const delegating = REFERRAL_PATTERNS.some((p) => p.test(text)) || CV_REQUEST_PATTERNS.some((p) => p.test(text));
+
+  if (!delegating && OOO_PATTERNS.some((p) => p.test(text))) {
     return autoReplyResult(message, 'pattern');
   }
 
@@ -204,7 +213,17 @@ export function classifyByPattern(message: InboundMessage): ClassificationResult
     };
   }
 
-  if (/\b(pdpl|data protection|legal|compliance|report(ed)? (this )?as spam|cease and desist)\b/i.test(text)) {
+  // A complaint suppresses an entire domain permanently. That is the most
+  // destructive thing this product does on its own, so the bar is a phrase
+  // somebody chose to write, not a word that happens to appear.
+  //
+  // The previous version matched a bare "legal", "compliance" or "data
+  // protection" anywhere in the message — which is every corporate email
+  // footer in the Gulf. A warm reply from a bank ("Happy to chat — [200 words
+  // of confidentiality and legal boilerplate]") would have permanently
+  // blacklisted the whole employer, silently, on the strength of its own
+  // signature block.
+  if (COMPLAINT_PATTERNS.some((p) => p.test(stripFooter(text)))) {
     return {
       classification: 'complaint_escalation',
       via: 'pattern',
@@ -258,11 +277,7 @@ export function classifyByPattern(message: InboundMessage): ClassificationResult
     };
   }
 
-  if (
-    /\b(send|share|forward|attach|email)\b[^.\n]{0,40}\b(cv|c\.v\.|resume|résumé|portfolio|transcript)\b/i.test(text) ||
-    /\b(cv|resume|résumé)\b[^.\n]{0,25}\b(please|kindly)\b/i.test(text) ||
-    /(أرسل|ارسل|أرفق)[^.\n]{0,30}(السيرة الذاتية|سيرتك)/.test(text)
-  ) {
+  if (CV_REQUEST_PATTERNS.some((p) => p.test(text))) {
     return {
       classification: 'document_request',
       via: 'pattern',
@@ -274,6 +289,55 @@ export function classifyByPattern(message: InboundMessage): ClassificationResult
   }
 
   return null;
+}
+
+/** Asking for the CV, in either language. */
+const CV_REQUEST_PATTERNS: RegExp[] = [
+  /\b(send|share|forward|attach|email)\b[^.\n]{0,40}\b(cv|c\.v\.|resume|résumé|portfolio|transcript)\b/i,
+  /\b(cv|resume|résumé)\b[^.\n]{0,25}\b(please|kindly)\b/i,
+  /(أرسل|ارسل|أرفق)[^.\n]{0,30}(السيرة الذاتية|سيرتك)/,
+];
+
+/**
+ * A complaint, as opposed to a footer that contains the word "legal".
+ *
+ * Every one of these is a sentence somebody typed deliberately. A bare topic
+ * word is not: UAE corporate footers routinely carry "confidential", "legal
+ * privilege", "data protection" and "compliance" under every message their
+ * staff send, including the enthusiastic ones.
+ */
+const COMPLAINT_PATTERNS: RegExp[] = [
+  /\b(report(ed|ing)?|mark(ed|ing)?)\s+(this|your (email|message))?\s*(as\s+)?(spam|junk|phishing|abuse)\b/i,
+  /\bcease and desist\b/i,
+  /\b(breach|violation) of\b[^.\n]{0,40}\b(pdpl|data protection|privacy)\b/i,
+  /\b(pdpl|data protection|privacy)\b[^.\n]{0,40}\b(complaint|matter|violation|breach|authority|regulator)\b/i,
+  /\b(unsolicited|unauthori[sz]ed)\b[^.\n]{0,30}\b(email|contact|approach|marketing)\b/i,
+  /\b(escalat(e|ed|ing)|refer(red|ring)?)\b[^.\n]{0,40}\b(legal|compliance|our lawyers|the regulator)\b/i,
+  /\b(legal|compliance)\s+(team|department)\b[^.\n]{0,40}\b(will|has|is)\b/i,
+  /\btake legal action\b/i,
+];
+
+/**
+ * Drops the boilerplate block most corporate mail carries.
+ *
+ * Not a general-purpose parser — just enough that a footer cannot classify the
+ * message above it. Anything after a legal-disclaimer opener is the footer, and
+ * so is everything after a standalone `--` signature marker.
+ */
+function stripFooter(text: string): string {
+  const markers = [
+    /\n-{2,}\s*\n/,
+    /\bthis (e-?mail|message)( and any attachments)? (is|are|may be) (confidential|privileged|intended)/i,
+    /\bif you (are not|have received this)( the)? (intended )?(recipient|in error)/i,
+    /\bdisclaimer\s*:/i,
+    /\bهذه الرسالة سرية/,
+  ];
+  let cut = text.length;
+  for (const marker of markers) {
+    const at = text.search(marker);
+    if (at >= 0 && at < cut) cut = at;
+  }
+  return text.slice(0, cut);
 }
 
 /**

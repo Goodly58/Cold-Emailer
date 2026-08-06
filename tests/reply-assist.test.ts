@@ -170,13 +170,23 @@ async function world() {
   return d;
 }
 
-async function inbound(id: string, classification: string, body: string) {
+async function inbound(id: string, classification: string, body: string, extra: { rfc822?: string | null; replyTo?: string | null } = {}) {
   const { execute } = await import('../lib/db/client');
   await execute(
     `INSERT INTO inbound (id, person_id, gmail_thread_id, gmail_message_id, from_address,
+                          rfc822_message_id, reply_to_address,
                           subject, body_text, language, classification, received_at, created_at)
-     VALUES (?, 'per_r', 'thread_r', ?, 'k@bank.ae', 'Zayed University student', ?, 'en', ?, ?, ?)`,
-    [id, `gm_${id}`, body, classification, AT, AT]
+     VALUES (?, 'per_r', 'thread_r', ?, 'k@bank.ae', ?, ?, 'Zayed University student', ?, 'en', ?, ?, ?)`,
+    [
+      id,
+      `gm_${id}`,
+      extra.rfc822 === undefined ? `<real.${id}@bank.ae>` : extra.rfc822,
+      extra.replyTo ?? null,
+      body,
+      classification,
+      AT,
+      AT,
+    ]
   );
   return id;
 }
@@ -217,7 +227,10 @@ test('the reply threads on their message, not on our last send', async () => {
     'SELECT in_reply_to, references_chain, gmail_thread_id FROM reply_draft WHERE inbound_id = ?',
     ['inb_t']
   );
-  assert.match(row!.in_reply_to, /gm_inb_t/);
+  // Their real RFC822 Message-ID, not Gmail's internal handle dressed up as
+  // one: a synthesised `<{gmail_id}@mail.gmail.com>` has never existed, and a
+  // reply carrying it arrives as an orphan in the thread it answers.
+  assert.equal(row!.in_reply_to, '<real.inb_t@bank.ae>');
   assert.equal(row!.gmail_thread_id, 'thread_r');
   assert.deepEqual(JSON.parse(row!.references_chain), [row!.in_reply_to]);
 });

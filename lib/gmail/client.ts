@@ -154,6 +154,17 @@ export async function markDisconnected(
 // Requests
 // ---------------------------------------------------------------------------
 
+/**
+ * Requests that may have had an effect even when the response never arrived.
+ *
+ * Only sending qualifies today, and it is matched on the path rather than on
+ * the method so a future POST that is genuinely idempotent — a label change, a
+ * settings write — is not needlessly made fragile.
+ */
+function isMutating(method: string, path: string): boolean {
+  return method === 'POST' && /\/messages\/send$/.test(path);
+}
+
 function classify(status: number): { retryable: boolean; userMessage: string } {
   if (status === 429 || status >= 500) {
     return {
@@ -173,7 +184,19 @@ function classify(status: number): { retryable: boolean; userMessage: string } {
   };
 }
 
-/** A raw Gmail API call, rate-limited and retried. */
+/**
+ * A raw Gmail API call, rate-limited and retried.
+ *
+ * **Sending is never retried here.** `lib/send.ts` is built around one
+ * asymmetry — a lost send is a follow-up, a duplicate is an email the recipient
+ * reads twice from someone asking them for a favour — and its whole discipline
+ * is to probe `rfc822msgid:` rather than to try again. A generic retry at this
+ * layer would defeat that silently: a 429 or a dropped connection *after* Gmail
+ * accepted the message would send it a second time, and neither the caller nor
+ * the user would ever know.
+ *
+ * A GET is safe to retry. A send is not, whatever the status code says.
+ */
 export async function gmailRequest<T>(
   userId: string,
   path: string,
@@ -183,9 +206,10 @@ export async function gmailRequest<T>(
   const url = new URL(`${API_BASE}${path}`);
   for (const [k, v] of Object.entries(query ?? {})) url.searchParams.set(k, v);
 
+  const attempts = isMutating(method, path) ? 1 : 3;
   let lastError: GmailError = new GmailError('request never ran');
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
     if (attempt > 0) await sleep(backoffMs(attempt - 1));
     await takeToken(userId);
 
