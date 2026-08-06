@@ -134,6 +134,44 @@ interface InboundRow {
  * minutes without producing a stack of near-identical answers to the same
  * email.
  */
+/**
+ * Puts the card on the screen immediately, with no model call.
+ *
+ * Called from the poller, the moment a reply is classified. The countdown and
+ * the recipient's own words are the parts that stop the user freezing; the
+ * written draft is the convenience, and it can follow a few minutes later from
+ * the sweep. Waiting for a Claude call before showing anything would mean a
+ * reply that arrived at 09:00 was invisible until the cron ran at 09:15 — on
+ * the one screen where minutes matter.
+ */
+export async function ensureReplyDraft(
+  inboundId: string,
+  userId: string,
+  now: Date = new Date()
+): Promise<string | null> {
+  const inbound = await queryOne<InboundRow>('SELECT * FROM inbound WHERE id = ?', [inboundId]);
+  if (!inbound?.person_id) return null;
+  if (!WORTH_ANSWERING.includes(inbound.classification)) return null;
+
+  const existing = await queryOne<{ id: string }>('SELECT id FROM reply_draft WHERE inbound_id = ?', [
+    inboundId,
+  ]);
+  if (existing) return existing.id;
+
+  const calendar = await loadCalendar();
+  return store({
+    userId,
+    inbound,
+    personId: inbound.person_id,
+    subject: replySubject(inbound.subject ?? ''),
+    body: null,
+    question: 'Writing a suggested reply. It will appear here shortly — or write your own now, which is always better.',
+    status: 'write_yourself',
+    due: replyDeadline(calendar, now),
+    now,
+  });
+}
+
 export async function draftReply(
   inboundId: string,
   userId: string,
@@ -488,11 +526,15 @@ export async function draftPendingReplies(
   now: Date = new Date(),
   limit = 5
 ): Promise<{ drafted: number; needsFact: number }> {
+  // Anything with no draft yet, plus the shells the poller put on screen
+  // straight away and left for us to fill in. A row the user has already
+  // approved, sent, dismissed, or been asked a question about is left alone.
   const pending = await query<{ id: string }>(
     `SELECT i.id FROM inbound i
        JOIN person p ON p.id = i.person_id
+       LEFT JOIN reply_draft r ON r.inbound_id = i.id
       WHERE i.classification IN (${WORTH_ANSWERING.map(() => '?').join(', ')})
-        AND NOT EXISTS (SELECT 1 FROM reply_draft r WHERE r.inbound_id = i.id)
+        AND (r.id IS NULL OR (r.status = 'write_yourself' AND r.body IS NULL))
       ORDER BY i.received_at DESC
       LIMIT ?`,
     [...WORTH_ANSWERING, limit]

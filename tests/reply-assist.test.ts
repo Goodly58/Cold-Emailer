@@ -345,3 +345,51 @@ test('a reply is never rationed by the daily ceiling or the send window', async 
   assert.notEqual(result.reason, 'blocked');
   assert.notEqual(result.reason, 'not_approved');
 });
+
+test('the card exists before any drafting happens', async () => {
+  // The countdown and their own words are what stop the user freezing. Waiting
+  // for a model call before showing anything would leave a reply that arrived
+  // at 09:00 invisible until the sweep ran at 09:15 — on the one screen where
+  // minutes matter.
+  const { ensureReplyDraft, openReplies } = await import('../lib/reply-assist');
+  await inbound('inb_shell', 'human_positive', 'Yes, lets find a time.');
+
+  const id = await ensureReplyDraft('inb_shell', 'usr_r', NOW);
+  assert.ok(id);
+
+  const [card] = await openReplies('usr_r', NOW);
+  assert.equal(card.personName, 'Khalid Al Ketbi');
+  assert.equal(card.body, null, 'no draft yet');
+  assert.match(card.inboundBody, /find a time/);
+  assert.ok(card.hoursLeft !== null, 'but the clock is already running');
+});
+
+test('the shell is upgraded rather than duplicated', async () => {
+  const { ensureReplyDraft, draftPendingReplies, openReplies } = await import('../lib/reply-assist');
+  await inbound('inb_up', 'human_positive', 'Happy to talk.');
+
+  const first = await ensureReplyDraft('inb_up', 'usr_r', NOW);
+  await draftPendingReplies('usr_r', NOW);
+  const second = await ensureReplyDraft('inb_up', 'usr_r', NOW);
+
+  assert.equal(first, second, 'the same row throughout');
+  assert.equal((await openReplies('usr_r', NOW)).length, 1);
+});
+
+test('an approved reply is never overwritten by a later sweep', async () => {
+  const { ensureReplyDraft, approveReply, draftPendingReplies, openReplies } = await import(
+    '../lib/reply-assist'
+  );
+  const { execute } = await import('../lib/db/client');
+  await inbound('inb_keep', 'human_positive', 'Send me a time.');
+
+  const id = await ensureReplyDraft('inb_keep', 'usr_r', NOW);
+  await execute(`UPDATE reply_draft SET body = 'Tuesday morning suits me.' WHERE id = ?`, [id!]);
+  await approveReply(id!, 'usr_r');
+
+  await draftPendingReplies('usr_r', NOW);
+
+  const [card] = await openReplies('usr_r', NOW);
+  assert.equal(card.body, 'Tuesday morning suits me.', 'what the user approved is what stays');
+  assert.equal(card.status, 'approved');
+});

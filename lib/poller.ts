@@ -528,6 +528,13 @@ async function pollThread(
 
     await recordAction(user.id, personId, person.company_id, transition, inboundId, now);
 
+    // The card, immediately. Their words and the countdown are what stop the
+    // user freezing; the written draft follows from the sweep a few minutes
+    // later. No model call happens here — a reply that arrived at 09:00 must
+    // not be invisible until the cron runs at 09:15.
+    const { ensureReplyDraft } = await import('./reply-assist');
+    await ensureReplyDraft(inboundId, user.id, now);
+
     if (inSpam) {
       await recordAction(
         user.id,
