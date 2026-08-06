@@ -49,6 +49,10 @@ export default function Sources() {
   const [report, setReport] = useState<RefreshReport | null>(null);
   const [err, setErr] = useState('');
 
+  const [sweeping, setSweeping] = useState(false);
+  const [sweepLog, setSweepLog] = useState<string[]>([]);
+  const [sweepStop, setSweepStop] = useState(false);
+
   useEffect(() => {
     list<JobSource>('jobSources').then(setSources);
     list<Company>('companies').then(setCompanies);
@@ -99,6 +103,49 @@ export default function Sources() {
       setErr(e instanceof Error ? e.message : 'Refresh failed');
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  /** Walks the company list in batches, registering every board it finds. */
+  async function sweepAll() {
+    setSweeping(true);
+    setSweepStop(false);
+    setSweepLog([]);
+    setErr('');
+    let offset = 0;
+    let totalFound = 0;
+    let totalScanned = 0;
+
+    try {
+      for (;;) {
+        const res = await api<{
+          scanned: number;
+          found: Array<{ company: string; platform: string; slug: string; jobCount: number }>;
+          nextOffset: number;
+          remaining: number;
+        }>('/api/discover/bulk', { method: 'POST', body: JSON.stringify({ offset, limit: 8 }) });
+
+        totalScanned += res.scanned;
+        totalFound += res.found.length;
+        for (const f of res.found) {
+          setSweepLog((l) => [`✓ ${f.company} — ${f.platform}/${f.slug} (${f.jobCount} roles)`, ...l]);
+        }
+        setSweepLog((l) => [
+          `… scanned ${totalScanned}, found ${totalFound}, ${res.remaining} left`,
+          ...l.filter((x) => !x.startsWith('…')),
+        ]);
+
+        if (res.scanned === 0 || res.remaining === 0) break;
+        // Companies that matched became sources, so they drop out of the
+        // queue — only advance past the ones that didn't match.
+        offset = res.nextOffset - res.found.length;
+        if (sweepStop) break;
+      }
+      setSources(await list<JobSource>('jobSources'));
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Sweep failed');
+    } finally {
+      setSweeping(false);
     }
   }
 
@@ -163,7 +210,36 @@ export default function Sources() {
       </div>
 
       <div className="card mb">
-        <h2 style={{ marginTop: 0 }}>Find a company&apos;s job board</h2>
+        <h2 style={{ marginTop: 0 }}>Auto-discover boards for every company</h2>
+        <p className="muted mb">
+          Sweeps your whole <Link href="/companies">company list</Link>, probing all six ATS
+          platforms for each one, and registers every board it finds. Companies already tracked are
+          skipped. Runs in batches — leave the page open while it works.
+        </p>
+        <div className="flex">
+          <button className="primary" onClick={sweepAll} disabled={sweeping}>
+            {sweeping ? 'Sweeping…' : 'Sweep all companies'}
+          </button>
+          {sweeping && (
+            <button onClick={() => setSweepStop(true)}>Stop after this batch</button>
+          )}
+        </div>
+        {sweepLog.length > 0 && (
+          <div
+            className="mt"
+            style={{ maxHeight: 220, overflowY: 'auto', fontSize: 13, fontFamily: 'ui-monospace, monospace' }}
+          >
+            {sweepLog.map((line, i) => (
+              <div key={i} className={line.startsWith('✓') ? 'success' : 'muted'}>
+                {line}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="card mb">
+        <h2 style={{ marginTop: 0 }}>Find one company&apos;s job board</h2>
         <p className="muted mb">
           Don&apos;t know which system a company uses? Type the name and this tries all six
           platforms to find their board automatically.

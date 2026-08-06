@@ -1,6 +1,8 @@
 // Public ATS board APIs. These power companies' own careers pages, so polling
 // them is exactly what they're published for — no scraping, no ToS problem.
 
+import { fetchJson, mapWithConcurrency } from './http';
+
 export const PLATFORMS = [
   'greenhouse',
   'lever',
@@ -86,51 +88,81 @@ const PARSERS: Record<Platform, (data: any, slug: string) => AtsJob[]> = {
 
 /** Fetch every open role from one company's board. Throws on a bad slug. */
 export async function fetchJobs(platform: Platform, slug: string): Promise<AtsJob[]> {
-  const res = await fetch(ENDPOINTS[platform](slug), {
-    cache: 'no-store',
-    headers: { accept: 'application/json' },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) throw new Error(`${platform} returned ${res.status}`);
-  const data = await res.json();
+  const data = await fetchJson(ENDPOINTS[platform](slug));
   return PARSERS[platform](data, slug).filter((j) => j.title && j.url);
+}
+
+export interface DiscoveredBoard {
+  platform: Platform;
+  slug: string;
+  jobCount: number;
+}
+
+/** Plausible board slugs for a company name, most likely first. */
+export function slugCandidates(companyName: string): string[] {
+  const stopWords = new Set([
+    'group', 'holding', 'holdings', 'company', 'co', 'corporation', 'corp', 'llc',
+    'plc', 'pjsc', 'psc', 'limited', 'ltd', 'inc', 'the', 'uae', 'emirates',
+    'middle', 'east', 'mena', 'international', 'national',
+  ]);
+
+  const base = companyName
+    .toLowerCase()
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const words = base.split(' ').filter(Boolean);
+  const meaningful = words.filter((w) => !stopWords.has(w));
+
+  const out = new Set<string>();
+  const add = (s: string) => {
+    if (s && validSlug(s)) out.add(s);
+  };
+
+  add(meaningful.join(''));
+  add(meaningful.join('-'));
+  add(words.join(''));
+  add(words.join('-'));
+  if (meaningful[0] && meaningful[0].length > 2) add(meaningful[0]);
+  if (meaningful.length > 1) add(meaningful.slice(0, 2).join(''));
+
+  return [...out];
 }
 
 /**
  * Work out which ATS a company uses by trying its name as a slug on each
- * platform. Cheap (six parallel requests) and saves hunting through careers
- * pages by hand.
+ * platform. Bounded so a bulk sweep can't open hundreds of sockets, and
+ * retries are disabled — a wrong guess should fail fast, not back off.
  */
-export async function discoverBoards(companyName: string): Promise<
-  Array<{ platform: Platform; slug: string; jobCount: number }>
-> {
-  const base = companyName
-    .toLowerCase()
-    .replace(/\(.*?\)/g, '')
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim();
+export async function discoverBoards(
+  companyName: string,
+  concurrency = 8
+): Promise<DiscoveredBoard[]> {
+  const candidates = slugCandidates(companyName);
 
-  const candidates = new Set<string>();
-  candidates.add(base.replace(/\s+/g, ''));
-  candidates.add(base.replace(/\s+/g, '-'));
-  const firstWord = base.split(/\s+/)[0];
-  if (firstWord && firstWord.length > 2) candidates.add(firstWord);
-
-  const attempts: Array<Promise<{ platform: Platform; slug: string; jobCount: number } | null>> = [];
+  const attempts: Array<{ platform: Platform; slug: string }> = [];
   for (const platform of PLATFORMS) {
     for (const slug of candidates) {
-      if (!validSlug(slug)) continue;
-      attempts.push(
-        fetchJobs(platform, slug)
-          .then((jobs) => (jobs.length > 0 ? { platform, slug, jobCount: jobs.length } : null))
-          .catch(() => null)
-      );
+      attempts.push({ platform, slug });
     }
   }
 
-  const results = await Promise.all(attempts);
-  return results.filter((r): r is { platform: Platform; slug: string; jobCount: number } => r !== null);
+  const results = await mapWithConcurrency(attempts, concurrency, async ({ platform, slug }) => {
+    try {
+      const jobs = await fetchJson(ENDPOINTS[platform](slug), { retries: 0, timeoutMs: 8000 });
+      const parsed = PARSERS[platform](jobs, slug).filter((j) => j.title && j.url);
+      return parsed.length > 0 ? { platform, slug, jobCount: parsed.length } : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const found = results.filter((r): r is DiscoveredBoard => r !== null);
+  // Prefer the board with the most roles when a company matches twice.
+  return found.sort((a, b) => b.jobCount - a.jobCount);
 }
 
 /** Does this role look relevant / UAE-based? Used for optional filtering. */
