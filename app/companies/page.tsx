@@ -32,6 +32,9 @@ export default function Companies() {
   const [syncMsg, setSyncMsg] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
   const [limit, setLimit] = useState(60);
+  const [importText, setImportText] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState('');
 
   useEffect(() => {
     list<Company>('companies').then(setCompanies);
@@ -124,6 +127,50 @@ export default function Companies() {
           </button>
         </form>
       </div>
+
+      <details className="card mb">
+        <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Bulk import companies</summary>
+        <p className="muted mt mb" style={{ fontSize: 13 }}>
+          Paste a JSON array to add many at once. Existing companies are enriched rather than
+          duplicated, so re-importing an updated list is safe. Only <code>name</code> is required.
+        </p>
+        <textarea
+          style={{ minHeight: 120, fontFamily: 'ui-monospace, monospace', fontSize: 12 }}
+          placeholder={'[{"name":"Acme UAE","sector":"Tech","location":"Dubai","domain":"acme.ae","tier":"target"}]'}
+          value={importText}
+          onChange={(e) => setImportText(e.target.value)}
+        />
+        <div className="flex mt">
+          <button
+            className="primary"
+            disabled={importing || !importText.trim()}
+            onClick={async () => {
+              setImporting(true);
+              setImportMsg('');
+              try {
+                const parsed = JSON.parse(importText);
+                const payload = Array.isArray(parsed) ? parsed : parsed.companies;
+                const r = await api<{ added: number; enriched: number; skipped: number; total: number }>(
+                  '/api/companies/import',
+                  { method: 'POST', body: JSON.stringify({ companies: payload }) }
+                );
+                setImportMsg(
+                  `Added ${r.added}, enriched ${r.enriched}, skipped ${r.skipped}. Now ${r.total} total.`
+                );
+                setCompanies(await list<Company>('companies'));
+                setImportText('');
+              } catch (e) {
+                setImportMsg(e instanceof Error ? `Failed: ${e.message}` : 'Import failed');
+              } finally {
+                setImporting(false);
+              }
+            }}
+          >
+            {importing ? 'Importing…' : 'Import'}
+          </button>
+          {importMsg && <span className={importMsg.startsWith('Failed') ? 'error' : 'success'}>{importMsg}</span>}
+        </div>
+      </details>
 
       <div className="form-row mb">
         <input
