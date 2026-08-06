@@ -18,13 +18,33 @@ Open http://localhost:3000.
 
 | Page | What it does |
 |---|---|
-| **Overview** | Stats, due follow-ups, queued emails, getting-started checklist |
-| **Pipeline** | Kanban for applications (Found → … → Offer) + live job import from public Greenhouse/Lever board APIs |
-| **Companies** | 28 seeded UAE employers where Emirati status is an advantage; tiers, careers links, quota notes |
-| **Contacts** | Decision-makers per company, with one-click "draft email" into the composer |
-| **Outreach** | Template composer with merge fields, "Open in Gmail" pre-filled compose, send/reply/follow-up log |
-| **Templates** | Your profile (fills merge fields) + 6 editable email templates incl. Emiratisation-angle variants |
-| **UAE Playbook** | How Emiratisation quotas and Nafis work, and how to use them in outreach |
+| **Overview** | Stats, due follow-ups, queued emails, setup checklist |
+| **Pipeline** | Kanban (Found → … → Offer) with search, filters, relevance scores, and manual import |
+| **Sources** | Job boards polled on a schedule; auto-discovery of which ATS a company uses |
+| **Companies** | Seeded UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes |
+| **Contacts** | Decision-makers with email finding, research links, and hook capture |
+| **Outreach** | Template composer with merge fields, pre-filled Gmail compose, follow-up log |
+| **Templates** | Profile + job preferences (drive scoring) + editable email templates |
+| **Health** | Scraper run history, broken-source alerts, backup/restore |
+| **UAE Playbook** | Emiratisation quotas, Nafis, career fairs, and how to use them in outreach |
+
+## The scraper
+
+Polls public ATS board APIs — the same endpoints that power companies' own careers pages, so no
+scraping and no ToS problem.
+
+- **Platforms**: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee
+- **Schedule**: daily via Vercel Cron (`vercel.json`), plus a manual "Refresh now"
+- **Discovery**: probes all platforms with derived slugs to find a company's board
+- **Resilience**: retries with exponential backoff on 429/5xx, fails fast on 4xx, bounded
+  concurrency, per-source failure counters
+- **Dedupe**: job URLs are normalized (tracking params stripped) before comparison
+- **Lifecycle**: postings that vanish are marked closed and pruned after 30 days; roles you've
+  already applied to are never auto-closed
+- **Scoring**: every imported role is ranked 0–100 against your job preferences
+
+Big UAE corporates (ADNOC, FAB, Emirates NBD…) run Oracle/SAP career portals with no public feed —
+those stay manual via their careers links on the Companies page.
 
 ## Data
 

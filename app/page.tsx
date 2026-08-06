@@ -100,15 +100,38 @@ export default function Overview() {
         )}
       </div>
 
-      <h2>Getting started</h2>
+      <h2>Setup checklist</h2>
       <div className="card playbook">
-        <ul>
-          <li>Set your profile (name, headline, LinkedIn) on the <Link href="/templates">Templates</Link> page — it fills the merge fields in every email.</li>
-          <li>Import live openings on the <Link href="/pipeline">Pipeline</Link> page (Greenhouse/Lever slugs), or add roles manually.</li>
-          <li>Work through the seeded <Link href="/companies">company list</Link> — 28 UAE employers where Emirati status is a real advantage.</li>
-          <li>Add 2–3 <Link href="/contacts">decision-makers</Link> per dream company, then draft tailored emails in <Link href="/outreach">Outreach</Link>.</li>
-          <li>Read the <Link href="/uae">UAE Playbook</Link> for the Emiratisation/Nafis angle before your first send.</li>
-        </ul>
+        <ol style={{ paddingLeft: 20 }}>
+          <li>
+            <strong>Set your profile and job preferences</strong> on the{' '}
+            <Link href="/templates">Templates</Link> page. The profile fills merge fields in every
+            email; the preferences (target titles, keywords, exclusions) are what the scraper scores
+            incoming roles against.
+          </li>
+          <li>
+            <strong>Sync the company list</strong> on the <Link href="/companies">Companies</Link>{' '}
+            page, then set each dream company&apos;s email domain and divisions via its{' '}
+            <em>Setup</em> button.
+          </li>
+          <li>
+            <strong>Discover job boards</strong> on the <Link href="/sources">Sources</Link> page —
+            &ldquo;Sweep all companies&rdquo; probes six ATS platforms per company automatically.
+          </li>
+          <li>
+            <strong>Add decision-makers</strong> in <Link href="/contacts">Contacts</Link>: hiring
+            manager, TA/Emiratisation lead, and one exec per target. Expand a row to find their
+            email and capture your hook.
+          </li>
+          <li>
+            <strong>Send</strong> from <Link href="/outreach">Outreach</Link> — 10–20 tailored
+            emails a day, tracked with follow-ups.
+          </li>
+          <li>
+            Read the <Link href="/uae">UAE Playbook</Link> before your first send, and check{' '}
+            <Link href="/runs">Health</Link> occasionally to confirm the scraper is still running.
+          </li>
+        </ol>
       </div>
     </div>
   );
