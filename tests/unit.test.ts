@@ -442,3 +442,70 @@ test('seed company names are unique', async () => {
   const names = companies.map((c) => c.name.trim().toLowerCase());
   assert.equal(new Set(names).size, names.length, 'duplicate company names');
 });
+
+/* ------------------------------------------------------------ pagination */
+
+test('a paginated board is walked to the end', async (t) => {
+  t.after(() => {
+    globalThis.fetch = realFetch;
+  });
+  const { fetchJobsFor } = await import('../lib/ats-registry');
+
+  // 47 postings behind a board that hard-caps pages at 20.
+  const total = Array.from({ length: 47 }, (_, i) => ({
+    title: `Role ${i}`,
+    locationsText: 'Dubai',
+    externalPath: `/job/Dubai/Role-${i}`,
+  }));
+  let requests = 0;
+  globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+    requests += 1;
+    const offset = JSON.parse(String(init?.body || '{}')).offset ?? 0;
+    return new Response(JSON.stringify({ jobPostings: total.slice(offset, offset + 20) }), { status: 200 });
+  }) as unknown as typeof fetch;
+
+  const jobs = await fetchJobsFor('workday', { slug: 'acme', dc: 'wd3', site: 'External' });
+  assert.equal(jobs.length, 47, 'every posting should be collected, not just the first page');
+  assert.equal(requests, 3, 'should stop as soon as a short page arrives');
+});
+
+test('pagination stops if a board ignores the offset', async (t) => {
+  t.after(() => {
+    globalThis.fetch = realFetch;
+  });
+  const { fetchJobsFor } = await import('../lib/ats-registry');
+
+  // A board that replays page one forever would otherwise loop to the cap.
+  const page = Array.from({ length: 20 }, (_, i) => ({
+    title: `Role ${i}`,
+    locationsText: 'Dubai',
+    externalPath: `/job/Dubai/Role-${i}`,
+  }));
+  let requests = 0;
+  globalThis.fetch = (async () => {
+    requests += 1;
+    return new Response(JSON.stringify({ jobPostings: page }), { status: 200 });
+  }) as unknown as typeof fetch;
+
+  const jobs = await fetchJobsFor('workday', { slug: 'acme', dc: 'wd3', site: 'External' });
+  assert.equal(jobs.length, 20);
+  assert.equal(requests, 2, 'second identical page should end the walk');
+});
+
+test('unpaginated platforms still make exactly one request', async (t) => {
+  t.after(() => {
+    globalThis.fetch = realFetch;
+  });
+  const { fetchJobsFor } = await import('../lib/ats-registry');
+  let requests = 0;
+  globalThis.fetch = (async () => {
+    requests += 1;
+    return new Response(
+      JSON.stringify({ jobs: [{ title: 'X', location: { name: 'Dubai' }, absolute_url: 'https://x.co/1' }] }),
+      { status: 200 }
+    );
+  }) as unknown as typeof fetch;
+
+  await fetchJobsFor('greenhouse', { slug: 'acme' });
+  assert.equal(requests, 1);
+});

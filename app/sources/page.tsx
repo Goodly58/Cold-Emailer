@@ -458,6 +458,7 @@ export default function Sources() {
             {PLATFORM_DEFS.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
+                {p.unverified ? ' (unverified)' : ''}
               </option>
             ))}
           </select>
@@ -486,6 +487,14 @@ export default function Sources() {
         <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
           {getPlatform(form.platform)?.hint}
         </p>
+        {getPlatform(form.platform)?.unverified && (
+          <p style={{ fontSize: 12, color: 'var(--amber)' }}>
+            This platform&apos;s endpoint has not been confirmed against a live board — the request
+            shape is well corroborated but untested. If it returns nothing or errors, that&apos;s
+            expected rather than a broken slug; check the <Link href="/runs">Health</Link> page for
+            the actual error.
+          </p>
+        )}
       </div>
 
       <div className="card">

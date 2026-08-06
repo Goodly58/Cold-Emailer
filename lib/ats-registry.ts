@@ -33,7 +33,19 @@ export interface PlatformDef {
   hint: string;
   /** Whether a plain company-name guess is worth trying during discovery. */
   discoverable: boolean;
-  build: (cfg: Record<string, string>) => {
+  /**
+   * Not confirmed against a live board. The endpoint shape is well
+   * corroborated but nobody has seen it return data, so failures here are
+   * expected rather than surprising — surfaced in the UI so a silent zero
+   * isn't mistaken for "no open roles".
+   */
+  unverified?: boolean;
+  /**
+   * Page size when the board caps results per request. Set this and
+   * fetchJobsFor will walk offsets until the board runs out.
+   */
+  pageSize?: number;
+  build: (cfg: Record<string, string>, offset?: number) => {
     url: string;
     method?: 'GET' | 'POST';
     body?: string;
@@ -215,10 +227,14 @@ export const PLATFORM_DEFS: PlatformDef[] = [
     ],
     hint: 'From https://<tenant>.<dc>.myworkdayjobs.com/<site> — slug is the tenant',
     discoverable: false,
-    build: ({ slug, dc, site }) => ({
+    unverified: true,
+    // Workday caps limit at 20 server-side; asking for more returns an empty
+    // array with HTTP 200, which reads as "no jobs" rather than an error.
+    pageSize: 20,
+    build: ({ slug, dc, site }, offset = 0) => ({
       url: `https://${slug}.${dc}.myworkdayjobs.com/wday/cxs/${slug}/${site}/jobs`,
       method: 'POST',
-      body: JSON.stringify({ appliedFacets: {}, limit: 20, offset: 0, searchText: '' }),
+      body: JSON.stringify({ appliedFacets: {}, limit: 20, offset, searchText: '' }),
       headers: { 'content-type': 'application/json' },
     }),
     parse: (d, cfg) =>
@@ -238,11 +254,13 @@ export const PLATFORM_DEFS: PlatformDef[] = [
     ],
     hint: 'From the careers URL host and its siteNumber query parameter',
     discoverable: false,
+    unverified: true,
+    // Kept minimal deliberately: an invalid `expand` target 400s the whole
+    // request, so nothing optional is requested.
     build: ({ host, site }) => ({
       url:
         `https://${host}/hcmRestApi/resources/latest/recruitingCEJobRequisitions` +
-        `?onlyData=true&expand=requisitionList.secondaryLocations` +
-        `&finder=findReqs;siteNumber=${site},limit=100,sortBy=POSTING_DATES_DESC`,
+        `?onlyData=true&finder=findReqs;siteNumber=${site},limit=200,sortBy=POSTING_DATES_DESC`,
     }),
     parse: (d, cfg) => {
       const list = d?.items?.[0]?.requisitionList || [];
@@ -288,14 +306,42 @@ export async function fetchJobsFor(
     }
   }
 
-  const req = def.build(config);
-  const data = await fetchJson(req.url, {
-    method: req.method,
-    body: req.body,
-    headers: req.headers,
-    retries: opts.retries,
-    timeoutMs: opts.timeoutMs,
-  });
+  const fetchPage = async (offset: number): Promise<AtsJob[]> => {
+    const req = def.build(config, offset);
+    const data = await fetchJson(req.url, {
+      method: req.method,
+      body: req.body,
+      headers: req.headers,
+      retries: opts.retries,
+      timeoutMs: opts.timeoutMs,
+    });
+    return def.parse(data, config).filter((j) => j.title && j.url);
+  };
 
-  return def.parse(data, config).filter((j) => j.title && j.url);
+  if (!def.pageSize) return fetchPage(0);
+
+  // Paginated board: walk offsets until a short page comes back. Capped so a
+  // board that keeps returning full pages can't loop forever.
+  const all: AtsJob[] = [];
+  const seen = new Set<string>();
+  const maxPages = 40;
+
+  for (let page = 0; page < maxPages; page++) {
+    const batch = await fetchPage(page * def.pageSize);
+
+    let fresh = 0;
+    for (const job of batch) {
+      if (seen.has(job.url)) continue;
+      seen.add(job.url);
+      all.push(job);
+      fresh += 1;
+    }
+
+    // A short page is the end of the board. Zero fresh rows from a full page
+    // means the board ignored our offset and is replaying page one — stop
+    // rather than spin.
+    if (batch.length < def.pageSize || fresh === 0) break;
+  }
+
+  return all;
 }

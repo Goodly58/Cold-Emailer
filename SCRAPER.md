@@ -13,16 +13,30 @@ time to lose your LinkedIn.
 request, how to parse the response, which identifiers it needs, and whether a board can be found by
 guessing a slug:
 
-| Platform | Identifiers | Discoverable |
-|---|---|---|
-| Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee | slug | yes |
-| Personio, Breezy, Pinpoint, Teamtailor | slug | no |
-| Workday | tenant + data centre + site | no |
-| Oracle Cloud Recruiting | host + site number | no |
+| Platform | Identifiers | Discoverable | Confirmed live |
+|---|---|---|---|
+| Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee | slug | yes | yes |
+| Personio, Breezy, Pinpoint, Teamtailor | slug | no | yes |
+| Workday | tenant + data centre + site | no | **no** |
+| Oracle Cloud Recruiting | host + site number | no | **no** |
 
 "Discoverable" means a company name can plausibly be turned into the identifier. Workday needs a
 data-centre number that no amount of guessing will produce, so discovery skips it rather than
 burning requests.
+
+**On the two unverified platforms.** Workday and Oracle were built from research that could not
+complete a live request — every outbound host was blocked in the environment where they were
+investigated. The request shape is strongly corroborated (independent implementations across many
+codebases agree on every field name), but nobody has seen either return job data. They are labelled
+"unverified" in the UI so an empty result reads as *untested*, not as *no open roles*. Two known
+risks if they fail in production:
+
+- Workday fronts these hosts with bot protection that rejects non-browser user agents. This tool
+  sends an honest identifying user agent rather than impersonating a browser, so a 403 here is the
+  likely first failure.
+- Oracle 400s the whole request if an `expand` target is invalid, so nothing optional is requested.
+
+The Health page will show the real error either way.
 
 **Aggregators** (`lib/aggregators.ts`) — cover the whole UAE market rather than one employer, which
 is how you find roles at companies you never thought to track. The Muse needs no key; Adzuna and
