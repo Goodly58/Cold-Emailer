@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { updateDb } from '@/lib/store';
-import { isPlatform, validSlug } from '@/lib/ats';
+import { getPlatform, validSlug } from '@/lib/ats';
 import type { JobSource } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -27,10 +27,13 @@ export async function POST() {
 
       const platform = company.ats.toLowerCase();
       const slug = company.atsSlug.trim().toLowerCase();
+      const def = getPlatform(platform);
 
-      // Only platforms the poller can actually read; others are recorded on
-      // the company for reference but can't be scheduled.
-      if (!isPlatform(platform) || !validSlug(slug)) {
+      // Register only what will actually poll. A platform we support but whose
+      // extra identifiers we don't have (Workday needs a data centre and site
+      // name) would produce a source that fails on every run — worse than not
+      // creating it, because it looks like coverage.
+      if (!def || !validSlug(slug) || def.fields.some((f) => f.required)) {
         skipped.push(`${company.name} (${company.ats})`);
         continue;
       }
