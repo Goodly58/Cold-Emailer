@@ -21,12 +21,20 @@ Open http://localhost:3000.
 | **Overview** | Stats, due follow-ups, queued emails, setup checklist |
 | **Pipeline** | Kanban (Found → … → Offer) with search, filters, relevance scores, and manual import |
 | **Sources** | Job boards polled on a schedule; auto-discovery of which ATS a company uses |
-| **Companies** | Seeded UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes |
+| **Companies** | ~1,000 seeded UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes; sector and tier filters, bulk import |
 | **Contacts** | Decision-makers with email finding, research links, and hook capture |
 | **Outreach** | Template composer with merge fields, pre-filled Gmail compose, follow-up log |
 | **Templates** | Profile + job preferences (drive scoring) + editable email templates |
 | **Health** | Scraper run history, broken-source alerts, backup/restore |
 | **UAE Playbook** | Emiratisation quotas, Nafis, career fairs, and how to use them in outreach |
+
+## Tests
+
+```bash
+npm test     # 52 tests: unit + refresh-cycle integration
+```
+
+CI runs these plus a build and a seed-database check on every push.
 
 ## The scraper
 
