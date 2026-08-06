@@ -72,6 +72,8 @@ export interface SweepResult {
   refused: number;
   /** Replies pre-written for the user. Always drafted before cold emails. */
   repliesDrafted: number;
+  /** Unconfirmed holiday windows the founder is being nudged about. */
+  confirmationTasks: number;
   freshness: { staled: number; superseded: number };
   skipped: string | null;
 }
@@ -101,6 +103,7 @@ export async function sweep(
     predrafted: 0,
     refused: 0,
     repliesDrafted: 0,
+    confirmationTasks: 0,
     freshness: { staled: 0, superseded: 0 },
     skipped: null,
   };
@@ -143,6 +146,7 @@ export async function sweep(
     result.refused = drafted.refused;
   }
 
+  result.confirmationTasks = await raiseConfirmationTasks(user, now);
   result.freshness = await freshnessPass(user, now);
 
   await logEvent({
@@ -630,6 +634,70 @@ async function predraftDue(user: User, now: Date): Promise<{ drafted: number; re
   }
 
   return { drafted, refused };
+}
+
+// ---------------------------------------------------------------------------
+// Confirming a holiday window before it arrives
+// ---------------------------------------------------------------------------
+
+/** How far ahead the founder is asked to confirm an unconfirmed window. */
+const CONFIRM_WINDOW_LEAD_DAYS = 3;
+
+/**
+ * The "confirm Eid dates" task.
+ *
+ * Islamic holidays finalise on moon-sighting, and the government sometimes adds
+ * a day two days out. Until a window is confirmed it counts as fully
+ * non-working, and every draft crossing it carries `regenerate_at_send` — so
+ * nothing breaks if nobody ever confirms it. What is lost is the warm opener: a
+ * generic line goes out where "hope you had a good Eid" would have landed.
+ *
+ * Correct beats warm-but-wrong, which is why this is a nudge and not a block.
+ */
+export async function confirmationTasks(
+  userId: string,
+  now: Date = new Date()
+): Promise<Array<{ id: string; name: string; start: string; end: string }>> {
+  const { listWindows } = await import('./calendar-store');
+  const today = todayUae(now);
+  const horizon = addDays(today, CONFIRM_WINDOW_LEAD_DAYS);
+
+  return (await listWindows())
+    .filter(
+      (w) =>
+        !w.confirmed &&
+        compareDates(w.start, horizon) <= 0 &&
+        // Past windows are nobody's problem: the dates they governed have
+        // already been derived and sent.
+        compareDates(w.end, today) >= 0
+    )
+    .map((w) => ({ id: w.id, name: w.name, start: w.start, end: w.end }));
+}
+
+/** Raises the nudge as a Next Action, once, three days out. */
+async function raiseConfirmationTasks(user: User, now: Date): Promise<number> {
+  const { recordAction } = await import('./poller');
+  const tasks = await confirmationTasks(user.id, now);
+
+  for (const task of tasks) {
+    await recordAction(
+      user.id,
+      null,
+      null,
+      {
+        summary: `Confirm ${task.name}.`,
+        superseded: 0,
+        action: {
+          kind: `confirm_window:${task.id}`,
+          message: `${task.name} is pencilled in for ${task.start} to ${task.end} but not confirmed. Check the announced dates and set them — it decides whether the emails going out that week say anything about the holiday.`,
+          url: '/calendar',
+        },
+      },
+      null,
+      now
+    );
+  }
+  return tasks.length;
 }
 
 // ---------------------------------------------------------------------------

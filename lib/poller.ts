@@ -169,13 +169,40 @@ export function addressOf(header: string | undefined): string {
 
 /** Every address on a comma-separated header, quoted display names and all. */
 export function addressList(header: string | undefined): string[] {
+  return addressEntries(header).map((e) => e.email);
+}
+
+export interface AddressEntry {
+  name: string | null;
+  email: string;
+}
+
+/**
+ * Addresses with their display names.
+ *
+ * The name is the payload in exactly one case, and it is the most valuable
+ * message the product ever receives: "looping in Sara who runs our Nafis
+ * programme" arrives as `"Sara Al Nuaimi" <s.alnuaimi@bank.ae>` in the CC line.
+ * Reducing that to an address throws away the half that makes it usable.
+ */
+export function addressEntries(header: string | undefined): AddressEntry[] {
   if (!header) return [];
   return header
     // Split on commas that are not inside a quoted display name — `"Ali, Dr."`
     // is one recipient, not two.
     .split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
-    .map((part) => addressOf(part))
-    .filter(Boolean);
+    .map((part) => {
+      const email = addressOf(part);
+      if (!email) return null;
+      const name = part
+        .replace(/<[^>]*>/, '')
+        .replace(/["']/g, '')
+        .trim();
+      // A bare address has no display name. `k@bank.ae` as a "name" would end
+      // up in a salutation.
+      return { name: name && name !== email ? name : null, email };
+    })
+    .filter((e): e is AddressEntry => e !== null);
 }
 
 // ---------------------------------------------------------------------------
@@ -431,6 +458,12 @@ async function pollThread(
     const inSpam = message.labelIds?.includes('SPAM') ?? false;
     if (inSpam) outcome.spam = true;
 
+    const participants = [
+      ...addressEntries(headers.from),
+      ...addressEntries(headers.to),
+      ...addressEntries(headers.cc),
+    ];
+
     const parsed: InboundMessage = {
       from,
       to: addressList(headers.to),
@@ -459,6 +492,7 @@ async function pollThread(
         ? new Date(Number(message.internalDate)).toISOString()
         : nowIso(now),
       classification,
+      participants,
     });
     outcome.newInbound++;
 
@@ -547,11 +581,37 @@ export async function recordAction(
   const action = transition.action;
   if (!action || action.kind === 'none' || !action.message) return;
 
+  // The partial unique index cannot help when there is no person: SQLite treats
+  // NULLs as distinct, so an action about the system rather than about somebody
+  // — "confirm the Eid dates" — would stack one card per sweep, four an hour,
+  // until the user stopped reading the list entirely.
+  if (personId === null) {
+    const open = await queryOne<{ id: string }>(
+      `SELECT id FROM next_action
+        WHERE user_id = ? AND kind = ? AND person_id IS NULL AND resolved_at IS NULL`,
+      [userId, action.kind]
+    );
+    if (open) return;
+  }
+
   await execute(
     `INSERT INTO next_action (id, user_id, kind, message, url, person_id, company_id, inbound_id, warm, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT DO NOTHING`,
-    [newId('action'), userId, action.kind, action.message, action.url ?? null, personId, companyId, inboundId, nowIso(now)]
+    [
+      newId('action'),
+      userId,
+      action.kind,
+      action.message,
+      action.url ?? null,
+      personId,
+      companyId,
+      inboundId,
+      // Warm means a person is waiting. A calendar chore is not, and must never
+      // sort above someone who wrote to you.
+      personId === null ? 0 : 1,
+      nowIso(now),
+    ]
   );
 }
 

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { currentUser } from '@/lib/user';
 
+import ConnectionBanner from '../connection-banner';
 import TodayClient from './today-client';
 
 export const dynamic = 'force-dynamic';
@@ -17,5 +18,12 @@ export const dynamic = 'force-dynamic';
 export default async function TodayPage() {
   const user = await currentUser();
   if (user.onboardingStep !== 'done') redirect('/onboarding');
-  return <TodayClient firstName={(user.canonicalName ?? user.name).split(' ')[0]} />;
+  return (
+    <>
+      {/* Above everything, including the queue. A user who opens the app to a
+          silent empty screen concludes it is finished with them. */}
+      <ConnectionBanner />
+      <TodayClient firstName={(user.canonicalName ?? user.name).split(' ')[0]} />
+    </>
+  );
 }

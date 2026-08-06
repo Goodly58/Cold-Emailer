@@ -279,6 +279,7 @@ const HANDLERS: Record<Classification, Handler> = {
     // Everyone on this thread is warm now. Cold-emailing someone you were just
     // introduced to is the single most avoidable embarrassment in the product.
     await markThreadParticipantsWarm(personId, companyId, at);
+    const introduced = await recordIntroducedPeople(personId, companyId, at);
 
     await setCompanyState(userId, companyId, 'paused_referral', null, at);
     const frozen = await freezeSiblings(userId, companyId, personId, at);
@@ -286,7 +287,9 @@ const HANDLERS: Record<Classification, Handler> = {
     return {
       summary: result.extracted.successor
         ? `They pointed you at ${result.extracted.successor}. Everyone on that thread is warm now.`
-        : 'They pointed you at someone else. Everyone on that thread is warm now.',
+        : introduced.length > 0
+          ? `They pointed you at ${introduced.join(' and ')}. Everyone on that thread is warm now.`
+          : 'They pointed you at someone else. Everyone on that thread is warm now.',
       personStatus: 'replied',
       companyStatus: 'paused_referral',
       superseded: superseded + frozen,
@@ -520,6 +523,86 @@ async function markThreadParticipantsWarm(personId: string, companyId: string, a
 }
 
 /**
+ * Turns the people CC'd into a referral into rows of their own.
+ *
+ * The register wants unmatched addresses at the domain to become contacts,
+ * ranked above the ladder: somebody vouched for this introduction, which is not
+ * something a search result can ever be.
+ *
+ * Two things this deliberately does not do. It does not invent a name — a row
+ * only appears when the header carried a display name, because "s.alnuaimi" is
+ * not what anybody is called and it would end up in a salutation. And the row
+ * is created `in_warm_thread = 1`, which is a hard block on any cold sequence:
+ * these people are for the user to write to in the thread they were introduced
+ * in, by hand, warmly. Creating a contact is not the same as creating a target.
+ */
+async function recordIntroducedPeople(
+  personId: string,
+  companyId: string,
+  at: string
+): Promise<string[]> {
+  const company = await queryOne<{ domain: string }>('SELECT domain FROM company WHERE id = ?', [companyId]);
+  if (!company) return [];
+
+  const rows = await query<{ participants: string }>(
+    'SELECT participants FROM inbound WHERE person_id = ?',
+    [personId]
+  );
+
+  const seen = new Map<string, string>();
+  for (const row of rows) {
+    for (const entry of JSON.parse(row.participants || '[]') as Array<{ name: string | null; email: string }>) {
+      const email = entry.email.toLowerCase();
+      if (!entry.name) continue;
+      if (!email.endsWith(`@${company.domain}`)) continue;
+      if (!seen.has(email)) seen.set(email, entry.name);
+    }
+  }
+  if (seen.size === 0) return [];
+
+  const { parseName } = await import('./names');
+  const added: string[] = [];
+
+  for (const [email, name] of seen) {
+    const existing = await queryOne<{ id: string }>('SELECT id FROM person WHERE lower(email) = ?', [email]);
+    if (existing) continue;
+
+    const parsed = parseName(name);
+    try {
+      await execute(
+        `INSERT INTO person
+           (id, company_id, full_name_raw, given_name, family_name, family_name_detected,
+            phonetic_key, contact_type, source_tier, email, email_status, in_warm_thread,
+            discovered_via, status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'hr', 2, ?, 'verified', 1, 'referral', 'identity_unconfirmed', ?, ?)`,
+        [
+          newId('person'),
+          companyId,
+          // Exactly as the header rendered it. CULTURE.md §3: never normalised,
+          // never "corrected" to a more standard transliteration.
+          name,
+          parsed.givenName,
+          parsed.familyName,
+          parsed.familyNameDetected ? 1 : 0,
+          parsed.phoneticKey,
+          email,
+          at,
+          at,
+        ]
+      );
+      added.push(name);
+    } catch {
+      // A transliteration twin of someone already on the ladder trips
+      // UNIQUE (company_id, phonetic_key). That constraint is doing its job:
+      // they are already known, and warm-marking has already covered them.
+      continue;
+    }
+  }
+
+  return added;
+}
+
+/**
  * A reply arriving after the sequence closed and the company went dormant.
  *
  * Three weeks post-breakup, "we just opened two Nafis-track roles" is the best
@@ -626,14 +709,16 @@ export async function recordInbound(input: {
   body: string;
   receivedAt: string;
   classification: ClassificationResult;
+  /** Addresses with their display names. A referral's payload is the name. */
+  participants?: Array<{ name: string | null; email: string }>;
 }): Promise<string> {
   const id = newId('inbound');
   await execute(
     `INSERT INTO inbound
        (id, outreach_id, person_id, gmail_thread_id, gmail_message_id, from_address, to_addresses,
-        cc_addresses, subject, body_text, language, classification, classifier_note,
+        cc_addresses, participants, subject, body_text, language, classification, classifier_note,
         extracted_date, extracted_successor, extracted_url, received_at, processed_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (gmail_message_id) DO NOTHING`,
     [
       id,
@@ -644,6 +729,7 @@ export async function recordInbound(input: {
       input.from,
       JSON.stringify(input.to),
       JSON.stringify(input.cc),
+      JSON.stringify(input.participants ?? []),
       input.subject,
       input.body.slice(0, 20000),
       input.classification.language,

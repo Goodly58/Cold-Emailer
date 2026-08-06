@@ -130,23 +130,9 @@ export default function TodayClient({ firstName }: { firstName: string }) {
         </div>
       )}
 
-      {queue.paused && (
-        <div className="notice info">
-          <strong>Everything is paused</strong>
-          Nothing goes out until you resume. Countdowns keep running so nothing is lost.
-        </div>
-      )}
-
-      {queue.sendBlock && queue.sendBlock.reason === 'not_connected' && (
-        <div className="notice warn">
-          <strong>Reconnect your email</strong>
-          Nothing is lost — everything picks up where it left off.
-          <p style={{ marginTop: 12, marginBottom: 0 }}>
-            <a className="button primary" href="/api/gmail/start">Reconnect</a>
-          </p>
-        </div>
-      )}
-
+      {/* The reconnect and paused notices live in <ConnectionBanner />, which
+          renders above this on every screen. Only the stale-poll case is local:
+          it clears itself within a minute of this screen opening. */}
       {queue.sendBlock && queue.sendBlock.reason === 'poll_stale' && (
         <div className="notice info">{queue.sendBlock.message}</div>
       )}

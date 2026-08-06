@@ -220,6 +220,10 @@ export async function draftReply(
     .filter(Boolean)
     .join('\n');
 
+  // Translated before the draft, so the card can show the user what they are
+  // approving even if the drafting call itself then fails.
+  if (inbound.language && inbound.language !== 'en') await translateInbound(inbound.id);
+
   const raw = await askClaude({ system: CONTRACT, prompt, effort: 'medium', maxTokens: 900 });
   if (!raw) {
     const id = await store({
@@ -374,7 +378,8 @@ interface DraftRow {
 
 const DRAFT_SELECT = `
   SELECT r.id, r.person_id, r.classification, r.subject, r.body, r.question, r.status,
-         r.due_date_uae, r.inbound_translated,
+         r.due_date_uae,
+         COALESCE(r.inbound_translated, i.translated_text) AS inbound_translated,
          p.full_name_raw AS person_name, c.name AS company_name,
          i.body_text AS inbound_body, i.language AS inbound_language, i.received_at
     FROM reply_draft r
@@ -474,6 +479,41 @@ export async function draftPendingReplies(
     if (result.kind === 'needs_fact' || result.kind === 'write_yourself') needsFact++;
   }
   return { drafted, needsFact };
+}
+
+/**
+ * A plain-English rendering of a non-English inbound message.
+ *
+ * Register: an Arabic polite rejection read as neutral engagement produces an
+ * enthusiastic English reply to a "no". The classifier handles Arabic, but the
+ * user still has to understand what they are approving before they send it —
+ * approving a reply to a message you cannot read is not approval.
+ *
+ * Stored, never re-fetched, and never sent: the reply itself stays English.
+ */
+export async function translateInbound(inboundId: string): Promise<string | null> {
+  const row = await queryOne<{ body_text: string | null; language: string | null; translated_text: string | null }>(
+    'SELECT body_text, language, translated_text FROM inbound WHERE id = ?',
+    [inboundId]
+  );
+  if (!row?.body_text) return null;
+  if (row.translated_text) return row.translated_text;
+  // English needs no translation, and a call per poll for every English reply
+  // would be most of the API bill.
+  if (!row.language || row.language === 'en') return null;
+  if (!isClaudeConfigured()) return null;
+
+  const text = await askClaude({
+    system:
+      'You translate one email into plain English. Output the translation and nothing else — no preamble, no notes, no explanation of idiom. Keep the register: a formal message stays formal, a curt one stays curt. If a phrase is a polite formula with no English equivalent, translate what it means rather than what it says.',
+    prompt: row.body_text.slice(0, 4000),
+    effort: 'low',
+    maxTokens: 800,
+  });
+  if (!text) return null;
+
+  await execute('UPDATE inbound SET translated_text = ? WHERE id = ?', [text, inboundId]);
+  return text;
 }
 
 /** The user answered the one-tap question. Re-draft with the fact in hand. */

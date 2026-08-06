@@ -50,6 +50,7 @@ async function db() {
 async function world() {
   const d = await db();
   await d.executeMultiple(`
+    DELETE FROM calendar_window; DELETE FROM reply_draft;
     DELETE FROM next_action; DELETE FROM thread_poll; DELETE FROM inbound;
     DELETE FROM contact_ledger; DELETE FROM outreach; DELETE FROM person_source;
     DELETE FROM ladder_slot; DELETE FROM person; DELETE FROM user_company_state;
@@ -1024,6 +1025,127 @@ test('a resolved action does not come back, and a later one can be raised', asyn
 });
 
 // ---------------------------------------------------------------------------
+// Introductions
+// ---------------------------------------------------------------------------
+
+test('the person CC’d into a referral becomes a contact of their own', async () => {
+  // "Looping in Sara who runs our Nafis programme" is the warmest contact this
+  // user will ever have, and reducing it to an address throws away the half
+  // that makes it usable.
+  const { execute, queryOne } = await import('../lib/db/client');
+  await person('per_ri');
+  await outreach({ id: 'out_ri', personId: 'per_ri', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+
+  await execute(
+    `INSERT INTO inbound (id, person_id, gmail_thread_id, gmail_message_id, from_address,
+                          to_addresses, cc_addresses, participants, classification, received_at, created_at)
+     VALUES ('inb_ri', 'per_ri', 't1', 'gm_ri', 'per_ri@bank.ae', '["sara@example.com"]',
+             '["s.alnuaimi@bank.ae"]',
+             '[{"name":"Sara Al Nuaimi","email":"s.alnuaimi@bank.ae"},
+               {"name":null,"email":"noreply@mailer.io"}]',
+             'referral', ?, ?)`,
+    [AT, AT]
+  );
+
+  const result = await apply(classification({ classification: 'referral' }), 'per_ri');
+
+  const created = await queryOne<{
+    full_name_raw: string;
+    in_warm_thread: number;
+    discovered_via: string;
+    status: string;
+  }>('SELECT full_name_raw, in_warm_thread, discovered_via, status FROM person WHERE email = ?', [
+    's.alnuaimi@bank.ae',
+  ]);
+
+  assert.equal(created!.full_name_raw, 'Sara Al Nuaimi', 'the name exactly as the header rendered it');
+  assert.equal(created!.discovered_via, 'referral');
+  // Warm is a hard block on any cold sequence: this is a person to write to by
+  // hand, in the thread they were introduced in.
+  assert.equal(created!.in_warm_thread, 1);
+  assert.match(result.summary, /Sara Al Nuaimi/);
+});
+
+test('a nameless address on a referral thread never becomes a contact', async () => {
+  // "s.alnuaimi" is not what anybody is called, and a fabricated name would end
+  // up in a salutation.
+  const { execute, queryOne } = await import('../lib/db/client');
+  await person('per_rn');
+  await execute(
+    `INSERT INTO inbound (id, person_id, gmail_thread_id, gmail_message_id, from_address,
+                          participants, classification, received_at, created_at)
+     VALUES ('inb_rn', 'per_rn', 't1', 'gm_rn', 'per_rn@bank.ae',
+             '[{"name":null,"email":"someone@bank.ae"}]', 'referral', ?, ?)`,
+    [AT, AT]
+  );
+
+  await apply(classification({ classification: 'referral' }), 'per_rn');
+  assert.equal(await queryOne('SELECT id FROM person WHERE email = ?', ['someone@bank.ae']), null);
+});
+
+test('an address outside the company domain is left alone', async () => {
+  // The user's own address is on every thread. Creating a contact row for the
+  // person job-hunting would be absurd, and a personal Gmail on the CC line is
+  // not a colleague.
+  const { execute, queryOne } = await import('../lib/db/client');
+  await person('per_ro');
+  await execute(
+    `INSERT INTO inbound (id, person_id, gmail_thread_id, gmail_message_id, from_address,
+                          participants, classification, received_at, created_at)
+     VALUES ('inb_ro', 'per_ro', 't1', 'gm_ro', 'per_ro@bank.ae',
+             '[{"name":"Sara Al Marzooqi","email":"sara@example.com"}]', 'referral', ?, ?)`,
+    [AT, AT]
+  );
+
+  await apply(classification({ classification: 'referral' }), 'per_ro');
+  assert.equal(await queryOne('SELECT id FROM person WHERE email = ?', ['sara@example.com']), null);
+});
+
+// ---------------------------------------------------------------------------
+// Confirming holiday windows
+// ---------------------------------------------------------------------------
+
+test('an unconfirmed window three days out raises exactly one task, ever', async () => {
+  const { confirmationTasks, sweep } = await import('../lib/scheduler');
+  const { execute, query } = await import('../lib/db/client');
+
+  await execute(
+    `INSERT INTO calendar_window (id, name, kind, start_date, end_date, confirmed, created_at, updated_at)
+     VALUES ('cal_eid', 'Eid Al Adha', 'public_holiday', '2026-08-09', '2026-08-11', 0, ?, ?),
+            ('cal_far', 'Eid Al Fitr', 'public_holiday', '2027-03-20', '2027-03-22', 0, ?, ?),
+            ('cal_ok',  'National Day', 'public_holiday', '2026-08-09', '2026-08-10', 1, ?, ?)`,
+    [AT, AT, AT, AT, AT, AT]
+  );
+
+  const tasks = await confirmationTasks('usr_c', NOW);
+  assert.equal(tasks.length, 1, 'only the one about to arrive, and only if unconfirmed');
+  assert.equal(tasks[0].name, 'Eid Al Adha');
+
+  // The sweep runs every fifteen minutes. Four cards an hour is how a list
+  // stops being read.
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+
+  const rows = await query<{ kind: string; warm: number }>(
+    'SELECT kind, warm FROM next_action WHERE resolved_at IS NULL'
+  );
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].warm, 0, 'a calendar chore never sorts above someone who wrote to you');
+});
+
+test('a window that has already passed is nobody’s problem', async () => {
+  const { confirmationTasks } = await import('../lib/scheduler');
+  const { execute } = await import('../lib/db/client');
+  await execute(
+    `INSERT INTO calendar_window (id, name, kind, start_date, end_date, confirmed, created_at, updated_at)
+     VALUES ('cal_past', 'Ramadan', 'ramadan_pause', '2026-03-01', '2026-03-20', 0, ?, ?)`,
+    [AT, AT]
+  );
+  assert.equal((await confirmationTasks('usr_c', NOW)).length, 0);
+});
+
+// ---------------------------------------------------------------------------
 // Message parsing
 // ---------------------------------------------------------------------------
 
@@ -1078,4 +1200,13 @@ test('a display name containing a comma is one recipient, not two', async () => 
     'sara@example.com',
   ]);
   assert.equal(addressOf('Fatima Al Marri <F.AlMarri@Bank.AE>'), 'f.almarri@bank.ae');
+});
+
+test('display names are kept, and a bare address never becomes one', async () => {
+  const { addressEntries } = await import('../lib/poller');
+  assert.deepEqual(addressEntries('"Sara Al Nuaimi" <s.alnuaimi@bank.ae>, plain@bank.ae'), [
+    { name: 'Sara Al Nuaimi', email: 's.alnuaimi@bank.ae' },
+    // `plain` as a "name" would end up in a salutation.
+    { name: null, email: 'plain@bank.ae' },
+  ]);
 });

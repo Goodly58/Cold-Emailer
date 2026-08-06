@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { attribution, experimentOne, pricingNumbers, recentEvents } from '@/lib/metrics';
 import { currentUser } from '@/lib/user';
 
+import ConnectionBanner from '../connection-banner';
+
 export const dynamic = 'force-dynamic';
 
 /**
@@ -34,6 +36,7 @@ export default async function NumbersPage() {
 
   return (
     <>
+      <ConnectionBanner />
       <h1>The numbers</h1>
       <p className="lede">
         For the person deciding whether this is a business, not for the person job-hunting.

@@ -6,6 +6,7 @@ import { leadingIndicators } from '@/lib/metrics';
 import { openActions } from '@/lib/poller';
 import { currentUser } from '@/lib/user';
 
+import ConnectionBanner from '../connection-banner';
 import DashboardControls from './controls';
 
 export const dynamic = 'force-dynamic';
@@ -52,6 +53,7 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <ConnectionBanner />
       <h1>Where this stands</h1>
 
       {/* ---- Warm, always first ------------------------------------------ */}
