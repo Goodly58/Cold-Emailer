@@ -66,6 +66,7 @@ export default function Sources() {
   // state value would stay false for the whole run and the button would do
   // nothing.
   const stopRequested = useRef(false);
+  const [needsSetup, setNeedsSetup] = useState<string[]>([]);
 
   useEffect(() => {
     list<JobSource>('jobSources').then(setSources);
@@ -265,10 +266,8 @@ export default function Sources() {
                   '/api/sources/from-companies',
                   { method: 'POST' }
                 );
-                setSweepLog([
-                  `✓ Registered ${r.added} sources from known ATS data` +
-                    (r.unsupported.length ? ` (${r.unsupported.length} on platforms without a public feed)` : ''),
-                ]);
+                setNeedsSetup(r.unsupported);
+                setSweepLog([`✓ Registered ${r.added} sources from known ATS data`]);
                 setSources(await list<JobSource>('jobSources'));
               } catch {
                 setErr('Could not register known sources.');
@@ -294,6 +293,24 @@ export default function Sources() {
                 {line}
               </div>
             ))}
+          </div>
+        )}
+        {needsSetup.length > 0 && (
+          <div className="mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+            <p style={{ fontSize: 13 }}>
+              <strong>{needsSetup.length} companies need a few details added by hand.</strong>{' '}
+              These run on enterprise systems where the board address can&apos;t be derived from the
+              company name — Workday needs a data-centre number and site name, Oracle needs a host
+              and site number, both visible in the careers page URL. Add them below and they poll
+              like any other source. Phenom, Taleo, SuccessFactors and iCIMS have no supported
+              public feed yet; use their careers link on the{' '}
+              <Link href="/companies">Companies</Link> page instead.
+            </p>
+            <div style={{ maxHeight: 160, overflowY: 'auto', fontSize: 12 }} className="muted">
+              {needsSetup.map((u) => (
+                <div key={u}>{u}</div>
+              ))}
+            </div>
           </div>
         )}
       </div>
