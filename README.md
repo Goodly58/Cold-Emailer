@@ -1,90 +1,94 @@
 # Emirati Cold-Outreach Engine
 
-Lands job interviews for an Emirati candidate through personalized cold email,
-using the structural advantage Emiratisation quotas and Nafis create: most large
-UAE employers have hiring targets for Emiratis, salary subsidies for hiring
-them, and often a named Emiratisation lead whose KPI is hiring people like the
-user.
+A single-user web tool that lands job interviews by cold email, built for one
+Emirati candidate and the structural advantage that UAE Emiratisation quotas and
+the Nafis programme create for them.
 
-A human approves every single send. There is no auto-send path in this codebase,
-and that is a schema-level fact, not a setting.
+It is not a mail-merge. It writes one email at a time, from evidence it can point
+at, and it will refuse to write rather than write something generic.
 
-## The documents that govern this build
+## What it does
 
-Read in this order. Where they conflict, the earlier one wins.
+1. **Onboarding** — a short interview that captures who the user is in their own
+   words, connects Gmail (two scopes: send and read), and produces a CV.
+2. **Sourcing** — a founder bench for finding real people at real companies:
+   evidence with source URLs, name normalisation, email-pattern inference and
+   verification. Every gate fires here, where a human is looking at the source.
+3. **Today** — the daily loop. Replies first, then follow-ups, then the safest new
+   email. Review the evidence behind every claim, edit anything, send.
+4. **Dashboard** — what the user did this week, and one honest sentence about
+   where it stands. Warm above cold, always.
+5. **The numbers** — the founder's screen: unit economics and Experiment 1.
 
-| Document | What it governs |
-|---|---|
-| `ULTRAPROMPT.md` | The build contract: mission, hard rules, the edge-case register, build order |
-| `PLAN.md` | Product plan v3, with §14 indexing the research and §15 recording dated amendments |
-| `CULTURE.md` | The register engine — salutation, honorifics, timing, the pre-send lint |
-| `research/template-doctrine.md` | The canonical email spec |
-| `research/company-universe.md` | How the target list is assembled |
-| `research/people-discovery.md` | Contact-finding playbooks |
-| `research/linkedin-access.md` | Why hard rule 7 exists and why it stays |
-| `EDGE_CASES.md` | Living ledger of everything found while building |
+## The eight hard rules
+
+They are enforced in code and in database constraints, never in comments.
+
+| # | Rule | Where it lives |
+|---|---|---|
+| 1 | No auto-send. Every email is approved by a human. | `lib/send.ts` — the CAS starts from `approved`, which only a human action sets |
+| 2 | No fabricated personalization. Every claim traces to an evidence row with a source URL. | `evidence.source_url NOT NULL`; the generator contract; `lintGenerated` |
+| 3 | Verified emails only. `accept_all` is never collapsed into `verified`. | `person.email_status` CHECK; re-checked inside `sendOutreach` |
+| 4 | Volume ceiling, ramped 3 → 5 → 10 → 15. | `lib/queue.ts` `budgetFor`, `sendPermission` |
+| 5 | One live sequence per organisation, keyed on `org_group`. | `enforceInvariants`, `buildQueue`, `rotateLadders` |
+| 6 | UAE working-day countdowns. | `lib/calendar.ts` — the only date module, enforced by a CI grep |
+| 7 | No LinkedIn automation, ever. Tier 3 is SERP over `ae.linkedin.com`. | `lib/tier3.ts` |
+| 8 | Honorifics are copied from a source, never derived. | `person` CHECK constraints — `Dear Eng. Priya,` is an unreachable state |
+
+Plus: no send while blind (`last_successful_poll_at` older than six hours blocks
+everything), and suppression checked before any draft is generated.
 
 ## Running it
 
 ```bash
 npm install
-npm run db:migrate      # creates data/engine.db
-npm run db:seed         # 50 target companies, their ladder plans, the UAE calendar
-npm run dev             # http://localhost:3000
+npm run db:migrate       # migrations also run automatically on first access
+npm run dev
 ```
 
-The database is created on first access, so `db:migrate` is really just a way to
-see what happened. `npm run db:seed` is idempotent.
+Environment:
 
-### Environment
+| Variable | Needed for |
+|---|---|
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Gmail connect |
+| `TOKEN_ENCRYPTION_KEY` | Encrypting refresh tokens at rest. Required in production |
+| `ANTHROPIC_API_KEY` | Drafting and classification. Without it the app still runs — it degrades to refusals and coaching rather than to nothing |
+| `CRON_SECRET` | The scheduled sweep. Required in production |
+| `APP_PASSWORD` | Optional password gate for a hosted deployment |
+| `DB_PATH` | Defaults to `data/engine.db` |
 
-| Variable | Needed for | Notes |
-|---|---|---|
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Connecting Gmail | Without these the connect step says so plainly instead of failing |
-| `APP_BASE_URL` | The OAuth redirect | Defaults to `http://localhost:3000` |
-| `TOKEN_ENCRYPTION_KEY` | Encrypting tokens at rest | 32 bytes hex. **Required in production** — the app refuses to start without it |
-| `ANTHROPIC_API_KEY` | The interview follow-up, and generation from week 3 | Without it the interview falls back to fixed follow-up questions rather than stalling |
-| `DB_PATH` | Moving the database | Defaults to `data/engine.db` |
-| `APP_PASSWORD` | Password-gating a hosted copy | Unset means open, which is right locally |
+The sweep runs every 10–15 minutes, never per-minute:
+
+```
+*/15 * * * * curl -sX POST -H "authorization: Bearer $CRON_SECRET" https://your-host/api/cron
+```
+
+Missing a run is harmless. The sweep is stateless and idempotent by
+construction: running it twice changes nothing, and running it three days late
+produces exactly the rows an on-time run would have.
 
 ## Checks
 
 ```bash
-npm run check           # typecheck + date-arithmetic guard + tests
+npm run check    # typecheck + date-arithmetic guard + tests
 ```
 
-Three gates, each protecting something specific:
+`npm run check:dates` is the unusual one. It greps for date arithmetic outside
+`lib/calendar.ts` and fails the build if it finds any — because Asia/Dubai
+calendar dates and UTC instants are different things, and confusing them puts a
+follow-up on the wrong day for the recipient. It has caught real defects twice.
 
-- **`npm run check:dates`** fails if any file outside `lib/calendar.ts` takes a
-  `Date` apart. A UTC server doing its own date arithmetic anchors day 0 to the
-  wrong day and the bug stays invisible until a follow-up lands on a Saturday.
-- **`npm test`** runs under `TZ=America/New_York`, so a timezone assumption
-  fails in CI rather than in a recipient's inbox.
-- **`tests/schema.test.ts`** proves the hard rules are unreachable states rather
-  than documented intentions — an honorific with no source URL, evidence with no
-  source, a fourth touch, two live rows for one step.
+Tests run under `TZ=America/New_York` on purpose.
 
-## Where things are
+## The documents
 
-```
-lib/calendar.ts        the ONLY date module — nextDue() and the send window
-lib/db/migrations/     the schema, with the hard rules as constraints
-lib/gmail/             OAuth (two scopes) and the one API wrapper
-lib/interview.ts       chip catalogue, thinness check, the profile gate
-lib/profile.ts         answers → intro blocks and profile-claim evidence rows
-lib/cv.ts              the one-page CV, generated from answered fields only
-lib/derived-dates.ts   recomputing scheduled_date from the current calendar
-app/onboarding/        screen 1 — connect, identity, interview, hygiene, CV
-app/today/             screen 2 — Review & Send (shell; the queue lands week 3)
-app/dashboard/         screen 3 — what is in play
-app/calendar/          founder-only: confirm Eid dates, watch countdowns move
-```
-
-## Status
-
-**Week 1 complete.** Next.js skeleton, the full global-keyed SQLite schema,
-Gmail OAuth with the granted-scope check, the profile interview with its
-minimum-viable gate, the CV step, and the UAE working-day calendar. 62 tests.
-
-Weeks 2–4 — sourcing tooling, the clarify-and-refuse generator with the Review
-screen, then the cadence engine — follow the build order in `ULTRAPROMPT.md` §6.
+- **`ULTRAPROMPT.md`** — the build contract. Where it conflicts with anything
+  else, it wins.
+- **`PLAN.md`** — the plan, with §15 recording every place the build diverged
+  from it and why.
+- **`EDGE_CASES.md`** — the living register. Every edge case found while
+  building, with its solution or an explicit deferral.
+- **`CULTURE.md`** — the register engine: honorifics, Arabic names, the send
+  window, what a Gulf recipient actually reads.
+- **`research/`** — template doctrine, company universe, people discovery,
+  LinkedIn access.
