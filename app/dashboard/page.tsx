@@ -38,8 +38,18 @@ export default async function DashboardPage() {
     query<{ n: number }>(
       `SELECT count(DISTINCT company_id) AS n FROM ladder_slot`
     ),
-    query<{ company_id: string; name: string }>(
-      `SELECT s.company_id, c.name FROM user_company_state s
+    // The person who replied has to come with it: resolving the conflict means
+    // choosing which thread to keep, and without an id the control could only
+    // ever post an incomplete request.
+    query<{ company_id: string; name: string; keep_person_id: string | null; keep_person: string | null }>(
+      `SELECT s.company_id, c.name,
+              (SELECT p.id FROM person p
+                WHERE p.company_id = s.company_id AND p.status = 'replied'
+                ORDER BY p.updated_at DESC LIMIT 1) AS keep_person_id,
+              (SELECT p.full_name_raw FROM person p
+                WHERE p.company_id = s.company_id AND p.status = 'replied'
+                ORDER BY p.updated_at DESC LIMIT 1) AS keep_person
+         FROM user_company_state s
          JOIN company c ON c.id = s.company_id
         WHERE s.user_id = ? AND s.status = 'reply_conflict'`,
       [user.id]
@@ -74,7 +84,12 @@ export default async function DashboardPage() {
                   </a>
                 </p>
               )}
-              <DashboardControls kind="resolve" id={action.id} />
+              <DashboardControls
+                kind="resolve"
+                id={action.id}
+                actionKind={action.kind}
+                personId={action.personId}
+              />
             </div>
           ))}
         </>
@@ -87,10 +102,17 @@ export default async function DashboardPage() {
             <div className="card" key={c.company_id}>
               <strong>Two live threads at {c.name}</strong>
               <p className="muted" style={{ margin: '6px 0 10px' }}>
-                Someone replied while a colleague was mid-sequence. A reply always wins, so tell us
-                which one you are following — the other stops either way.
+                {c.keep_person ?? 'Someone'} replied while a colleague was mid-sequence. A reply
+                always wins, so tell us which one you are following — the other stops either way.
               </p>
-              <DashboardControls kind="conflict" id={c.company_id} />
+              {c.keep_person_id ? (
+                <DashboardControls kind="conflict" id={c.company_id} personId={c.keep_person_id} />
+              ) : (
+                <p className="help" style={{ margin: 0 }}>
+                  We have lost track of who replied here. Open the thread in Gmail — nothing further
+                  will send to this company meanwhile.
+                </p>
+              )}
             </div>
           ))}
         </>

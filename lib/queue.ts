@@ -159,17 +159,40 @@ interface QueueRow {
   company_id: string;
   company_name: string;
   org_group_id: string;
+  company_status: string | null;
   email_status: string;
   person_status: string;
 }
 
+/**
+ * Company states in which nothing may be offered, for anybody.
+ *
+ * A last line of defence rather than the primary one — `freezeSiblings` and
+ * `advanceSequences` both hold this invariant already. But those act at the
+ * moment something happens, and a row that slipped through, or was created
+ * before the state changed, would otherwise be offered to a colleague at a
+ * company the user is mid-conversation with. The queue is the last place to
+ * catch it before a human taps Send.
+ */
+const FROZEN_COMPANY_STATES = [
+  'dormant',
+  'suppressed_by_request',
+  'in_conversation',
+  'paused_referral',
+  'paused_late_reply',
+  'reply_conflict',
+  'blocked',
+];
+
 const QUEUE_SELECT = `
   SELECT o.id, o.person_id, o.step, o.subject, o.body, o.status, o.scheduled_date, o.updated_at,
          p.full_name_raw AS person_name, p.contact_type, p.email_status, p.status AS person_status,
-         c.id AS company_id, c.name AS company_name, c.org_group_id
+         c.id AS company_id, c.name AS company_name, c.org_group_id,
+         s.status AS company_status
     FROM outreach o
     JOIN person p ON p.id = o.person_id
     JOIN company c ON c.id = p.company_id
+    LEFT JOIN user_company_state s ON s.company_id = c.id AND s.user_id = o.user_id
    WHERE o.user_id = ?`;
 
 /**
@@ -254,6 +277,11 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
     if (isFollowUp && due && compareDates(due, today) > 0) continue; // not yet
     const family = familyOf(row.org_group_id, families);
     if (!isFollowUp && liveSequences.has(family)) continue; // one at a time
+
+    if (row.company_status && FROZEN_COMPANY_STATES.includes(row.company_status)) {
+      deferred++;
+      continue;
+    }
 
     let blockedReason: string | null = null;
     if (outsideWindow) {

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 
 type Props =
-  | { kind: 'resolve'; id: string }
-  | { kind: 'conflict'; id: string }
+  | { kind: 'resolve'; id: string; actionKind?: string; personId?: string | null }
+  | { kind: 'conflict'; id: string; personId: string }
   | { kind: 'global'; paused: boolean; placed: boolean };
 
 /**
@@ -43,14 +43,27 @@ export default function DashboardControls(props: Props) {
 
   if (props.kind === 'resolve') {
     if (done) return <p className="muted" style={{ margin: 0 }}>Done.</p>;
+
+    // The gateway card promises the sequence restarts from day zero. A generic
+    // "handled" button only cleared the card and left the countdown stopped, so
+    // the contact stayed frozen until the timeout dropped them — the product
+    // failing to keep a promise it made in its own words.
+    const isGateway = props.actionKind === 'gateway' && props.personId;
+
     return (
       <button
         type="button"
         className="button secondary"
         disabled={busy}
-        onClick={() => void post({ action: 'resolve', id: props.id })}
+        onClick={() =>
+          void post(
+            isGateway
+              ? { action: 'gateway_cleared', personId: props.personId }
+              : { action: 'resolve', id: props.id }
+          )
+        }
       >
-        {busy ? 'One moment…' : 'I have handled this'}
+        {busy ? 'One moment…' : isGateway ? 'Done — restart the sequence' : 'I have handled this'}
       </button>
     );
   }
@@ -64,7 +77,12 @@ export default function DashboardControls(props: Props) {
           className="button primary"
           disabled={busy}
           onClick={() =>
-            void post({ action: 'reply_conflict', companyId: props.id, choice: 'going_with_reply' })
+            void post({
+              action: 'reply_conflict',
+              companyId: props.id,
+              keepPersonId: props.personId,
+              choice: 'going_with_reply',
+            })
           }
         >
           I am going with the person who replied
@@ -74,7 +92,12 @@ export default function DashboardControls(props: Props) {
           className="button secondary"
           disabled={busy}
           onClick={() =>
-            void post({ action: 'reply_conflict', companyId: props.id, choice: 'reply_was_dead_end' })
+            void post({
+              action: 'reply_conflict',
+              companyId: props.id,
+              keepPersonId: props.personId,
+              choice: 'reply_was_dead_end',
+            })
           }
         >
           That one was a dead end — carry on with the other
@@ -90,8 +113,18 @@ export default function DashboardControls(props: Props) {
   if (props.placed) {
     return (
       <div className="notice info">
-        <strong>You marked yourself as placed.</strong> Nothing will send. If that changes, say so
-        and everything can be picked back up.
+        <strong>You marked yourself as placed.</strong> Nothing will send.
+        {message && <p style={{ margin: '8px 0 0' }}>{message}</p>}
+        <p style={{ margin: '12px 0 0' }}>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy}
+            onClick={() => void post({ action: 'unplaced' })}
+          >
+            {busy ? 'One moment…' : 'That fell through — pick it back up'}
+          </button>
+        </p>
       </div>
     );
   }

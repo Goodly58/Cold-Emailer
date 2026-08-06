@@ -468,7 +468,29 @@ const MONTHS = [
  * a week late.
  */
 export function extractReturnDate(body: string, today: string = todayUae()): string | null {
-  const iso = body.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  return futureOnly(readDate(body, today), today);
+}
+
+/**
+ * A return date is only useful if it is in the future.
+ *
+ * An autoresponder set up in March and still running in August says "until 20
+ * August" of *last* year, or carries a date in its signature. Taking it at face
+ * value writes a past date into `hold_until`, which is no hold at all — the
+ * pause is silently discarded and the follow-up fires into the empty office the
+ * autoresponder just told us about.
+ */
+function futureOnly(date: string | null, today: string): string | null {
+  if (!date) return null;
+  return compareDates(date, today) > 0 ? date : null;
+}
+
+function readDate(body: string, today: string): string | null {
+  // An explicit ISO date, but only when it is near a return phrase — otherwise
+  // the first date in a signature or a quoted thread wins.
+  const iso = body.match(
+    /\b(?:back|return(?:ing)?|until|till|from)\b[^.\n]{0,30}?\b(\d{4})-(\d{2})-(\d{2})\b/i
+  ) ?? body.match(/^\s*(\d{4})-(\d{2})-(\d{2})\s*$/m);
   if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
 
   const named = body.match(
@@ -477,6 +499,7 @@ export function extractReturnDate(body: string, today: string = todayUae()): str
   if (named) {
     return withYear(Number(named[1]), MONTHS.indexOf(named[2].toLowerCase()) + 1, today);
   }
+
 
   const reversed = body.match(
     new RegExp(`\\b(?:back|return(?:ing)?|until|till)\\b[^.\\n]{0,30}?\\b(${MONTHS.join('|')})\\s+(\\d{1,2})\\b`, 'i')

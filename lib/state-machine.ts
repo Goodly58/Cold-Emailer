@@ -5,7 +5,7 @@
  * embarrasses the user. The comments name the failure rather than restating the
  * code, because in six months the code will be obvious and the reason will not.
  */
-import { addDays, nextDue, todayUae } from './calendar';
+import { addDays, compareDates, nextDue, todayUae } from './calendar';
 import { loadCalendar } from './calendar-store';
 import type { Classification, ClassificationResult } from './classifier';
 import { execute, query, queryOne, transaction } from './db/client';
@@ -286,12 +286,20 @@ const HANDLERS: Record<Classification, Handler> = {
 
     // A stated timeframe is a re-approach date. Honouring it, and saying so,
     // converts a no-for-now into the warmest possible later opening.
-    const until = result.extracted.date ?? addDays(todayUae(now), 90);
+    // Only a future date. Claude's extraction is format-checked, not
+    // sanity-checked, and a past `dormant_until` wakes the company on the next
+    // sweep — so "try us in Q4", misread, becomes an email tomorrow to somebody
+    // who just said not yet.
+    const stated = result.extracted.date;
+    const until =
+      stated && compareDates(stated, todayUae(now)) > 0 ? stated : addDays(todayUae(now), 90);
     await setCompanyState(userId, companyId, 'dormant', until, at);
     await freezeSiblings(userId, companyId, personId, at);
 
     return {
-      summary: `Not now. We will come back on ${until}, referencing what they said.`,
+      summary: stated === until
+        ? `Not now. We will come back on ${until}, referencing what they said.`
+        : `Not now. Resting the company until ${until}.`,
       personStatus: 'closed_silent',
       companyStatus: 'dormant',
       superseded,

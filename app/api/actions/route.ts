@@ -99,6 +99,25 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  if (action === 'unplaced') {
+    // The placed screen says "if that changes, say so and everything can be
+    // picked back up", and until this existed nothing could. An offer falling
+    // through in the fortnight before a start date is not rare, and it is the
+    // worst possible moment to discover the tool has silently retired itself.
+    //
+    // Sequences are not resurrected: the people closed silently were closed
+    // weeks ago and the wording is long stale. Sending resumes, and the queue
+    // rebuilds from live contacts — which is what the stale rule would have
+    // done anyway.
+    await updateUser(user.id, { placedDate: null });
+    await logEvent({ event: 'placed', userId: user.id, detail: { undone: true } });
+    return NextResponse.json({
+      ok: true,
+      message:
+        'Picked back up. The sequences that closed quietly stay closed — they are weeks old — but new ones can go out again from today.',
+    });
+  }
+
   if (action === 'gateway_cleared') {
     // The card said "one click and the sequence restarts from day zero". This
     // is the click.

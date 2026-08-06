@@ -233,18 +233,32 @@ export function workingDaysBetween(
   assertUaeDate(to);
   if (compareDates(from, to) >= 0) return 0;
 
+  // A long span is old data, not a bug.
+  //
+  // This used to throw past 400 days, on the reasoning that such a gap must be
+  // a mistake. It is not: a person sits in `closed_silent` forever, a row sits
+  // in `paused_pending_reply` indefinitely, and a user can come back after a
+  // year. Every caller here is asking "how long has it been" — the sweep's
+  // rotation cooldown, the nightly recompute, the welcome-back line — so the
+  // throw did not surface a bug, it detonated the entire scheduler on a
+  // fourteen-month-old row and stopped every follow-up in the system.
+  //
+  // The honest answer to "more working days than we count" is the cap. Nothing
+  // downstream distinguishes 300 from 3,000: they are all "long ago".
+  const span = daysBetween(from, to);
+  if (span > MAX_SEARCH_DAYS) return LONG_AGO_WORKING_DAYS;
+
   let count = 0;
   let cursor = from;
-  const span = daysBetween(from, to);
-  if (span > MAX_SEARCH_DAYS) {
-    throw new CalendarError(`span of ${span} days from ${from} to ${to} is implausible`);
-  }
   for (let i = 0; i < span; i++) {
     cursor = addDays(cursor, 1);
     if (isWorkingDay(cursor, calendar)) count++;
   }
   return count;
 }
+
+/** What `workingDaysBetween` reports for a span beyond its search window. */
+export const LONG_AGO_WORKING_DAYS = Math.floor((MAX_SEARCH_DAYS * 5) / 7);
 
 /**
  * Guard for recomputing a derived due date after a calendar edit

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { GateResult, InterviewField, Specificity } from '@/lib/interview';
 import { SCOPE_EXPLANATIONS } from '@/lib/gmail/oauth';
@@ -288,27 +288,36 @@ function Identity({
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  const [failed, setFailed] = useState(false);
+
+  const loadOptions = useCallback(async () => {
+    setFailed(false);
+    try {
+      const response = await fetch('/api/onboarding/identity');
+      const payload = await response.json();
+      if (!response.ok) {
+        onError(payload.error ?? 'We could not read your email settings just now.');
+        setFailed(true);
+        return;
+      }
+      setOptions(payload.addresses);
+      const preferred =
+        payload.addresses.find((a: SendAsOption) => a.isDefault) ?? payload.addresses[0];
+      if (preferred) {
+        setChosen(preferred.email);
+        if (!name && preferred.displayName) setName(preferred.displayName);
+      }
+    } catch {
+      onError('We could not read your email settings just now.');
+      setFailed(true);
+    }
+    // `name` is read but must not re-trigger the fetch when the user types.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onError]);
+
   if (!loaded) {
     setLoaded(true);
-    void (async () => {
-      try {
-        const response = await fetch('/api/onboarding/identity');
-        const payload = await response.json();
-        if (!response.ok) {
-          onError(payload.error ?? 'We could not read your email settings just now.');
-          return;
-        }
-        setOptions(payload.addresses);
-        const preferred =
-          payload.addresses.find((a: SendAsOption) => a.isDefault) ?? payload.addresses[0];
-        if (preferred) {
-          setChosen(preferred.email);
-          if (!name && preferred.displayName) setName(preferred.displayName);
-        }
-      } catch {
-        onError('We could not read your email settings just now.');
-      }
-    })();
+    void loadOptions();
   }
 
   const selected = options?.find((o) => o.email === chosen);
@@ -341,7 +350,26 @@ function Identity({
       <h1>How your emails will look</h1>
       <p className="lede">This is what the person receiving your email sees.</p>
 
-      {options === null && <p className="muted">Reading your email settings&hellip;</p>}
+      {options === null && !failed && <p className="muted">Reading your email settings&hellip;</p>}
+
+      {failed && (
+        // The fetch is a Gmail call, so it fails for transient reasons — a 429,
+        // a 5xx, a token revoked between consenting and landing here. Without a
+        // retry this step was a dead end on the way in: onboarding could not be
+        // finished and there was nothing on screen to press.
+        <div className="notice warn">
+          <strong>We could not read your email settings</strong>
+          This is usually a passing glitch on Google&rsquo;s side, not something you did.
+          <p style={{ marginTop: 12, marginBottom: 0 }}>
+            <button type="button" className="button primary" onClick={() => void loadOptions()}>
+              Try again
+            </button>{' '}
+            <a className="button secondary" href="/api/gmail/start">
+              Reconnect instead
+            </a>
+          </p>
+        </div>
+      )}
 
       {options && options.length > 0 && (
         <>

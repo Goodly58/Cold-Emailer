@@ -85,14 +85,41 @@ export default function TodayClient({ firstName }: { firstName: string }) {
   const [sentCount, setSentCount] = useState(0);
   const [justSent, setJustSent] = useState<string | null>(null);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const load = useCallback(async () => {
-    const response = await fetch('/api/queue');
-    setQueue(await response.json());
+    setLoadError(null);
+    try {
+      const response = await fetch('/api/queue');
+      const payload = await response.json();
+      if (!response.ok && !payload.error) throw new Error('bad response');
+      setQueue(payload);
+    } catch {
+      // The queue endpoint runs the whole sweep — a Gmail poll, a classifier,
+      // a recompute — so it can fail for reasons that have nothing to do with
+      // the user. Without this the screen sat on "Checking for replies first…"
+      // forever, with no error, no retry, and nothing to tap.
+      setLoadError(
+        'We could not load today just now. Nothing is lost and nothing has been sent — try again.'
+      );
+    }
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  if (loadError) {
+    return (
+      <>
+        <h1>Today</h1>
+        <div className="notice warn">{loadError}</div>
+        <button type="button" className="button primary" onClick={() => void load()}>
+          Try again
+        </button>
+      </>
+    );
+  }
 
   if (!queue) return <p className="muted">Checking for replies first…</p>;
   if (queue.error) return <div className="notice warn">{queue.error}</div>;
@@ -268,6 +295,7 @@ function ReplyCard({ reply, onDone }: { reply: ReplyDraft; onDone: () => void })
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [confirmDismiss, setConfirmDismiss] = useState(false);
 
   async function post(payload: Record<string, unknown>) {
     setBusy(true);
@@ -363,14 +391,24 @@ function ReplyCard({ reply, onDone }: { reply: ReplyDraft; onDone: () => void })
             placeholder="In your own words"
             style={{ width: '100%' }}
           />
+          {error && <div className="notice warn">{error}</div>}
           <button
             type="button"
             className="button primary"
             disabled={busy || answer.trim().length === 0}
             onClick={async () => {
               const result = await post({ action: 'answer_question', answer });
-              if (result?.reply?.body) setBody(result.reply.body);
-              onDone();
+              if (result?.reply?.body) {
+                setBody(result.reply.body);
+                onDone();
+                return;
+              }
+              // The endpoint returns 200 with ok:false when drafting itself
+              // fails, so silence here looked identical to success and the user
+              // tapped the same button forever with a deadline running.
+              setError(
+                'Your answer is saved, but we could not write the reply. Write it yourself below — it is short, and it is due today.'
+              );
             }}
           >
             {busy ? 'Writing…' : 'Use this and write the reply'}
@@ -419,16 +457,23 @@ function ReplyCard({ reply, onDone }: { reply: ReplyDraft; onDone: () => void })
               className="button secondary"
               disabled={busy}
               onClick={async () => {
+                // One tap from Send, and it throws away whatever they typed.
+                // Nothing else on this screen destroys work without asking.
+                if (!confirmDismiss) {
+                  setConfirmDismiss(true);
+                  return;
+                }
                 await post({ action: 'dismiss' });
                 onDone();
               }}
             >
-              I handled it myself
+              {confirmDismiss ? 'Yes — clear this card' : 'I handled it myself'}
             </button>
           </p>
           <p className="help">
-            Edit anything you like first. It is your name on it, and a reply that
-            sounds like you beats a perfect one that does not.
+            {confirmDismiss
+              ? 'Clearing this removes the draft and anything you have typed. It does not email anyone.'
+              : 'Edit anything you like first. It is your name on it, and a reply that sounds like you beats a perfect one that does not.'}
           </p>
         </>
       )}
@@ -479,6 +524,7 @@ function Review({
   const [detail, setDetail] = useState<DraftDetail | null>(null);
   const [body, setBody] = useState('');
   const [editing, setEditing] = useState(false);
+  const [edited, setEdited] = useState(false);
   const [checkedEvidence, setCheckedEvidence] = useState(false);
   const [sheet, setSheet] = useState<EvidenceRow | null>(null);
   const [lint, setLint] = useState<Array<{ rule: string; message: string; excerpt?: string }>>([]);
@@ -486,16 +532,47 @@ function Review({
   const [busy, setBusy] = useState(false);
   const [interlockAnswered, setInterlockAnswered] = useState(false);
 
+  const [openError, setOpenError] = useState<string | null>(null);
+  const [confirmSkip, setConfirmSkip] = useState(false);
+
   useEffect(() => {
     void (async () => {
-      const response = await fetch(`/api/draft?id=${encodeURIComponent(outreachId)}`);
-      const payload = await response.json();
-      setDetail(payload);
-      setBody(payload.outreach?.body ?? '');
+      try {
+        const response = await fetch(`/api/draft?id=${encodeURIComponent(outreachId)}`);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error ?? 'bad response');
+        setDetail(payload);
+        setBody(payload.outreach?.body ?? '');
+      } catch {
+        setOpenError('We could not open that one. Nothing was sent — go back and try again.');
+      }
     })();
   }, [outreachId]);
 
-  if (!detail?.outreach) return <p className="muted">Opening…</p>;
+  // The Back button lives further down the screen, so an early return without
+  // one is a room with no door: the user is stuck on "Opening…" with only the
+  // browser to rescue them, on a phone, where there is no obvious back.
+  if (openError) {
+    return (
+      <>
+        <div className="notice warn">{openError}</div>
+        <button type="button" className="button secondary" onClick={onClose}>
+          ← Back to today
+        </button>
+      </>
+    );
+  }
+
+  if (!detail?.outreach) {
+    return (
+      <>
+        <p className="muted">Opening…</p>
+        <button type="button" className="button secondary" onClick={onClose}>
+          ← Back to today
+        </button>
+      </>
+    );
+  }
 
   const isFollowUp = detail.outreach.step > 1;
   const needsInterlock = isFollowUp && !interlockAnswered;
@@ -515,6 +592,7 @@ function Review({
 
   async function runLint(next: string) {
     setBody(next);
+    setEdited(true);
     const response = await fetch('/api/draft', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -531,7 +609,12 @@ function Review({
       const response = await fetch('/api/draft', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'send', outreachId, edited: editing ? body : undefined }),
+        // Keyed on whether the body was changed, not on whether the editor
+        // happens to be open. Tapping "Done editing" before Send used to send
+        // the ORIGINAL stored text while the screen showed the user's rewrite —
+        // the exact opposite of the one guarantee this screen makes, that the
+        // email in the recipient's inbox is what was reviewed.
+        body: JSON.stringify({ action: 'send', outreachId, edited: edited ? body : undefined }),
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok) {
@@ -591,6 +674,14 @@ function Review({
         <button
           className="chip"
           onClick={async () => {
+            // This writes a permanent blocklist entry for the whole company,
+            // and the chip sits next to "Edit" in the same row. One mis-tap on
+            // a phone should not quietly remove an employer from the pipeline
+            // for good, so the second tap is the one that does it.
+            if (!confirmSkip) {
+              setConfirmSkip(true);
+              return;
+            }
             await fetch('/api/draft', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
@@ -599,7 +690,7 @@ function Review({
             onClose();
           }}
         >
-          Skip this company
+          {confirmSkip ? 'Yes — leave them alone for good' : 'Skip this company'}
         </button>
       </div>
 

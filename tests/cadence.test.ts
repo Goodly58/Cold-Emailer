@@ -1717,3 +1717,107 @@ test('sending is never retried at the transport layer', async () => {
   assert.equal(sendAttempts, 1, 'a send is attempted exactly once, whatever the status code');
   assert.ok(getAttempts > 1, 'a read is safe to retry');
 });
+
+// ---------------------------------------------------------------------------
+// Old data must not be a crash
+// ---------------------------------------------------------------------------
+
+test('a fourteen-month-old row does not detonate the scheduler', async () => {
+  // `workingDaysBetween` used to throw past 400 days on the reasoning that such
+  // a gap must be a mistake. It is not: a person sits in `closed_silent`
+  // forever and a user can come back after a year — and every caller is asking
+  // "how long has it been", so the throw did not surface a bug, it stopped
+  // every follow-up in the system.
+  const { workingDaysBetween, EMPTY_CALENDAR, LONG_AGO_WORKING_DAYS } = await import('../lib/calendar');
+  assert.equal(workingDaysBetween('2024-01-01', '2026-08-06', EMPTY_CALENDAR), LONG_AGO_WORKING_DAYS);
+
+  const { sweep } = await import('../lib/scheduler');
+  await person('per_old', { status: 'in_sequence' });
+  await person('per_old2', { ladder_rank: 2 });
+  await outreach({ id: 'out_old1', personId: 'per_old', step: 1, status: 'sent', sentDate: '2024-01-05', threadId: 't1' });
+  await outreach({ id: 'out_old3', personId: 'per_old', step: 3, status: 'sent', sentDate: '2024-02-05', threadId: null });
+
+  const result = await sweep(await user(), { now: NOW, poll: false, predraft: false });
+  assert.equal(result.skipped, null, 'the sweep completes');
+  assert.equal(result.rotated, 1, 'and a two-year silence is simply a long silence');
+});
+
+test('a user returning after a year sees a welcome, not a crash', async () => {
+  const { welcomeBack } = await import('../lib/scheduler');
+  const { execute } = await import('../lib/db/client');
+  await execute(
+    `INSERT INTO event_log (id, at, user_id, event, detail, level)
+     VALUES ('evt_old', '2024-02-01T06:00:00.000Z', 'usr_c', 'sent', '{}', 'info')`
+  );
+  const result = await welcomeBack(await user(), NOW);
+  assert.equal(result.show, true);
+});
+
+test('a follow-up is never blocked on evidence freshness', async () => {
+  // Touches 2 and 3 assert nothing about the recipient — one is "any thoughts?"
+  // on the existing thread and the other closes it. Gating them on the
+  // cold-sourcing rules stranded a live sequence behind a card asking for a
+  // fact the follow-up was never going to use.
+  const { execute, queryOne } = await import('../lib/db/client');
+  const { sweep } = await import('../lib/scheduler');
+
+  await person('per_fu', { status: 'in_sequence' });
+  await execute('UPDATE person SET anchor_source_url = NULL WHERE id = ?', ['per_fu']);
+  await outreach({ id: 'out_fu1', personId: 'per_fu', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_fu2', personId: 'per_fu', step: 2, status: 'queued', scheduled: '2026-08-06', dueWorkingDays: 4 });
+
+  await sweep(await user(), { now: NOW, poll: false });
+
+  const row = await queryOne<{ status: string }>('SELECT status FROM outreach WHERE id = ?', ['out_fu2']);
+  assert.notEqual(row!.status, 'needs_fact');
+});
+
+test('an out-of-office pointing at a date in the past is not believed', async () => {
+  // An autoresponder set up in March and still running says "until 20 August"
+  // of last year. Taking it at face value writes a past hold, which is no hold
+  // at all — the follow-up fires into the empty office it just warned about.
+  const { extractReturnDate } = await import('../lib/classifier');
+  assert.equal(extractReturnDate('I am back on 20 August.', '2026-09-01'), null);
+  assert.equal(extractReturnDate('I am back on 20 August.', '2026-08-01'), '2026-08-20');
+
+  const { queryOne } = await import('../lib/db/client');
+  await person('per_pastooo', { status: 'in_sequence' });
+  await outreach({ id: 'out_po1', personId: 'per_pastooo', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_po2', personId: 'per_pastooo', step: 2, status: 'queued', scheduled: '2026-08-06' });
+
+  await apply(classification({ classification: 'auto_reply_ooo', extracted: { date: null } }), 'per_pastooo');
+  const row = await queryOne<{ scheduled_date: string }>('SELECT scheduled_date FROM outreach WHERE id = ?', [
+    'out_po2',
+  ]);
+  // Five working days, the no-parseable-date fallback, rather than a date in
+  // the past that would make it due immediately.
+  assert.equal(row!.scheduled_date, '2026-08-13');
+});
+
+test('a soft rejection pointing backwards rests the company anyway', async () => {
+  await person('per_pastrej');
+  await outreach({ id: 'out_pr', personId: 'per_pastrej', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+
+  await apply(
+    classification({ classification: 'rejection_soft', extracted: { date: '2025-01-01' } }),
+    'per_pastrej'
+  );
+  const state = (await companyState())!;
+  assert.equal(state.dormant_until, '2026-11-04', 'ninety days, not a date that already passed');
+});
+
+test('nothing is offered at a company the user is mid-conversation with', async () => {
+  const { buildQueue } = await import('../lib/queue');
+  const { execute } = await import('../lib/db/client');
+
+  await person('per_conv', { status: 'ready' });
+  await outreach({ id: 'out_conv', personId: 'per_conv', step: 1, status: 'drafted' });
+  await execute(
+    `INSERT INTO user_company_state (user_id, company_id, status, created_at, updated_at)
+     VALUES ('usr_c', 'cmp_c', 'in_conversation', ?, ?)`,
+    [AT, AT]
+  );
+
+  const queue = await buildQueue(await user(), NOW);
+  assert.equal(queue.firstEmails.length, 0);
+});
