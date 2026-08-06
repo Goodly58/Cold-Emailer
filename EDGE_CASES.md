@@ -705,6 +705,38 @@ sequence stranded behind a card asking for a fact the follow-up was never going
 to use. Worth recording: the fix for one defect was itself a defect, and only
 the next audit round found it.
 
+### The one the skeptics could not refute
+
+Forty-five of the audit's findings were refuted, almost all because the fix had
+already landed while the audit was still running. One survived, and it is the
+worst class of defect this product has:
+
+**Pressing Send twice on a reply could deliver it twice** (critical) — the reply
+path caught a Gmail failure, probed once, and on finding nothing reverted the
+row to `approved` so the button worked again. But `probeForSentMessage`
+swallowed every error and returned the same `null` for "searched, not there" and
+"could not look" — and Gmail's `rfc822msgid:` index lags a freshly sent message
+by seconds to minutes, so "the probe found nothing" routinely means "we cannot
+tell yet". The user is told to try again, taps Send, and the retry POSTs a
+second time with no probe at all: the hiring manager receives the reply, and the
+attached CV, twice.
+
+The comment I had written at that exact line claimed the opposite — that the
+retry "records rather than duplicates" because "the probe above finds it". That
+probe is inside the catch of the *second* attempt. It only helps if the second
+attempt also fails.
+
+→ **Handled.** The probe now returns `found | absent | unknown`. A reused
+Message-ID makes the send path probe *before* calling Gmail. `unknown` never
+reverts the row — it stays `sending`, and the repair sweep, which now covers
+reply drafts as well as cold sends, resolves it later. The cold path had this
+right from week 3; the reply path, written later and in a hurry to make the
+button feel responsive, took the opposite choice.
+
+The lesson is the one this whole register keeps arriving at: a comment asserting
+an invariant is not the invariant. This one was wrong for a fortnight and read
+as reassuring the entire time.
+
 ---
 
 ## Deferrals summary

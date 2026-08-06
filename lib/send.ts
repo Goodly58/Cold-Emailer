@@ -214,7 +214,7 @@ export async function sendOutreach(
   } catch (e) {
     // Never blind-retry. Gmail may have accepted it and dropped the response.
     const found = await probeForSentMessage(user.id, messageId);
-    if (found) {
+    if (found.state === 'found') {
       await recordSent(outreach, {
         gmailMessageId: found.id,
         gmailThreadId: found.threadId,
@@ -342,10 +342,16 @@ async function recordSent(
  * fact: dating it "now" would move the whole cadence a day and spend the wrong
  * day's budget on an email that went out yesterday.
  */
-async function probeForSentMessage(
-  userId: string,
-  messageId: string
-): Promise<{ id: string; threadId: string; internalDate?: string } | null> {
+export type ProbeResult =
+  | { state: 'found'; id: string; threadId: string; internalDate?: string }
+  | { state: 'absent' }
+  // The probe itself failed, or Gmail's search index has not caught up — it
+  // lags a freshly sent message by seconds to minutes. Treating this as
+  // "absent" is what turns one lost response into two emails in a stranger's
+  // inbox.
+  | { state: 'unknown' };
+
+async function probeForSentMessage(userId: string, messageId: string): Promise<ProbeResult> {
   try {
     const bare = messageId.replace(/^<|>$/g, '');
     const result = await gmailRequest<{ messages?: Array<{ id: string; threadId: string }> }>(
@@ -354,18 +360,18 @@ async function probeForSentMessage(
       { query: { q: `rfc822msgid:${bare}`, maxResults: '1' } }
     );
     const hit = result.messages?.[0];
-    if (!hit) return null;
+    if (!hit) return { state: 'absent' };
 
     try {
       const full = await gmailRequest<{ internalDate?: string }>(userId, `/users/me/messages/${hit.id}`, {
         query: { format: 'metadata' },
       });
-      return { id: hit.id, threadId: hit.threadId, internalDate: full.internalDate };
+      return { state: 'found', id: hit.id, threadId: hit.threadId, internalDate: full.internalDate };
     } catch {
-      return { id: hit.id, threadId: hit.threadId };
+      return { state: 'found', id: hit.id, threadId: hit.threadId };
     }
   } catch {
-    return null;
+    return { state: 'unknown' };
   }
 }
 
@@ -385,8 +391,6 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
     `SELECT * FROM outreach WHERE status = 'sending' AND user_id = ?`,
     [userId]
   );
-  if (stuck.length === 0) return { recovered: 0, reverted: 0, pending: 0 };
-
   const owner = await queryOne<{ signature_block: string | null; canonical_name: string | null; name: string }>(
     'SELECT signature_block, canonical_name, name FROM app_user WHERE id = ?',
     [userId]
@@ -404,8 +408,10 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
       continue;
     }
 
-    const found = row.rfc822_message_id ? await probeForSentMessage(userId, row.rfc822_message_id) : null;
-    if (found) {
+    const found = row.rfc822_message_id
+      ? await probeForSentMessage(userId, row.rfc822_message_id)
+      : ({ state: 'absent' } as ProbeResult);
+    if (found.state === 'found') {
       const sentAt = found.internalDate ? new Date(Number(found.internalDate)) : now;
       await recordSent(row, {
         gmailMessageId: found.id,
@@ -426,8 +432,69 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
       continue;
     }
 
+    // "We could not check" is not "it did not send". Leave it in flight.
+    if (found.state === 'unknown') {
+      pending++;
+      continue;
+    }
+
     if (ageMs > SEND_ABANDONED_MS) {
       await execute(`UPDATE outreach SET status = 'approved', updated_at = ? WHERE id = ?`, [nowIso(now), row.id]);
+      reverted++;
+    } else {
+      pending++;
+    }
+  }
+
+  // Replies can sit in `sending` for the same reason cold sends can: the Gmail
+  // call threw and the probe could not say whether it had landed. They were
+  // previously reverted to `approved` immediately, which is what made pressing
+  // Send again able to deliver twice.
+  const stuckReplies = await query<{
+    id: string;
+    person_id: string;
+    rfc822_message_id: string | null;
+    body: string | null;
+    updated_at: string;
+  }>(
+    `SELECT id, person_id, rfc822_message_id, body, updated_at
+       FROM reply_draft WHERE status = 'sending' AND user_id = ?`,
+    [userId]
+  );
+
+  for (const row of stuckReplies) {
+    const ageMs = now.getTime() - Date.parse(row.updated_at);
+    if (ageMs < SEND_IN_FLIGHT_GRACE_MS) {
+      pending++;
+      continue;
+    }
+
+    const found = row.rfc822_message_id
+      ? await probeForSentMessage(userId, row.rfc822_message_id)
+      : ({ state: 'absent' } as ProbeResult);
+
+    if (found.state === 'found') {
+      await execute(
+        `UPDATE reply_draft SET status = 'sent', gmail_message_id = ?, sent_body_verbatim = ?,
+                                sent_at = ?, updated_at = ? WHERE id = ?`,
+        [found.id, withSignature(row.body ?? '', signature, owner?.canonical_name ?? owner?.name ?? null),
+         nowIso(now), nowIso(now), row.id]
+      );
+      await resolveReplyActions(userId, row.person_id, nowIso(now));
+      recovered++;
+      continue;
+    }
+
+    if (found.state === 'unknown') {
+      pending++;
+      continue;
+    }
+
+    if (ageMs > SEND_ABANDONED_MS) {
+      await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [
+        nowIso(now),
+        row.id,
+      ]);
       reverted++;
     } else {
       pending++;
@@ -512,7 +579,8 @@ export async function sendReply(
   }
 
   const { claimReplyForSend } = await import('./reply-assist');
-  const messageId = await claimReplyForSend(replyId, user.id);
+  const claim = await claimReplyForSend(replyId, user.id);
+  const messageId = claim?.messageId ?? null;
   if (!messageId) {
     return {
       ok: false,
@@ -568,6 +636,36 @@ export async function sendReply(
   const toEmail = reply.reply_to_address || reply.from_address || person.email;
   const toName = toEmail.toLowerCase() === person.email.toLowerCase() ? person.full_name_raw : null;
 
+  const at = nowIso(now);
+
+  // A reused Message-ID means an earlier attempt already reached the point of
+  // calling Gmail. Sending again without checking is how a hiring manager
+  // receives the same reply — and the same CV — twice: Gmail's search index
+  // lags a fresh message by up to minutes, so the previous attempt's probe can
+  // legitimately have found nothing while the message was on its way.
+  if (claim?.reused) {
+    const already = await probeForSentMessage(user.id, messageId);
+    if (already.state === 'found') {
+      await execute(
+        `UPDATE reply_draft SET status = 'sent', gmail_message_id = ?, sent_body_verbatim = ?,
+                                sent_at = ?, updated_at = ? WHERE id = ?`,
+        [already.id, body, at, at, replyId]
+      );
+      await resolveReplyActions(user.id, reply.person_id, at);
+      return { ok: true, outreachId: replyId, gmailMessageId: already.id, message: 'Already sent.' };
+    }
+    if (already.state === 'unknown') {
+      await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [at, replyId]);
+      return {
+        ok: false,
+        outreachId: replyId,
+        message:
+          'We cannot tell yet whether the first attempt went out, so we have not sent it again. Give it a minute and check the thread.',
+        reason: 'gmail_error',
+      };
+    }
+  }
+
   const mime = buildReplyMime({
     fromName: user.canonicalName ?? user.name,
     fromEmail: user.sendAsEmail ?? user.gmailAddress!,
@@ -581,7 +679,6 @@ export async function sendReply(
     attachment,
   });
 
-  const at = nowIso(now);
   try {
     const response = await gmailRequest<{ id: string; threadId: string }>(user.id, '/users/me/messages/send', {
       method: 'POST',
@@ -611,7 +708,7 @@ export async function sendReply(
     return { ok: true, outreachId: replyId, gmailMessageId: response.id, message: 'Sent.' };
   } catch (e) {
     const found = await probeForSentMessage(user.id, messageId);
-    if (found) {
+    if (found.state === 'found') {
       // It went out; only the response was lost. Everything the happy path does
       // has to happen here too, or the user is left looking at a card asking
       // them to reply to somebody they have already replied to.
@@ -632,11 +729,16 @@ export async function sendReply(
     }
 
     // Back to approved so the button works again — the user is standing here
-    // waiting, unlike a cold send. The Message-ID is deliberately kept on the
-    // row: the next attempt reuses it, so if this one did in fact reach Gmail
-    // and only the response was lost, the probe above finds it and the retry
-    // records rather than duplicates.
-    await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [at, replyId]);
+    // waiting, unlike a cold send. The Message-ID stays on the row, and the
+    // retry probes with it before sending anything, which is what makes
+    // pressing Send twice safe.
+    //
+    // Only when the probe was conclusive. If we could not check at all, the row
+    // stays `sending` and the repair sweep resolves it later, exactly as the
+    // cold path does — a duplicate is worse than a delay, always.
+    if (found.state === 'absent') {
+      await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [at, replyId]);
+    }
     await logError('error', e, { userId: user.id, entityType: 'reply', entityId: replyId });
     return {
       ok: false,

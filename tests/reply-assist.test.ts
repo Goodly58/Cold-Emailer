@@ -406,3 +406,82 @@ test('an approved reply is never overwritten by a later sweep', async () => {
   assert.equal(card.body, 'Tuesday morning suits me.', 'what the user approved is what stays');
   assert.equal(card.status, 'approved');
 });
+
+// ---------------------------------------------------------------------------
+// Pressing Send twice
+// ---------------------------------------------------------------------------
+
+test('a retry reuses the Message-ID and says so', async () => {
+  // The reuse flag is what makes the retry safe: it tells the send path an
+  // earlier attempt already reached the point of calling Gmail, so it must
+  // probe before sending anything.
+  const { draftReply, approveReply, claimReplyForSend } = await import('../lib/reply-assist');
+  const { execute } = await import('../lib/db/client');
+  await inbound('inb_retry', 'human_positive', 'Yes.');
+  const drafted = await draftReply('inb_retry', 'usr_r', NOW);
+  await execute(`UPDATE reply_draft SET body = 'Thank you.' WHERE id = ?`, [drafted.id!]);
+
+  await approveReply(drafted.id!, 'usr_r');
+  const first = await claimReplyForSend(drafted.id!, 'usr_r');
+  assert.equal(first?.reused, false, 'the first attempt mints a fresh id');
+
+  // The Gmail call failed and the probe was inconclusive, so it went back to
+  // approved and the user pressed Send again.
+  await execute(`UPDATE reply_draft SET status = 'approved' WHERE id = ?`, [drafted.id!]);
+  const second = await claimReplyForSend(drafted.id!, 'usr_r');
+  assert.equal(second?.messageId, first?.messageId, 'the same message, not a new one');
+  assert.equal(second?.reused, true, 'and the send path is told to check first');
+});
+
+test('an inconclusive probe leaves the reply in flight rather than resending it', async () => {
+  // Gmail's search index lags a fresh message by up to minutes, so "the probe
+  // found nothing" routinely means "we cannot tell yet". Treating that as "it
+  // did not send" is what delivers the same reply — and the same CV — twice.
+  const { draftReply, approveReply } = await import('../lib/reply-assist');
+  const { sendReply } = await import('../lib/send');
+  const { execute, queryOne } = await import('../lib/db/client');
+  const { getUser } = await import('../lib/user');
+
+  await inbound('inb_flight', 'human_positive', 'Yes.');
+  const drafted = await draftReply('inb_flight', 'usr_r', NOW);
+  await execute(`UPDATE reply_draft SET body = 'Thank you.' WHERE id = ?`, [drafted.id!]);
+  await approveReply(drafted.id!, 'usr_r');
+
+  // Gmail is unreachable in tests, so both the send and the probe fail — which
+  // is exactly the inconclusive case.
+  const result = await sendReply(drafted.id!, (await getUser('usr_r'))!, NOW);
+  assert.equal(result.ok, false);
+
+  const row = await queryOne<{ status: string; rfc822_message_id: string | null }>(
+    'SELECT status, rfc822_message_id FROM reply_draft WHERE id = ?',
+    [drafted.id!]
+  );
+  assert.equal(row!.status, 'sending', 'it stays in flight for the repair sweep, not back on the button');
+  assert.ok(row!.rfc822_message_id, 'carrying the id the sweep will probe with');
+});
+
+test('the repair sweep resolves a reply left in flight', async () => {
+  const { draftReply, approveReply } = await import('../lib/reply-assist');
+  const { repairStuckSends } = await import('../lib/send');
+  const { execute, queryOne } = await import('../lib/db/client');
+
+  await inbound('inb_repair', 'human_positive', 'Yes.');
+  const drafted = await draftReply('inb_repair', 'usr_r', NOW);
+  await execute(
+    `UPDATE reply_draft SET body = 'Thank you.', status = 'sending',
+                            rfc822_message_id = '<stuck@x>', updated_at = ? WHERE id = ?`,
+    ['2026-08-04T06:00:00.000Z', drafted.id!]
+  );
+  await approveReply(drafted.id!, 'usr_r');
+  await execute(`UPDATE reply_draft SET status = 'sending' WHERE id = ?`, [drafted.id!]);
+
+  // Two days later, Gmail still unreachable: the probe cannot confirm, so it
+  // stays pending rather than being resurrected as sendable.
+  const result = await repairStuckSends('usr_r', new Date('2026-08-06T06:00:00.000Z'));
+  assert.equal(result.pending >= 1, true);
+
+  const row = await queryOne<{ status: string }>('SELECT status FROM reply_draft WHERE id = ?', [
+    drafted.id!,
+  ]);
+  assert.equal(row!.status, 'sending', 'a duplicate is worse than a delay, always');
+});

@@ -636,19 +636,27 @@ export async function dismissReply(replyId: string, userId: string): Promise<boo
 }
 
 /** A fresh Message-ID, persisted before the Gmail call. Same rule as a cold send. */
-export async function claimReplyForSend(replyId: string, userId: string): Promise<string | null> {
-  const messageId = newMessageId();
+export async function claimReplyForSend(
+  replyId: string,
+  userId: string
+): Promise<{ messageId: string; reused: boolean } | null> {
+  // `reused` is the important half. A Message-ID already on the row means an
+  // earlier attempt reached the point of calling Gmail, so the caller must
+  // probe before sending anything — otherwise pressing Send again after a lost
+  // response delivers the reply twice.
+  const existing = await queryOne<{ rfc822_message_id: string | null }>(
+    'SELECT rfc822_message_id FROM reply_draft WHERE id = ? AND user_id = ?',
+    [replyId, userId]
+  );
+  const reused = Boolean(existing?.rfc822_message_id);
+  const messageId = existing?.rfc822_message_id ?? newMessageId();
+
   const changed = await execute(
-    `UPDATE reply_draft SET status = 'sending', rfc822_message_id = COALESCE(rfc822_message_id, ?), updated_at = ?
+    `UPDATE reply_draft SET status = 'sending', rfc822_message_id = ?, updated_at = ?
       WHERE id = ? AND user_id = ? AND status = 'approved'`,
     [messageId, nowIso(), replyId, userId]
   );
-  if (changed !== 1) return null;
-  const row = await queryOne<{ rfc822_message_id: string }>(
-    'SELECT rfc822_message_id FROM reply_draft WHERE id = ?',
-    [replyId]
-  );
-  return row?.rfc822_message_id ?? null;
+  return changed === 1 ? { messageId, reused } : null;
 }
 
 /** Tomorrow, for the "not today" action. Never further — this is the urgent one. */
