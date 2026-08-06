@@ -399,3 +399,46 @@ test('sectorGroup maps representative sectors correctly', async () => {
     assert.equal(sectorGroup(sector), expected, `"${sector}" grouped wrongly`);
   }
 });
+
+/* ------------------------------------------------------- seed integrity */
+
+test('seed company ids are unique', async () => {
+  // The store keys rows on (collection, id). Duplicate ids collide on the
+  // primary key and silently drop companies on first load — this caught five
+  // real developers being overwritten by restaurant chains.
+  const db = await import('../data/db.json');
+  const companies = (db as unknown as { companies: Array<{ id: string; name: string }> }).companies;
+  const seen = new Map<string, string>();
+  const collisions: string[] = [];
+  for (const c of companies) {
+    const prior = seen.get(c.id);
+    if (prior) collisions.push(`${c.id}: "${prior}" vs "${c.name}"`);
+    else seen.set(c.id, c.name);
+  }
+  assert.deepEqual(collisions, [], 'duplicate company ids would drop rows');
+});
+
+test('seed companies are well formed', async () => {
+  const db = await import('../data/db.json');
+  const companies = (db as unknown as {
+    companies: Array<{ id: string; name: string; sector: string; location: string; tier: string; domain?: string }>;
+  }).companies;
+
+  assert.ok(companies.length > 500, 'the starter database should be substantial');
+
+  const tiers = new Set(['dream', 'target', 'backup']);
+  for (const c of companies) {
+    assert.ok(c.id && c.name && c.sector && c.location, `incomplete row: ${JSON.stringify(c).slice(0, 80)}`);
+    assert.ok(tiers.has(c.tier), `bad tier "${c.tier}" on ${c.name}`);
+    if (c.domain) {
+      assert.match(c.domain, /^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/, `bad domain on ${c.name}: ${c.domain}`);
+    }
+  }
+});
+
+test('seed company names are unique', async () => {
+  const db = await import('../data/db.json');
+  const companies = (db as unknown as { companies: Array<{ name: string }> }).companies;
+  const names = companies.map((c) => c.name.trim().toLowerCase());
+  assert.equal(new Set(names).size, names.length, 'duplicate company names');
+});
