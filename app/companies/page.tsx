@@ -31,6 +31,7 @@ export default function Companies() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [limit, setLimit] = useState(60);
 
   useEffect(() => {
     list<Company>('companies').then(setCompanies);
@@ -91,8 +92,10 @@ export default function Companies() {
     <div>
       <h1>Target companies</h1>
       <p className="subtitle">
-        120 UAE employers that are quota-liable or run active Emiratisation programs. Click a tier
-        badge to cycle Dream → Target → Backup, and use the LinkedIn links to find who to email.
+        {companies.length} UAE employers that are quota-liable or run active Emiratisation
+        programs, across all seven emirates. Click a tier badge to cycle Dream → Target → Backup,
+        use the LinkedIn links to find who to email, and <em>Setup</em> to set a company&apos;s
+        email domain and divisions.
       </p>
 
       <div className="card mb">
@@ -158,7 +161,7 @@ export default function Companies() {
             </tr>
           </thead>
           <tbody>
-            {shown.map((c) => (
+            {shown.slice(0, limit).map((c) => (
               <tr key={c.id}>
                 <td>
                   <strong>{c.name}</strong>
@@ -206,6 +209,11 @@ export default function Companies() {
             ))}
           </tbody>
         </table>
+        {shown.length > limit && (
+          <button className="mt" style={{ width: '100%' }} onClick={() => setLimit(limit + 60)}>
+            Show 60 more of {shown.length - limit}
+          </button>
+        )}
       </div>
 
       {openId && (
