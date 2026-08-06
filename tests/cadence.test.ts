@@ -1877,3 +1877,79 @@ test('a draft flagged for regeneration is actually regenerated', async () => {
   // up, which it never was before, and the flag is not left set forever.
   assert.notEqual(row!.status, 'drafted');
 });
+
+test('an overdue follow-up stays overdue instead of retreating a day per sweep', async () => {
+  // The clamp pushed any past date to tomorrow, and the recompute re-derived
+  // the same past date the next run — so an overdue item was perpetually one
+  // day away and the queue, which only offers follow-ups whose date has
+  // arrived, never offered it. The follow-up starved.
+  const { recomputeDerivedDates } = await import('../lib/derived-dates');
+  const { buildQueue } = await import('../lib/queue');
+  const { queryOne } = await import('../lib/db/client');
+
+  await person('per_overdue', { status: 'in_sequence' });
+  await outreach({ id: 'out_ov1', personId: 'per_overdue', step: 1, status: 'sent', sentDate: '2026-07-01', threadId: 't1' });
+  await outreach({
+    id: 'out_ov2',
+    personId: 'per_overdue',
+    step: 2,
+    status: 'drafted',
+    scheduled: '2026-07-07',
+    dueWorkingDays: 4,
+  });
+
+  for (let i = 0; i < 3; i++) await recomputeDerivedDates({ now: NOW });
+
+  const row = await queryOne<{ scheduled_date: string }>('SELECT scheduled_date FROM outreach WHERE id = ?', [
+    'out_ov2',
+  ]);
+  assert.equal(row!.scheduled_date, '2026-07-07', 'the date it was always due');
+
+  const queue = await buildQueue(await user(), NOW);
+  assert.equal(queue.followUps.length, 1, 'and it is finally offered');
+});
+
+test('two linked org groups with one live sequence each is still a conflict', async () => {
+  // Grouping by the raw org_group_id can never see this: the count is one on
+  // each side. It is the exact case org_group_link exists for.
+  const { sweep } = await import('../lib/scheduler');
+  const { execute, queryOne } = await import('../lib/db/client');
+
+  await person('per_fam1', { status: 'in_sequence' });
+  await outreach({ id: 'out_fam1', personId: 'per_fam1', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+
+  const subId = await subsidiary();
+  await execute(`UPDATE person SET status = 'in_sequence' WHERE id = ?`, [subId]);
+  await outreach({ id: 'out_fam2', personId: subId, step: 1, status: 'sent', sentDate: '2026-08-05', threadId: 't2' });
+  await outreach({ id: 'out_fam2b', personId: subId, step: 2, status: 'drafted', scheduled: '2026-08-06' });
+
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+
+  assert.equal(await statusOf('out_fam2b'), 'paused_pending_reply', 'the newer one waits');
+  const state = await queryOne<{ status: string }>(
+    'SELECT status FROM user_company_state WHERE company_id = ?',
+    ['cmp_c']
+  );
+  assert.equal(state!.status, 'reply_conflict', 'and the user is asked to choose');
+});
+
+test('a gateway challenge stops the follow-up that does not exist yet', async () => {
+  // The challenge arrives within minutes of touch 1, before any follow-up row
+  // exists to pause — so pausing only existing rows paused nothing, and the
+  // sweep later created touch 2 and fired it into the quarantine.
+  const { sweep } = await import('../lib/scheduler');
+  const { queryOne } = await import('../lib/db/client');
+
+  await person('per_gwearly', { status: 'in_sequence' });
+  await outreach({ id: 'out_gwe', personId: 'per_gwearly', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+
+  // Nothing but the sent row exists, which is the whole point.
+  await apply(classification({ classification: 'gateway_challenge' }), 'per_gwearly');
+  await sweep(await user(), { now: NOW, poll: false, predraft: false });
+
+  assert.equal(
+    await queryOne('SELECT id FROM outreach WHERE person_id = ? AND step = 2', ['per_gwearly']),
+    null,
+    'no touch 2 is created into a quarantine'
+  );
+});

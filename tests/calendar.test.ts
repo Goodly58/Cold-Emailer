@@ -182,11 +182,20 @@ test('a moon-sighting shift moves a derived due date later', () => {
   assert.equal(compareDates(after, before) > 0, true);
 });
 
-test('a due date may move later freely but a past one lands no sooner than tomorrow', () => {
+test('a due date may move later freely, and only a date that MOVED earlier is clamped', () => {
   const today = '2026-03-16'; // a Monday
-  // A window shrinking would otherwise pull the date into the past and fire
-  // the follow-up the moment the sweep runs.
-  assert.equal(clampRecomputedDueDate('2026-03-10', today), '2026-03-17');
+
+  // A window shrinking pulls the date backwards. Firing it the instant the
+  // sweep runs is the thing this guards.
+  assert.equal(clampRecomputedDueDate('2026-03-10', today, EMPTY_CALENDAR, '2026-03-18'), '2026-03-17');
+
+  // But an overdue follow-up whose date did NOT move must stay overdue. It came
+  // due while the user was away; clamping it to tomorrow on every sweep pushed
+  // it forward a day, every day, forever — and the queue only offers follow-ups
+  // whose date has arrived, so the item starved.
+  assert.equal(clampRecomputedDueDate('2026-03-10', today, EMPTY_CALENDAR, '2026-03-10'), '2026-03-10');
+  assert.equal(clampRecomputedDueDate('2026-03-10', today, EMPTY_CALENDAR, null), '2026-03-10');
+
   // Today is not the past. It is what the countdown has said all along, and
   // pushing it out would move a legitimate follow-up every time the sweep ran
   // after 20:00 UTC — the hour Dubai rolls over and the server has not.
@@ -199,10 +208,18 @@ test('the clamp floor is the next working day, never a Saturday', () => {
   // Clamping to a bare tomorrow lands follow-ups on the weekend, where they sit
   // outside the send window while the countdown reads as satisfied.
   const friday = '2026-03-20';
-  assert.equal(clampRecomputedDueDate('2026-03-01', friday), '2026-03-23', 'Saturday and Sunday are skipped');
+  assert.equal(
+    clampRecomputedDueDate('2026-03-01', friday, EMPTY_CALENDAR, '2026-03-30'),
+    '2026-03-23',
+    'Saturday and Sunday are skipped'
+  );
 
   const cal = calendarOf(holiday('2026-03-23', '2026-03-24'));
-  assert.equal(clampRecomputedDueDate('2026-03-01', friday, cal), '2026-03-25', 'and so is a holiday');
+  assert.equal(
+    clampRecomputedDueDate('2026-03-01', friday, cal, '2026-03-30'),
+    '2026-03-25',
+    'and so is a holiday'
+  );
 });
 
 test('drafts crossing an unconfirmed window are flagged for regeneration at send', () => {

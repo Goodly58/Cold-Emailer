@@ -261,20 +261,37 @@ async function enforceInvariants(user: User, now: Date): Promise<number> {
   // and "Emirates NBD Capital" cannot both be running. The oldest live sequence
   // keeps its place; the others pause rather than close, because "that contact
   // was a dead end" is a real outcome and resuming should not need re-sourcing.
-  const conflicts = await query<{ org_group_id: string; keep_person: string }>(
-    `SELECT c.org_group_id,
-            (SELECT p2.id
-               FROM person p2 JOIN company c2 ON c2.id = p2.company_id
-               JOIN outreach o2 ON o2.person_id = p2.id
-              WHERE c2.org_group_id = c.org_group_id AND p2.status = 'in_sequence'
-                AND o2.status = 'sent'
-              ORDER BY o2.sent_at ASC LIMIT 1) AS keep_person
-       FROM person p JOIN company c ON c.id = p.company_id
+  // Grouped by organisation FAMILY, not by the raw org_group_id. Two linked
+  // groups each holding one live sequence is exactly the case the link exists
+  // to catch, and grouping by the raw column can never see it — the count is 1
+  // on each side.
+  const { orgFamilyKeys } = await import('./org');
+  const families = await orgFamilyKeys();
+  const live = await query<{ person_id: string; org_group_id: string; sent_at: string | null }>(
+    `SELECT p.id AS person_id, c.org_group_id, min(o.sent_at) AS sent_at
+       FROM person p
+       JOIN company c ON c.id = p.company_id
+       JOIN outreach o ON o.person_id = p.id AND o.status = 'sent'
       WHERE p.status = 'in_sequence'
-      GROUP BY c.org_group_id
-     HAVING count(DISTINCT p.id) > 1`,
+      GROUP BY p.id`,
     []
   );
+
+  const byFamily = new Map<string, Array<{ personId: string; orgGroupId: string; sentAt: string }>>();
+  for (const row of live) {
+    const family = families.get(row.org_group_id) ?? row.org_group_id;
+    const list = byFamily.get(family) ?? [];
+    list.push({ personId: row.person_id, orgGroupId: row.org_group_id, sentAt: row.sent_at ?? '' });
+    byFamily.set(family, list);
+  }
+
+  const conflicts = [...byFamily.values()]
+    .filter((list) => list.length > 1)
+    // The oldest live sequence keeps its place; the rest pause.
+    .map((list) => {
+      const sorted = [...list].sort((a, b) => a.sentAt.localeCompare(b.sentAt));
+      return { org_group_id: sorted[0].orgGroupId, keep_person: sorted[0].personId };
+    });
 
   for (const conflict of conflicts) {
     if (!conflict.keep_person) continue;
@@ -373,6 +390,15 @@ async function advanceSequences(user: User, now: Date): Promise<number> {
       WHERE o.user_id = ? AND o.status = 'sent' AND o.sent_date_uae IS NOT NULL
         AND o.step < 3
         AND p.status = 'in_sequence'
+        -- A quarantined message means the recipient has not seen anything. The
+        -- challenge usually arrives within minutes of touch 1, before any
+        -- follow-up row exists to pause — so the pause is checked on ANY row for
+        -- this person, and the next touch is not created at all rather than
+        -- created and fired into the quarantine.
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach paused
+           WHERE paused.person_id = o.person_id AND paused.countdown_paused = 1
+        )
         -- Never manufacture a touch that the sequence has already moved past.
         -- A person who has had the break-up must not be handed a "just checking
         -- you saw this" afterwards, whatever gap the row history has in it.
@@ -606,6 +632,13 @@ async function timeOutGatewayChallenges(user: User, now: Date): Promise<number> 
         WHERE person_id = ? AND status IN ('queued', 'drafted', 'stale', 'needs_fact', 'approved')`,
       [at, row.person_id!]
     );
+    // Including the quarantined message itself, which carries the pause that
+    // blocks advancement. Left set, it would freeze this person permanently
+    // even if they were reopened later by a late reply.
+    await execute(
+      `UPDATE outreach SET countdown_paused = 0, updated_at = ? WHERE person_id = ? AND countdown_paused = 1`,
+      [at, row.person_id!]
+    );
     timedOut++;
   }
   return timedOut;
@@ -712,12 +745,19 @@ async function predraftDue(user: User, now: Date): Promise<{ drafted: number; re
     }
 
     await execute(
+      // The subject is kept only where it has to be: a threaded follow-up must
+      // carry the original `Re: …` verbatim or it breaks threading in the
+      // clients most likely to be reading it. Touch 1's subject is generated
+      // from the premise, so keeping it across a redraft left a subject line
+      // about a fact the body no longer mentions.
       `UPDATE outreach
-          SET subject = COALESCE(subject, ?), body = ?, evidence_ids = ?, template_version = ?,
+          SET subject = CASE WHEN gmail_thread_id IS NOT NULL THEN COALESCE(subject, ?) ELSE ? END,
+              body = ?, evidence_ids = ?, template_version = ?,
               subject_variant = ?, premise_tier = ?, status = 'drafted',
               regenerate_at_send = 0, updated_at = ?
         WHERE id = ?`,
       [
+        outcome.draft.subject,
         outcome.draft.subject,
         outcome.draft.body,
         JSON.stringify(outcome.draft.evidenceIds),

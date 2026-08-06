@@ -517,6 +517,17 @@ const HANDLERS: Record<Classification, Handler> = {
         WHERE person_id = ? AND status IN ('queued', 'drafted', 'approved')`,
       [at, personId]
     );
+
+    // Also on the message that was quarantined, which is `sent`. The challenge
+    // usually arrives within minutes of touch 1, when no follow-up row exists
+    // yet — so pausing only the live rows paused nothing at all, and the sweep
+    // went on to create touch 2 and fire it into the same quarantine. The
+    // `sent` row is what `advanceSequences` checks.
+    await execute(
+      `UPDATE outreach SET countdown_paused = 1, updated_at = ?
+        WHERE person_id = ? AND status = 'sent'`,
+      [at, personId]
+    );
     await execute('UPDATE company SET gateway = 1, updated_at = ? WHERE id = ?', [at, companyId]);
 
     return {
@@ -826,12 +837,23 @@ export async function gatewayCleared(
   const calendar = await loadCalendar();
   const today = todayUae(now);
 
+  const resumeOn = nextDue(today, 4, calendar);
+
+  // The live rows resume with fresh dates and fresh wording.
   const resumed = await execute(
     `UPDATE outreach
         SET countdown_paused = 0, hold_until = ?, scheduled_date = ?,
             regenerate_at_send = 1, status = 'stale', updated_at = ?
-      WHERE person_id = ? AND countdown_paused = 1`,
-    [nextDue(today, 4, calendar), nextDue(today, 4, calendar), at, personId]
+      WHERE person_id = ? AND countdown_paused = 1 AND status <> 'sent'`,
+    [resumeOn, resumeOn, at, personId]
+  );
+
+  // The quarantined message itself only has its pause lifted — it was sent, and
+  // flipping it back to `stale` would rewrite history and offer it again.
+  await execute(
+    `UPDATE outreach SET countdown_paused = 0, updated_at = ?
+      WHERE person_id = ? AND status = 'sent' AND countdown_paused = 1`,
+    [at, personId]
   );
 
   await execute(

@@ -280,11 +280,26 @@ export const LONG_AGO_WORKING_DAYS = Math.floor((MAX_SEARCH_DAYS * 5) / 7);
 export function clampRecomputedDueDate(
   recomputed: UaeDate,
   todayUaeDate: UaeDate,
-  calendar: WorkingCalendar = EMPTY_CALENDAR
+  calendar: WorkingCalendar = EMPTY_CALENDAR,
+  previous?: UaeDate | null
 ): UaeDate {
   assertUaeDate(recomputed);
   assertUaeDate(todayUaeDate);
   if (compareDates(recomputed, todayUaeDate) >= 0) return recomputed;
+
+  // Already overdue, and not because anything moved. A follow-up that came due
+  // while the user was away must stay due — clamping it to tomorrow on every
+  // sweep pushed it forward a day, every day, forever, and the queue only
+  // offers follow-ups whose date has arrived. The item starved: perpetually
+  // one day away, never sendable.
+  //
+  // The rule this function exists for is narrower than it looked. It protects
+  // against a *retroactive calendar edit* pulling a date backwards and firing
+  // it the instant the sweep runs. That only happens when the recomputed date
+  // is earlier than the one already stored.
+  if (previous && compareDates(recomputed, previous) >= 0) return recomputed;
+  if (!previous) return recomputed;
+
   return nextWorkingDay(addDays(todayUaeDate, 1), calendar);
 }
 

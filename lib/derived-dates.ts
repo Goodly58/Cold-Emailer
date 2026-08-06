@@ -129,7 +129,8 @@ export async function recomputeDerivedDates(
     const derived = clampRecomputedDueDate(
       floors.reduce((latest, floor) => (compareDates(floor, latest) > 0 ? floor : latest), fromDayZero),
       today,
-      calendar
+      calendar,
+      row.scheduled_date
     );
     const regenerate = crossesUnconfirmedWindow(today, derived, calendar);
     // The gap the wording must match is the one the recipient experiences:
