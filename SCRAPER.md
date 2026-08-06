@@ -84,9 +84,19 @@ liability, seniority fit. Two guards matter:
 ## Storage
 
 `lib/store.ts` writes **one row per record**, not one blob per collection, and diffs against a
-snapshot taken at read time so only genuinely changed rows are written. Measured at 24ms for a
-single edit against 2,126 rows; the previous blob-per-collection layout rewrote everything on every
-edit.
+snapshot taken at read time so only genuinely changed rows are written. The previous
+blob-per-collection layout rewrote an entire collection on every edit.
+
+Measured with 555 companies and 1,500 scraped roles (2,061 rows, an 800KB database):
+
+| Operation | Latency |
+|---|---|
+| Load company list | ~110ms |
+| Load application list | ~90ms |
+| Single record edit | ~110ms |
+
+Reads still load the full dataset, so latency grows with total rows — fine at the scale a personal
+job search reaches, and the 30-day pruning of closed postings keeps it bounded.
 
 ## Known limits
 
