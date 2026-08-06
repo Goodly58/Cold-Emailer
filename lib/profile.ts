@@ -88,12 +88,24 @@ export async function saveAnswer(
   );
 
   let followupQuestion: string | null = existing?.followup_question ?? null;
-  if (specificity === 'thin' && typeof value === 'string') {
+
+  // A thin answer typed into a chip field's Other box needs the same rescue a
+  // thin text answer gets. Without this it stays thin forever — chip values are
+  // arrays, and the rescue used to be reachable only for strings, so the answer
+  // was quietly excluded from every draft with no way for the user to fix it.
+  const thinText =
+    typeof value === 'string'
+      ? value
+      : Array.isArray(value) && value.length === 1
+        ? String(value[0])
+        : null;
+
+  if (specificity === 'thin' && thinText !== null) {
     // Re-ask only when the answer actually changed, so editing an unrelated
     // field does not reshuffle the question they are already looking at.
-    const answerChanged = !existing || JSON.parse(existing.value) !== value;
+    const answerChanged = !existing || JSON.stringify(JSON.parse(existing.value)) !== JSON.stringify(value);
     if (answerChanged || !followupQuestion) {
-      followupQuestion = await generateFollowup(field, value);
+      followupQuestion = await generateFollowup(field, thinText);
       await logEvent({
         event: 'interview_followup_asked',
         userId,

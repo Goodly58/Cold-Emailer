@@ -243,9 +243,34 @@ export function assessText(value: string): Specificity {
   return 'concrete';
 }
 
-export function assessChips(values: string[]): Specificity {
+/**
+ * How specific a chip answer is.
+ *
+ * **A value the user picked from a list we wrote is concrete by construction.**
+ * There is nothing vague about tapping "Banking" or "Yes" — we offered those
+ * words, and grading them against a prose heuristic condemns every single-chip
+ * answer in the interview as thin. That matters far more than it looks: a thin
+ * answer is excluded from `generatorProfile`, and chip answers are arrays, so
+ * they never get the rescue question that saves a thin *text* answer. The
+ * result was that "When could you start?" — the question every second positive
+ * reply asks, which onboarding collects for exactly that reason — was silently
+ * discarded, and reply assist asked the user for it again every time.
+ *
+ * Only free text typed into an Other box is assessed, and only when it is the
+ * whole answer.
+ */
+export function assessChips(values: string[], options: string[] = []): Specificity {
   if (values.length === 0) return 'unknown';
-  if (values.some((v) => assessText(v) === 'thin' && values.length === 1)) return 'thin';
+
+  const known = new Set(options.map((o) => o.toLowerCase()));
+  const freeText = values.filter((v) => !known.has(v.trim().toLowerCase()));
+
+  // At least one thing was picked from the list. That is a real answer.
+  if (freeText.length < values.length) return 'concrete';
+
+  // Everything was typed. Now the prose heuristic earns its keep — this is the
+  // "anything" typed into the Other box that the register asks us to catch.
+  if (values.length === 1) return assessText(values[0]);
   return 'concrete';
 }
 
@@ -254,7 +279,7 @@ export function assessAnswer(field: InterviewField, value: unknown): Specificity
     return typeof value === 'string' ? assessText(value) : 'unknown';
   }
   const values = Array.isArray(value) ? value.map(String) : value ? [String(value)] : [];
-  return assessChips(values);
+  return assessChips(values, field.options ?? []);
 }
 
 // ---------------------------------------------------------------------------

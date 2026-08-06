@@ -269,3 +269,71 @@ test('a thin answer never reaches the CV as a claim', async () => {
     'a claim we could not confirm is left out rather than printed'
   );
 });
+
+// ---------------------------------------------------------------------------
+// Chip answers
+// ---------------------------------------------------------------------------
+
+test('picking from a list we wrote is concrete, however short the words are', async () => {
+  // Grading "Yes" and "Banking" against a prose heuristic condemned every
+  // single-chip answer in the interview as thin — and a thin answer is excluded
+  // from `generatorProfile`. "When could you start?" is the question every
+  // second positive reply asks, which is precisely why onboarding collects it,
+  // and it was being silently discarded.
+  const { assessAnswer, INTERVIEW_FIELDS } = await import('../lib/interview');
+
+  for (const field of INTERVIEW_FIELDS) {
+    if (field.kind === 'text' || !field.options?.length) continue;
+    assert.equal(
+      assessAnswer(field, [field.options[0]]),
+      'concrete',
+      `${field.key}: "${field.options[0]}" was picked from our own list`
+    );
+  }
+});
+
+test('"anything" typed into the Other box is still caught', async () => {
+  // The register item this heuristic exists for. It has to survive the fix.
+  const { assessChips } = await import('../lib/interview');
+  const options = ['Banking', 'Healthcare', 'Logistics'];
+
+  assert.equal(assessChips(['anything'], options), 'thin');
+  assert.equal(assessChips(['whatever'], options), 'thin');
+  // One real pick plus free text is a real answer.
+  assert.equal(assessChips(['Banking', 'anything'], options), 'concrete');
+  // And typed free text that is genuinely specific passes on its own merits.
+  assert.equal(
+    assessChips(['Sovereign wealth and family offices in Abu Dhabi'], options),
+    'concrete'
+  );
+});
+
+test('a thin chip answer can be rescued, like a thin text one', async () => {
+  // Chip values are arrays, and the rescue used to be reachable only for
+  // strings — so a vague Other-box answer stayed thin forever, excluded from
+  // every draft, with nothing the user could do about it.
+  const { currentUser } = await import('../lib/user');
+  const { saveAnswer, saveFollowupAnswer, generatorProfile } = await import('../lib/profile');
+
+  const user = await currentUser();
+  const saved = await saveAnswer(user.id, 'industries', ['anything']);
+  assert.equal(saved.specificity, 'thin');
+  assert.ok(saved.followupQuestion, 'a question is offered rather than a dead end');
+
+  await saveFollowupAnswer(user.id, 'industries', 'Banking operations and trade finance');
+  const profile = await generatorProfile(user.id);
+  assert.match(profile.industries ?? '', /trade finance/);
+});
+
+test('the answers a positive reply will need are readable by the generator', async () => {
+  const { currentUser } = await import('../lib/user');
+  const { saveAnswer, generatorProfile } = await import('../lib/profile');
+
+  const user = await currentUser();
+  await saveAnswer(user.id, 'nafis_registered', ['Yes']);
+  await saveAnswer(user.id, 'availability', ['After I graduate']);
+
+  const profile = await generatorProfile(user.id);
+  assert.equal(profile.nafis_registered, 'Yes');
+  assert.equal(profile.availability, 'After I graduate');
+});
