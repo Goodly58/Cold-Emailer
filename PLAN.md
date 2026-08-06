@@ -217,3 +217,38 @@ Where the build diverged from the plan, with the reason. Per ULTRAPROMPT §7,
   the ladder slots carry no person rows, because inventing a name to fill one is
   exactly what hard rule 2 exists to prevent. The friend's profile comes from
   the real interview for the same reason. Week 2 sourcing fills the slots.
+
+### 2026-08-06 — week 4
+
+- **Two new columns rather than a smarter recomputation:** `outreach.hold_until`
+  and `outreach.countdown_paused` (migration `002_cadence.sql`). §5 has
+  `scheduled_date` derived and never authoritative, which is right and is also
+  why an out-of-office reschedule written into it was silently reverted within
+  hours by the next sweep. A hold has to be a stored fact the recomputation
+  *reads*, not an adjustment to its output.
+- **The break-up is anchored on touch 1, with a floor after touch 2.**
+  `template-doctrine` §(d) counts both offsets from day 0, which is correct on
+  time and wrong when the user disappears — touch 2 on day 13 would put touch 3
+  two days later. The doctrine's anchor is kept and a four-working-day floor
+  after whatever the recipient actually last received is added on top.
+- **The Gmail History API is not used at all.** §5 and the register both discuss
+  handling `historyId` expiry. Polling `threads.get` on stored thread ids has no
+  expiry to handle, returns spam-labelled messages the list endpoint hides, and
+  keeps the CASA audit surface to "tool-created threads only". The quota problem
+  the History API would have solved is handled by a per-thread cadence in
+  `thread_poll` instead: live sequences every sweep, closed threads once a day.
+- **The Mon–Thu send window is now enforced, not just documented.** `CULTURE.md`
+  §9 was implemented in `lib/calendar.ts` as `isSendWindowDay` in week 1 and
+  then never consulted by the queue or the send path. Both now refuse outside
+  the window. The queue still renders the cards, held with a date — an empty
+  screen on a Saturday reads as broken.
+- **`clampRecomputedDueDate` takes a calendar and treats today as due.** §5's
+  rule is "earlier only to tomorrow at the soonest"; implemented literally it
+  produced Saturday due dates, and it fired on dates equal to today, which
+  pushed legitimately-due follow-ups out during the four hours a day when Dubai
+  has rolled over and a UTC server has not.
+- **The dashboard leads on what the user did, not on replies.** §9 lists reply
+  counts among the dashboard contents. They are present but subordinate, and any
+  rate refuses to render below twenty sends: the cadence puts most replies on
+  days 5–12, so an honest week-one reply count is zero, and a headline zero is a
+  normal state displayed as failure.

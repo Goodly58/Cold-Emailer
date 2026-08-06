@@ -222,17 +222,267 @@ deferred with a reason.
 
 ---
 
+## Weeks 2–4 — new edge cases found while building
+
+### Sourcing (week 2)
+
+**Two transliterations of one name become two ladder rungs** (critical) —
+"Maryam AlSuweidi" from a press release and "Mariam Al Suwaidi" from a
+leadership page are one person. As two rows they are two live sequences at one
+company, and she receives two cold emails from the same stranger.
+→ **Handled.** `phoneticKey()` collapses transliteration families
+(Mohammed/Mohamed/Muhammad/Mohd → one key) and `canonicalToken()` strips a
+leading `al|el|ash|ad|az|as` before the family lookup, so the space is
+irrelevant. Enforced as `UNIQUE (company_id, phonetic_key)`, not as a check that
+could be forgotten. (`lib/names.ts`, `lib/db/migrations/001_init.sql`; test:
+*a company can be sourced end to end, and every planted trap is caught*.)
+
+**"Al" split off as a given name** (high) — naive tokenisation makes
+"Al Ketbi" into given "Al", family "Ketbi", and the email opens *Dear Mr. Al*.
+→ **Handled.** `FAMILY_PARTICLES` are never separated from the token that
+follows them. (`lib/names.ts`.)
+
+**An unresolvable patronymic chain** (high) — "Ahmed bin Rashid bin Saeed" has
+no family name to be formal with, and guessing one is worse than not trying.
+→ **Handled.** `resolveSalutation` falls back to `Mr. + first name` rather than
+inventing a family name, and never derives an honorific from the chain.
+(`lib/names.ts`.)
+
+**A catch-all domain reports every address as valid** (critical) — verification
+returns "deliverable" for an address that does not exist, and the send lands
+nowhere while the countdown runs.
+→ **Handled.** `accept_all` is a distinct `email_status`, never collapsed into
+`verified`, and is surfaced on the card as exactly what it is.
+(`lib/email-pattern.ts`, schema check constraint.)
+
+**One exemplar is not a pattern** (high) — a single `first.last@` sighting
+mints the whole company's addresses from a guess.
+→ **Handled.** `recordExemplar` requires two independent exemplars before a
+pattern is `confirmed`; below that, addresses stay `guessed` and cannot be sent
+to. (`lib/email-pattern.ts`.)
+
+**The London trap** (high) — a Tier-3 search for a UAE role returns the
+same-named person at the same company's London office, and the whole premise is
+about a country they do not work in.
+→ **Handled.** `checkGeography` on every Tier-3 result, and the search plan is
+always scoped `site:ae.linkedin.com/in` — never `linkedin.com`, never a scrape.
+(`lib/tier3.ts`.)
+
+### Generation and sending (week 3)
+
+**A documented conflict between two governing documents** (high) —
+`research/template-doctrine.md` bans "I hope this email finds you well" as an AI
+tell; `CULTURE.md` §5 lists it among safe pleasantries and argues the
+bare-transactional email fails in the Gulf for its missing frame, not its
+length. Both govern their area, so one of them had to lose somewhere.
+→ **Resolved rather than deferred.** Banned at LOW and MEDIUM register, allowed
+as a single line at HIGH — a government under-secretary expects the frame and a
+startup founder reads it as spam. Implemented as `HIGH_REGISTER_EXEMPT`, tested
+in both directions, and the reasoning is in the file header so the next reader
+does not "fix" it. (`lib/template.ts`.)
+
+**`SQLITE_BUSY` on a genuine two-tab send race** (critical) — one connection
+cannot interleave two write transactions, so the loser of a Send race got a
+driver error thrown at it. The user would have seen a failure on a send that
+was actually fine.
+→ **Handled.** Write transactions are serialised in-process behind a promise
+queue, plus `PRAGMA busy_timeout = 5000` for the separate case of another
+process holding the file. The compare-and-swap then decides the race instead of
+the driver, and the loser reads "Sent from another device a moment ago."
+(`lib/db/client.ts`; test: *two tabs pressing Send produce exactly one claim*.)
+
+**"To see if we are a fit" slipped the banned-phrase lint** (medium) — the
+pattern assumed a contraction, so the uncontracted form went through.
+→ **Handled.** Loosened to `/\bto see if (we|there|you)\b.{0,25}\bfit\b/i`.
+(`lib/template.ts`.)
+
+**A stale tier-1 fact is not a tier-1 fact** (high) — congratulating someone on
+a promotion they announced fourteen months ago is worse than saying nothing.
+→ **Handled.** `effectiveTier` demotes on recency (tier 1–2 by one step past 90
+days, two past a year; a tier-4 promotion note past 30 days drops to 6, i.e.
+unusable). Expressed through the calendar module, because "older than ninety
+days" is a calendar question, not an elapsed-milliseconds one — the date guard
+caught the first version. (`lib/generator.ts`.)
+
+### The cadence engine (week 4)
+
+**An out-of-office reschedule undone by the nightly recompute** (critical) —
+`scheduled_date` is derived, never authoritative, and is recomputed every
+sweep. The OOO handler wrote the new date straight into it, so within hours the
+recomputation put it back and the follow-up fired into the empty office anyway.
+The bug is invisible in a unit test of the handler; it only appears when the two
+correct behaviours meet.
+→ **Handled.** A hold is now a stored fact the recomputation *reads*, not an
+adjustment to its output: `outreach.hold_until` floors the derived date, and
+`outreach.countdown_paused` stops the derivation entirely for a gateway
+challenge, where there is no honest date to count from.
+(`lib/db/migrations/002_cadence.sql`, `lib/state-machine.ts`,
+`lib/derived-dates.ts`; tests: *an out-of-office is not a reply, not a touch,
+and survives the recompute*, *a gateway challenge stops the clock instead of
+moving it*.)
+
+**A quarantined step read as due now** (high) — the gateway handler nulls
+`scheduled_date`, and the queue treats a null date as "no deadline, offer it".
+The follow-up would have been offered into a quarantine the recipient never
+released.
+→ **Handled.** `buildQueue` excludes `countdown_paused` rows outright.
+(`lib/queue.ts`; test: *a quarantined step is never offered in the queue*.)
+
+**The break-up anchored on the wrong touch** (high) — `template-doctrine` §(d)
+counts both offsets from day 0 (0 → +4 → +15). Anchoring step 3 on step 2's send
+date instead stretched the sequence to a month. Anchoring purely on day 0 has
+the opposite failure: a user who disappears and sends touch 2 on day 13 gets
+touch 3 two days later, which reads as pestering to the only person whose
+opinion matters.
+→ **Handled.** Anchored on touch 1 per the doctrine, with a four-working-day
+floor after whatever the recipient actually last received.
+(`lib/derived-dates.ts`; test: *a late touch 2 pushes the break-up out rather
+than stacking it*.)
+
+**The send window was documented but never enforced** (critical) — `CULTURE.md`
+§9 makes Monday–Thursday the only window that is safe for every UAE org type,
+and nothing in the code knew. A follow-up whose countdown landed on a Friday was
+offered and sendable, into an inbox that would read it on Monday at best. Found
+by running the sweep, not by reading the code.
+→ **Handled.** `sendPermission` refuses outside the window, naming the next
+send day. `buildQueue` still renders the cards but with Send off — an empty
+screen on a Saturday reads as broken, whereas "three ready, held until Monday"
+is reassuring and true. (`lib/queue.ts`; tests: *nothing may be sent on a
+Friday, a Saturday or a Sunday*, *a weekend queue shows what is waiting rather
+than an empty screen*.)
+
+**The due-date clamp landed follow-ups on Saturdays** (high) — the rule "a date
+may move earlier only to tomorrow at the soonest" was implemented as a literal
+next calendar day, so a retroactive correction on a Friday produced a Saturday
+due date that then sat outside the send window with its countdown reading as
+satisfied.
+→ **Handled.** The floor is the next working day.
+(`lib/calendar.ts`; test: *the clamp floor is the next working day, never a
+Saturday*.)
+
+**The clamp fired on dates that were due today** (high) — between 20:00 UTC and
+midnight, Dubai has rolled over and the server has not. Any sweep in that window
+saw a legitimately-due follow-up as "in the past" and pushed it a day. This is
+four hours of every day.
+→ **Handled.** Today is not the past; the clamp only applies to dates strictly
+before today. (`lib/calendar.ts`.)
+
+**The year in an out-of-office is never written down** (medium) — "back on 5
+January", read on 28 December, was parsed as *last* January, eleven months in
+the past, where the clamp made it due tomorrow — into an empty office. And the
+year itself came off a UTC `Date`, which disagrees with Dubai for four hours
+either side of New Year.
+→ **Handled.** The reference day is a UAE date, and a date more than sixty days
+in the past rolls forward a year. The UTC read was caught by the date-arithmetic
+guard, doing exactly what it was built for. (`lib/classifier.ts`; test: *"back
+on 5 January" read in December means next January*.)
+
+**`recordInbound` returned a dangling id on every re-poll** (high) — the insert
+is `ON CONFLICT DO NOTHING` because polling is idempotent and sees the same
+message every sweep, but the function returned the id it had minted rather than
+the row that exists. The next foreign key pointing at it failed, so the second
+poll of any replied thread threw.
+→ **Handled.** It returns the stored row's id. (`lib/state-machine.ts`.)
+
+**The cron bypass could never match its own route** (high) — the password
+middleware let scheduled jobs through on `pathname.startsWith('/api/cron/')`,
+with a trailing slash the route `/api/cron` never has. Behind a password gate
+the sweep would have 401'd forever, silently, and the first symptom would have
+been follow-ups quietly not going out.
+→ **Handled.** (`middleware.ts`.)
+
+**A touch manufactured after the break-up already went out** (medium) —
+`advanceSequences` looked only at the row in front of it, so a history with a
+gap in it could produce a "just checking you saw this" after the closing email.
+→ **Handled.** The insert refuses when any later step already exists for that
+person. (`lib/scheduler.ts`.)
+
+**A dead thread costs a Gmail request every fifteen minutes, forever** (medium)
+— the register requires polling every thread ever sent, and that set only grows.
+Polling all of them every sweep is a quota storm waiting for the first quiet Eid
+week; polling only live ones loses the late reply the rule exists for.
+→ **Handled.** `thread_poll` carries a per-thread cadence: live sequences every
+sweep, closed ones once a day, and a thread that 404s five times retires.
+(`lib/poller.ts`, `lib/db/migrations/002_cadence.sql`.)
+
+---
+
+## Milestone audit — weeks 2, 3 and 4
+
+Every register item in scope, with the code or the reason. Silence is not an
+option, so items that are genuinely not done say so.
+
+### Reply classification and inbound handling
+
+| Register item | Status |
+|---|---|
+| Every inbound classified before it may change state (critical) | **Handled** — header pre-checks first (`Auto-Submitted`, `X-Autoreply`, `Precedence`, `multipart/report`), then patterns, then Claude; ambiguous defaults to a human reply and surfaces the thread (`lib/classifier.ts`). |
+| Referral gets torched by the ladder (critical) | **Handled** — every From/To/CC on an inbound message marks matching people `in_warm_thread`, which is a hard block on rotation; the company goes `paused_referral` and leaves it only by user action (`lib/state-machine.ts`, `lib/scheduler.ts`; tests: *a referral pauses the company and marks everyone on the thread warm*, *a warm contact is never picked up by ladder rotation*). **Deferred:** creating person rows for unmatched addresses at the domain — the addresses are recorded on the inbound row, so nothing is lost, but promoting them to ladder members is week 5. |
+| "Remove me" suppresses the domain, not the person (critical) | **Handled** — person suppressed by email hash and company `suppressed_by_request`, checked before any draft, permanent, surviving dormancy (`lib/state-machine.ts`, `lib/people.ts`). |
+| A rejection kills the whole ladder (critical) | **Handled** — `dormant_until` +90 days, every ladder row frozen, and rotation gated on company state so no amount of silence rotates past a no (tests: *a rejection kills the whole ladder…*, *the ladder never rotates past a rejection…*). |
+| Out-of-office counted as a real reply (critical) | **Handled** — not a reply, not a touch; return date + 2 working days, or 5 working days with no parseable date; `regenerate_at_send` set; past the break-up it stretches rather than closes (three tests). |
+| Late reply after the sequence closed (critical) | **Handled** — every thread ever sent is polled forever; a real reply reopens the person, un-dormants the company and freezes siblings (`lib/poller.ts`, `reopenForLateReply`). |
+| Escalation from an address we never emailed (high) | **Handled** — thread-first matching attaches any message on a tracked thread regardless of sender; `complaint_escalation` suppresses the domain at poll time, not at the next sweep. |
+| Secure-gateway challenge (high) | **Handled** — countdown paused, `company.gateway` recorded, challenge URL surfaced as an action, and after five working days of nothing it is treated as a soft bounce so the best contact is not frozen forever. |
+| "How did you get my email?" (high) | **Handled** — `provenance_challenge` halts the sequence and the action assembles the honest answer from the stored `person_source` URLs. |
+| Reply on LinkedIn or by phone (high) | **Handled** — "they replied elsewhere" on the follow-up card sets `replied_external` and halts the countdowns (`app/api/draft/route.ts`). |
+| Departed contact (medium) | **Handled** — permanent `departed`, evidence stale, named successor extracted and surfaced. |
+| Auto-ack from an unmonitored mailbox (medium) | **Handled** — `dead_end_mailbox`, `role_based = 1`, portal URL surfaced, no cooldown wasted. |
+| Person 2 calls out the email to person 1 (medium) | **Handled** — the generator receives `priorContactAtCompany` for every ladder step past the first and is contract-forbidden from first-contact phrasing; `prior_contact_callout` pre-drafts the honest pivot. |
+| Arabic inbound (medium) | **Handled** — Arabic and mixed-language few-shots in the classifier prompt, Arabic OOO patterns (`إجازة`) in the pattern pass, `language` stored on every inbound row. **Deferred:** the machine translation shown on the Review card — the language is detected and stored, but the translated body is week 5. |
+| Hard vs soft bounce (high) | **Handled** — 5.x.x closes the person and marks the pattern exemplar bounced; 4.x.x retries after one working day; the wording never contains an SMTP code (test: *a hard bounce closes the person and never blames the user*). |
+| Reply lands in SPAM (high) | **Handled** — `threads.get` returns spam-labelled messages, the reply still stops the sequence, and a "mark Not Spam" action with a deep link is raised (`lib/poller.ts`). |
+| historyId expiry and quota storms (medium) | **Handled differently, on purpose.** The History API is not used at all: the thread set is small and bounded, so `threads.get` on stored ids has no expiry to handle. The quota half is handled by the per-thread cadence, the token bucket and the backoff. |
+
+### Scheduler and state machine
+
+| Register item | Status |
+|---|---|
+| Reply races a queued follow-up (critical) | **Handled** — both guards. The poller supersedes atomically; the send-time gate re-checks inside the CAS and cannot lose (tests: *a reply supersedes every queued, drafted and approved step at once*, *the send gate wins the race the poller can lose*). |
+| Follow-up whose predecessor never sent (high) | **Handled** — an invariant repair, not an assertion (test: *a follow-up whose predecessor never sent cannot exist*). |
+| All date math in Asia/Dubai (high) | **Handled** — one module, CI grep, suite under `TZ=America/New_York`. Two live defects caught by it this week, both listed above. |
+| `scheduled_date` derived, never authoritative (high) | **Handled** — recomputed every sweep and on every calendar edit, with `hold_until` and `countdown_paused` as the stored facts it reads. **Still deferred:** the "confirm Eid dates" founder task three days before each window. |
+| Person 1 replies after person 2 started (high) | **Handled** — both resolutions, with person 2 pausing rather than closing so resuming needs no re-sourcing (two tests). |
+| Stateless idempotent sweep (high) | **Handled** — tests assert that running twice changes nothing and that a three-day outage converges to the same state as three daily runs. |
+| Post-gap backlog vs the daily ceiling (high) | **Handled** — follow-ups drain first against their own cap, first emails use the ramped ceiling after, combined hard cap, nothing rolls over (`lib/queue.ts`). |
+| Queue-open freshness pass (high) | **Handled** — the full sweep runs on every queue open and sends stay blocked until it finishes; the returning user sees "welcome back", never a backlog count. |
+| Sibling companies under one domain (medium) | **Handled** — every sequencing invariant keys on `org_group` (test: *two live sequences at one org group collapse to the oldest*). |
+| Global pause and "I got the job" (medium) | **Handled** — pause freezes the sweep entirely rather than filtering the queue; "I got the job" closes silent sequences without a word, routes warm threads to a courteous withdrawal, and logs the placement numbers (`app/api/actions/route.ts`). |
+
+### Still open, with reasons
+
+| Item | Status |
+|---|---|
+| Reply-assist drafting (critical) | **Not done.** A reply raises an action with coaching text, which is what stops the user freezing, but the pre-drafted response itself is not written yet. This is the biggest remaining gap and is the first thing in week 5. |
+| Inbound machine translation on the card | Week 5. Language is detected and stored; the translation is not rendered. |
+| Referral addresses promoted to person rows | Week 5. Recorded on the inbound row, so nothing is lost. |
+| "Confirm Eid dates" founder task | Week 5. The calendar screen already shows unconfirmed windows; the proactive nudge is missing. |
+| Reconnect banner on every screen, day-6 token prompt | Week 5. The block itself is enforced everywhere; the banner is on `/today` only. |
+| OAuth production publishing and CASA | Founder action, tracked in `DEPLOY.md`. |
+
+---
+
 ## Deferrals summary
 
-Nothing critical is deferred without a dated reason. The list, so week 2 starts
-from a known position:
+Nothing critical is deferred without a dated reason. Updated at the end of week
+4, so week 5 starts from a known position. Items closed since week 1 are struck
+through with what closed them.
 
 | Deferred | Until | Why |
 |---|---|---|
-| OAuth production publishing + Google verification | Before user #1 | Founder account action; tracked in `DEPLOY.md`. Also removes the 7-day testing-token expiry. |
-| `document_request` classification and CV-attached reply | Week 4 | Needs the reply pipeline. The CV half — having a CV at all — is done. |
-| Reconnect banner on all screens, day-6 proactive prompt | Week 4 | Two screens have content so far. |
-| Re-matching stored hygiene text against newly added companies | Week 2 | Needs company ingestion to hook to. |
-| Weekly signature re-fetch, nightly date recompute, "confirm Eid dates" task | Week 4 | All are scheduler jobs; the functions they call exist and are tested. |
+| OAuth production publishing + Google verification | Before user #1 | Founder account action; tracked in `DEPLOY.md`. Also removes the 7-day testing-token expiry. **Still open** — nothing in the codebase can close it. |
+| ~~`document_request` classification and CV-attached reply~~ | ~~Week 4~~ | **Half closed.** The classification exists and raises a CV action; the reply that carries the CV waits on reply-assist drafting in week 5. |
+| ~~Reconnect banner on all screens, day-6 proactive prompt~~ | Week 5 | **Still open.** The *block* is enforced everywhere it matters — no send while not `connected`, none while the poll is stale — but the banner lives on `/today` alone. |
+| ~~Re-matching stored hygiene text against newly added companies~~ | ~~Week 2~~ | **Closed** — `lib/blocklist.ts` matches by domain family at queue-build time, so a company added later is caught. |
+| ~~Weekly signature re-fetch, nightly date recompute~~ | ~~Week 4~~ | **Closed** — the sweep recomputes derived dates on every run and on every calendar edit (`app/api/cron/route.ts`). |
+| "Confirm Eid dates" founder task, three days before each window | Week 5 | **Still open.** The calendar screen shows unconfirmed windows and drafts crossing one carry `regenerate_at_send`, so the failure it guards against is already prevented; the nudge is the missing convenience. |
+| Reply-assist drafting | Week 5 | **The largest remaining gap.** A reply raises an action with coaching, which is what stops the user freezing, but the pre-drafted response is not written. |
+| Machine translation of Arabic inbound on the Review card | Week 5 | Language detected and stored; the rendered translation is missing. Classification itself is Arabic-capable and tested. |
+| Referral addresses promoted to person rows | Week 5 | Recorded on the inbound row and marked warm, so nobody gets cold-emailed. Promoting them to ladder members is the convenience half. |
 | Arabic-capable CV generation | No date | Upload path covers it; embedding a Unicode font is a week of work for a ten-second workaround. |
-| "Skip this company" and the warm-intro reframe | Week 3 | Live on the Review card. |
+| ~~"Skip this company" and the warm-intro reframe~~ | ~~Week 3~~ | **Closed** — live on the Review card, feeding the blocklist rather than just hiding the card. |
+| ~~Duplicate or lost sends: the CAS, pre-persisted Message-ID, repair sweep~~ | ~~Week 3~~ | **Closed** — `lib/send.ts`, with the two-tab and mid-send-crash tests. |
+| ~~Follow-ups don't thread for the recipient~~ | ~~Week 3/4~~ | **Closed** — full `References` chain and `In-Reply-To`, subject verbatim after `Re:`. |
+| ~~Reply in SPAM, DSN parsing, historyId expiry~~ | ~~Week 4~~ | **Closed** — spam-inclusive `threads.get`, DSN status parsing, and no History API to expire. |
+| ~~Token revoked mid-campaign: reconnect reply-sweep and backlog re-spreading~~ | ~~Week 4~~ | **Closed** — the sweep on queue open is the reply-sweep, and the budget split re-spreads the backlog without a burst. |
+| Explicit "switch account" action that archives live threads | No date | Rare, destructive, and safe today: a mismatched account is refused outright rather than silently accepted. |
