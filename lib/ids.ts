@@ -25,6 +25,7 @@ export const ID_PREFIX = {
   blockedDomain: 'blk',
   event: 'evt',
   action: 'act',
+  reply: 'rpl',
 } as const;
 
 export type IdKind = keyof typeof ID_PREFIX;

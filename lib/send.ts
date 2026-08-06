@@ -25,7 +25,14 @@ import { lockEvidenceForSend } from './evidence';
 import { gmailRequest, GmailError } from './gmail/client';
 import { newId, nowIso } from './ids';
 import { logEvent, logError } from './log';
-import { buildMime, newMessageId, toGmailRaw, withSignature } from './mime';
+import {
+  buildMime,
+  buildReplyMime,
+  newMessageId,
+  toGmailRaw,
+  withSignature,
+  type Attachment,
+} from './mime';
 import { sendBlockFor, type User } from './user';
 
 export interface SendResult {
@@ -382,6 +389,163 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
   }
 
   return { recovered, reverted, pending };
+}
+
+/**
+ * Sends an approved reply.
+ *
+ * The same shape as a cold send — claim, persist the Message-ID, call Gmail,
+ * probe rather than retry — with three deliberate differences:
+ *
+ *   - **No budget, no window, no spacing.** Answering someone who wrote to you
+ *     is not outreach and must never be rationed by a deliverability ceiling or
+ *     held for a Monday. The person is waiting.
+ *   - **No suppression check on the recipient.** They emailed us. Refusing to
+ *     answer a removal request because the address is suppressed would be the
+ *     tool preventing the one reply that request requires.
+ *   - **An attachment is possible**, for exactly one case: they asked for the
+ *     CV.
+ *
+ * The connection gate still applies: nothing sends while the Gmail connection
+ * is not live.
+ */
+export async function sendReply(
+  replyId: string,
+  user: User,
+  now: Date = new Date()
+): Promise<SendResult> {
+  if (user.connectionState !== 'connected') {
+    return {
+      ok: false,
+      outreachId: replyId,
+      message: 'Reconnect your email to send this — nothing is lost.',
+      reason: 'blocked',
+    };
+  }
+
+  const reply = await queryOne<{
+    id: string;
+    person_id: string;
+    subject: string | null;
+    body: string | null;
+    classification: string;
+    gmail_thread_id: string | null;
+    in_reply_to: string | null;
+    references_chain: string;
+    status: string;
+  }>('SELECT * FROM reply_draft WHERE id = ? AND user_id = ?', [replyId, user.id]);
+
+  if (!reply) return { ok: false, outreachId: replyId, message: 'That one is no longer here.', reason: 'not_approved' };
+  if (!reply.body?.trim()) {
+    return { ok: false, outreachId: replyId, message: 'There is nothing written yet.', reason: 'not_approved' };
+  }
+
+  const person = await queryOne<{ email: string | null; full_name_raw: string }>(
+    'SELECT email, full_name_raw FROM person WHERE id = ?',
+    [reply.person_id]
+  );
+  if (!person?.email) {
+    return { ok: false, outreachId: replyId, message: 'There is no address to reply to.', reason: 'no_address' };
+  }
+
+  const { claimReplyForSend } = await import('./reply-assist');
+  const messageId = await claimReplyForSend(replyId, user.id);
+  if (!messageId) {
+    return {
+      ok: false,
+      outreachId: replyId,
+      message: reply.status === 'sent' ? 'Already sent.' : 'Approve it first.',
+      reason: reply.status === 'sending' ? 'already_sending' : 'not_approved',
+    };
+  }
+
+  let attachment: Attachment | null = null;
+  if (reply.classification === 'document_request') {
+    const { currentCv, cvContent } = await import('./cv');
+    const current = await currentCv(user.id);
+    // Only an approved CV is ever attached. An unreviewed one going to a hiring
+    // manager is worse than a line saying it is coming.
+    if (current?.approved) {
+      const file = await cvContent(user.id, current.id);
+      if (file) {
+        attachment = { filename: file.filename, mimeType: file.mimeType, content: file.content };
+      }
+    }
+  }
+
+  const body = withSignature(reply.body, user.signatureBlock);
+  const references: string[] = JSON.parse(reply.references_chain);
+
+  const mime = buildReplyMime({
+    fromName: user.canonicalName ?? user.name,
+    fromEmail: user.sendAsEmail ?? user.gmailAddress!,
+    toName: person.full_name_raw,
+    toEmail: person.email,
+    subject: reply.subject ?? '',
+    body,
+    messageId,
+    inReplyTo: reply.in_reply_to,
+    references,
+    attachment,
+  });
+
+  const at = nowIso(now);
+  try {
+    const response = await gmailRequest<{ id: string; threadId: string }>(user.id, '/users/me/messages/send', {
+      method: 'POST',
+      body: {
+        raw: toGmailRaw(mime),
+        ...(reply.gmail_thread_id ? { threadId: reply.gmail_thread_id } : {}),
+      },
+    });
+
+    await execute(
+      `UPDATE reply_draft
+          SET status = 'sent', gmail_message_id = ?, gmail_thread_id = ?,
+              sent_body_verbatim = ?, sent_at = ?, updated_at = ?
+        WHERE id = ?`,
+      [response.id, response.threadId, body, at, at, replyId]
+    );
+    // The action that raised this card is done.
+    await execute(
+      `UPDATE next_action SET resolved_at = ? WHERE user_id = ? AND person_id = ? AND resolved_at IS NULL`,
+      [at, user.id, reply.person_id, ]
+    );
+
+    await logEvent({
+      event: 'sent',
+      userId: user.id,
+      entityType: 'reply',
+      entityId: replyId,
+      detail: { classification: reply.classification, attachedCv: attachment !== null },
+    });
+
+    return { ok: true, outreachId: replyId, gmailMessageId: response.id, message: 'Sent.' };
+  } catch (e) {
+    const found = await probeForSentMessage(user.id, messageId);
+    if (found) {
+      await execute(
+        `UPDATE reply_draft SET status = 'sent', gmail_message_id = ?, sent_body_verbatim = ?,
+                                sent_at = ?, updated_at = ? WHERE id = ?`,
+        [found.id, body, at, at, replyId]
+      );
+      return { ok: true, outreachId: replyId, gmailMessageId: found.id, message: 'Sent.' };
+    }
+
+    // Back to approved, not left in `sending`: unlike a cold send, the user is
+    // standing here waiting and needs the button to work again.
+    await execute(`UPDATE reply_draft SET status = 'approved', updated_at = ? WHERE id = ?`, [at, replyId]);
+    await logError('error', e, { userId: user.id, entityType: 'reply', entityId: replyId });
+    return {
+      ok: false,
+      outreachId: replyId,
+      message:
+        e instanceof GmailError
+          ? e.userMessage
+          : 'We could not reach your email just now. Nothing was lost — try again shortly.',
+      reason: 'gmail_error',
+    };
+  }
 }
 
 /** Approves a draft. Separate from sending: approval is the human's act. */

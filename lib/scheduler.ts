@@ -29,6 +29,7 @@ import { generate, loadContext } from './generator';
 import { newId, nowIso } from './ids';
 import { logEvent } from './log';
 import { pollReplies, type PollResult } from './poller';
+import { draftPendingReplies } from './reply-assist';
 import { freshnessPass } from './queue';
 import { repairStuckSends } from './send';
 import type { User } from './user';
@@ -69,6 +70,8 @@ export interface SweepResult {
   recompute: RecomputeResult;
   predrafted: number;
   refused: number;
+  /** Replies pre-written for the user. Always drafted before cold emails. */
+  repliesDrafted: number;
   freshness: { staled: number; superseded: number };
   skipped: string | null;
 }
@@ -97,6 +100,7 @@ export async function sweep(
     recompute: { examined: 0, changed: 0, flaggedForRegeneration: 0, calendarVersion: 0 },
     predrafted: 0,
     refused: 0,
+    repliesDrafted: 0,
     freshness: { staled: 0, superseded: 0 },
     skipped: null,
   };
@@ -128,6 +132,12 @@ export async function sweep(
   result.recompute = await recomputeDerivedDates({ now });
 
   if (options.predraft !== false) {
+    // Replies first, always. Someone is waiting on one of these; nobody is
+    // waiting on a cold email, and if the budget for Claude calls runs short in
+    // a single sweep it must run short on the cold half.
+    const replies = await draftPendingReplies(user.id, now);
+    result.repliesDrafted = replies.drafted + replies.needsFact;
+
     const drafted = await predraftDue(user, now);
     result.predrafted = drafted.drafted;
     result.refused = drafted.refused;
@@ -143,6 +153,7 @@ export async function sweep(
       rotated: result.rotated,
       predrafted: result.predrafted,
       refused: result.refused,
+      repliesDrafted: result.repliesDrafted,
       woken: result.woken,
       invariantsFixed: result.invariantsFixed,
       gatewayTimedOut: result.gatewayTimedOut,

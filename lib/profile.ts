@@ -175,6 +175,36 @@ export async function saveVerificationFraming(
   );
 }
 
+/**
+ * A fact the user supplied mid-flight, in answer to a drafting question.
+ *
+ * "When could you start?" gets asked by every second positive reply. Storing
+ * the answer as a profile field rather than as a one-off means it is asked
+ * once: a tool that asks the same question four times stops being trusted, and
+ * this user has fifteen minutes a week to spend on it.
+ *
+ * `concrete` because the user typed it in answer to a specific question, which
+ * is exactly the standard the interview's specificity gate is testing for.
+ */
+export async function recordSideAnswer(
+  userId: string,
+  question: string,
+  answer: string
+): Promise<void> {
+  // Keyed on the question so the same one overwrites rather than accumulating,
+  // and prefixed so it never collides with an interview field.
+  const field = `asked:${question.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 60)}`;
+  const at = nowIso();
+  await execute(
+    `INSERT INTO profile_answer (id, user_id, field, value, specificity, followup_question, created_at, updated_at)
+     VALUES (?, ?, ?, ?, 'concrete', ?, ?, ?)
+     ON CONFLICT (user_id, field) DO UPDATE SET
+       value = excluded.value, followup_question = excluded.followup_question,
+       updated_at = excluded.updated_at`,
+    [newId('answer'), userId, field, JSON.stringify(answer), question, at, at]
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Turning answers into what the generator may read
 // ---------------------------------------------------------------------------

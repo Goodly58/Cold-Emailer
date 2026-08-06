@@ -27,7 +27,24 @@ interface OpenAction {
   companyName: string | null;
 }
 
+interface ReplyDraft {
+  id: string;
+  personName: string;
+  companyName: string;
+  classification: string;
+  subject: string;
+  body: string | null;
+  question: string | null;
+  status: string;
+  inboundBody: string;
+  inboundTranslated: string | null;
+  inboundLanguage: string;
+  hoursLeft: number | null;
+  attachCv: boolean;
+}
+
 interface Queue {
+  replies: ReplyDraft[];
   followUps: QueueItem[];
   firstEmails: QueueItem[];
   needsFact: Array<{ outreachId: string; personName: string; companyName: string; request: string }>;
@@ -148,6 +165,15 @@ export default function TodayClient({ firstName }: { firstName: string }) {
         and every heading on the screen, because the reply is the climax of the
         whole product and the moment the user freezes.
       */}
+      {queue.replies?.length > 0 && (
+        <>
+          <h2>Someone wrote back</h2>
+          {queue.replies.map((reply) => (
+            <ReplyCard key={reply.id} reply={reply} onDone={() => void load()} />
+          ))}
+        </>
+      )}
+
       {queue.actions?.length > 0 && (
         <>
           <h2>Waiting on you</h2>
@@ -235,6 +261,192 @@ export default function TodayClient({ firstName }: { firstName: string }) {
         <a className="linkish" href="/dashboard">See everything in play</a>
       </p>
     </>
+  );
+}
+
+/**
+ * The reply card.
+ *
+ * Everything about this is arranged against one failure: the user reads the
+ * interview invite in Gmail, feels the weight of it, decides to answer
+ * "properly" tomorrow, and four days later the manager has moved on.
+ *
+ * So it is open by default — no tap to reveal, no second screen — the draft is
+ * already written and editable in place, the countdown is in hours rather than
+ * days, and the primary button says Send rather than Review. The work is done;
+ * all that is left is agreeing to it.
+ */
+function ReplyCard({ reply, onDone }: { reply: ReplyDraft; onDone: () => void }) {
+  const [body, setBody] = useState(reply.body ?? '');
+  const [answer, setAnswer] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+
+  async function post(payload: Record<string, unknown>) {
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/reply', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: reply.id, ...payload }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setError(result.error ?? result.message ?? 'That did not go through.');
+        return null;
+      }
+      return result;
+    } catch {
+      setError('That did not go through. Nothing was lost — try again in a moment.');
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (sent) {
+    return (
+      <div className="card" style={{ borderColor: 'var(--accent)' }}>
+        <strong>Replied to {reply.personName}.</strong>
+        <p className="muted" style={{ margin: '6px 0 0' }}>
+          That was the one that mattered.
+        </p>
+      </div>
+    );
+  }
+
+  const urgent = reply.hoursLeft !== null && reply.hoursLeft <= 24;
+
+  return (
+    <div className="card" style={{ borderColor: urgent ? 'var(--accent)' : undefined }}>
+      <strong>
+        {reply.personName} at {reply.companyName}
+      </strong>
+
+      {reply.hoursLeft !== null && (
+        <p
+          className="help"
+          style={{ marginTop: 4, color: urgent ? 'var(--accent)' : undefined }}
+        >
+          {reply.hoursLeft < 0
+            ? 'Overdue. Still worth sending — late beats never, by a lot.'
+            : reply.hoursLeft <= 3
+              ? `${reply.hoursLeft} hours left today.`
+              : reply.hoursLeft <= 24
+                ? `${reply.hoursLeft} hours left.`
+                : 'Due tomorrow. Today is better.'}
+        </p>
+      )}
+
+      {/* What they actually said. Answering the classification instead of the
+          person is how a reply reads as automated. */}
+      <blockquote
+        style={{
+          margin: '10px 0',
+          padding: '8px 12px',
+          borderLeft: '3px solid var(--line)',
+          background: 'var(--bg-soft)',
+          borderRadius: 8,
+          whiteSpace: 'pre-wrap',
+          fontSize: '0.94em',
+        }}
+      >
+        {reply.inboundBody.slice(0, 900)}
+      </blockquote>
+
+      {reply.inboundTranslated && (
+        <p className="help" style={{ marginTop: -4 }}>
+          In English: {reply.inboundTranslated}
+        </p>
+      )}
+
+      {reply.status === 'needs_fact' && reply.question ? (
+        // A missing fact is a question, never an invention. The user has to
+        // live with whatever this email promises.
+        <>
+          <p style={{ margin: '10px 0 6px' }}>
+            <strong>One thing before we write this:</strong> {reply.question}
+          </p>
+          <textarea
+            className="field"
+            rows={2}
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder="In your own words"
+            style={{ width: '100%' }}
+          />
+          <button
+            type="button"
+            className="button primary"
+            disabled={busy || answer.trim().length === 0}
+            onClick={async () => {
+              const result = await post({ action: 'answer_question', answer });
+              if (result?.reply?.body) setBody(result.reply.body);
+              onDone();
+            }}
+          >
+            {busy ? 'Writing…' : 'Use this and write the reply'}
+          </button>
+          <p className="help">
+            We will remember this, so you are not asked again next time someone
+            asks the same thing.
+          </p>
+        </>
+      ) : (
+        <>
+          {reply.status === 'write_yourself' && reply.question && (
+            // Not a question — there is nothing the user could answer that
+            // would unblock it. An empty box and a reason beats a prompt they
+            // cannot satisfy, which would loop forever.
+            <p className="help" style={{ marginTop: 8 }}>
+              {reply.question}
+            </p>
+          )}
+          <textarea
+            className="field"
+            rows={7}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder={reply.status === 'write_yourself' ? 'Two or three lines is right.' : undefined}
+            style={{ width: '100%', marginTop: 6 }}
+          />
+          {reply.attachCv && (
+            <p className="help">Your CV goes with this one, attached.</p>
+          )}
+          {error && <div className="notice warn">{error}</div>}
+          <p style={{ marginTop: 10, marginBottom: 0 }}>
+            <button
+              type="button"
+              className="button primary"
+              disabled={busy || body.trim().length === 0}
+              onClick={async () => {
+                const result = await post({ action: 'send', edited: body });
+                if (result?.ok) setSent(true);
+              }}
+            >
+              {busy ? 'Sending…' : 'Send this reply'}
+            </button>{' '}
+            <button
+              type="button"
+              className="button secondary"
+              disabled={busy}
+              onClick={async () => {
+                await post({ action: 'dismiss' });
+                onDone();
+              }}
+            >
+              I handled it myself
+            </button>
+          </p>
+          <p className="help">
+            Edit anything you like first. It is your name on it, and a reply that
+            sounds like you beats a perfect one that does not.
+          </p>
+        </>
+      )}
+    </div>
   );
 }
 

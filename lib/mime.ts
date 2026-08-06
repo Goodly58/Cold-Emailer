@@ -82,6 +82,67 @@ export function buildMime(parts: MessageParts): string {
   return `${headers.join('\r\n')}\r\n\r\n${body}\r\n`;
 }
 
+export interface Attachment {
+  filename: string;
+  mimeType: string;
+  content: Buffer;
+}
+
+/**
+ * A reply, optionally carrying one attachment.
+ *
+ * Deliberately a separate function from `buildMime`, which has no attachment
+ * path at all. The distinction is not stylistic: a CV attached to a *cold*
+ * email is a top gateway-quarantine trigger and the message is never seen. A CV
+ * attached to a reply to "please send your CV" is the entire point of the
+ * email. Keeping them as two builders means the cold path cannot grow an
+ * attachment by accident, however a future caller is written.
+ *
+ * One attachment, never more, and only ever the user's own approved CV.
+ */
+export function buildReplyMime(parts: MessageParts & { attachment?: Attachment | null }): string {
+  if (!parts.attachment) return buildMime(parts);
+
+  const boundary = `b_${randomUUID().replace(/-/g, '')}`;
+  const headers: string[] = [
+    `From: ${formatAddress(parts.fromName, parts.fromEmail)}`,
+    `To: ${formatAddress(parts.toName, parts.toEmail)}`,
+    `Subject: ${encodeHeader(parts.subject)}`,
+    `Message-ID: ${parts.messageId}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+  ];
+  if (parts.inReplyTo) headers.push(`In-Reply-To: ${parts.inReplyTo}`);
+  if (parts.references && parts.references.length > 0) {
+    headers.push(`References: ${parts.references.join(' ')}`);
+  }
+
+  const body = parts.body.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n');
+  // 76 characters is the RFC 2045 line limit. Some gateways reject longer
+  // lines outright, and a rejected CV is indistinguishable from being ignored.
+  const encoded = parts.attachment.content.toString('base64').replace(/(.{76})/g, '$1\r\n');
+
+  return [
+    headers.join('\r\n'),
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    body,
+    '',
+    `--${boundary}`,
+    `Content-Type: ${parts.attachment.mimeType}; name="${parts.attachment.filename}"`,
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: attachment; filename="${parts.attachment.filename}"`,
+    '',
+    encoded,
+    '',
+    `--${boundary}--`,
+    '',
+  ].join('\r\n');
+}
+
 /** Gmail's `raw` field is base64url with no padding. */
 export function toGmailRaw(mime: string): string {
   return Buffer.from(mime, 'utf8').toString('base64url');

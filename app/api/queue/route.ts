@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { openActions } from '@/lib/poller';
 import { buildQueue } from '@/lib/queue';
+import { openReplies } from '@/lib/reply-assist';
 import { sweep, welcomeBack } from '@/lib/scheduler';
 import { currentUser, sendBlockFor } from '@/lib/user';
 
@@ -36,10 +37,12 @@ export async function GET() {
 
   return NextResponse.json({
     ...queue,
+    // Above everything. A person is waiting on each of these.
+    replies: await openReplies(fresh.id),
     actions: await openActions(fresh.id, 5),
     welcome: await welcomeBack(fresh),
     freshness: swept.freshness,
-    replies: swept.poll?.transitions ?? [],
+    justHappened: swept.poll?.transitions ?? [],
     sendBlock: block.blocked ? { reason: block.reason, message: block.userMessage } : null,
     paused: fresh.paused,
     placed: Boolean(fresh.placedDate),
