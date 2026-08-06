@@ -252,3 +252,31 @@ Where the build diverged from the plan, with the reason. Per ULTRAPROMPT §7,
   rate refuses to render below twenty sends: the cadence puts most replies on
   days 5–12, so an honest week-one reply count is zero, and a headline zero is a
   normal state displayed as failure.
+
+### 2026-08-06 — week 5
+
+- **Reply assist is its own table, not an `outreach` row.** §5 has outreach
+  capped at three touches by `step IN (1,2,3)` and counted against the daily
+  ceiling. A reply is neither: answering somebody who wrote to you is not
+  outreach and must never be rationed by a deliverability budget or held for a
+  Monday. `reply_draft` (migration `003`) is separate for that reason, and
+  `sendReply` deliberately skips the ceiling, the same-domain spacing, the
+  send window, and the recipient suppression check — refusing to answer a
+  removal request because the address is suppressed would be the tool defeating
+  its own rule.
+- **Two builders for MIME, not a flag.** `buildMime` has no attachment path at
+  all and `buildReplyMime` takes at most one. A CV on a cold email is a top
+  gateway-quarantine trigger; a CV on a reply to "send me your CV" is the whole
+  email. Two functions mean the cold path cannot grow an attachment however a
+  future caller is written, and a test asserts it.
+- **The reply deadline is today, not "one working day".** Read literally the
+  rule gives 88 hours on a Friday, and the mechanism this feature rests on is a
+  number in hours. Today whenever today is a working day with three hours left;
+  the next working day otherwise.
+- **`needs_fact` and `write_yourself` are separate states.** The clarify-and-
+  refuse contract produces a question only when there is a fact the user could
+  supply. When drafting itself is unavailable the card hands over an empty box
+  and says why — asking an unanswerable question on a deadline is a loop.
+- **The dashboard withholds rates below twenty sends.** §9 lists reply metrics;
+  they are present but a rate refuses to render until it means something. A
+  template killed on n=3 is a template killed at random.

@@ -462,6 +462,83 @@ option, so items that are genuinely not done say so.
 
 ---
 
+## Week 5 — found by running it, not by reading it
+
+Every item here was invisible to the unit tests, because each is two correct
+pieces meeting badly. They were found by executing a full scenario end to end
+against a real database: send touch 1, sweep, receive a referral, apply it,
+rebuild the queue, sweep twice more.
+
+**A referral was not caught without an API key** (critical) — the pattern pass
+is the fallback when Claude is unconfigured or simply unreachable. It had rules
+for gateways, out-of-office, removals, complaints, departures and provenance,
+and none for referrals. "Looping in Fatima who runs our Emiratisation
+programme" fell through to the safe default of a human reply, which protects the
+sender — the sequence stops — but does not mark Fatima warm. She is rank 2 on
+the ladder. The one classification whose failure cannot be undone was the one
+depending on a network call.
+→ **Handled.** `REFERRAL_PATTERNS` and a CV-request pattern, referral checked
+first because a CV sent a day late is recoverable and a cold email to someone
+just introduced is not. (`lib/classifier.ts`; tests: *a referral is caught by
+pattern, with no model available*, *a departure still beats a referral when both
+could match*.)
+
+**`\b` around Arabic never matches** (medium) — the Arabic CV-request pattern
+was written `/\b(أرسل)\b.../`. JavaScript defines `\b` on `[A-Za-z0-9_]`, and
+every Arabic letter is a non-word character, so the boundary can never assert
+between two of them. The pattern was dead on arrival and would have looked
+correct in review forever.
+→ **Handled.** Word boundaries dropped for the Arabic patterns.
+(`lib/classifier.ts`.)
+
+**The reply deadline was 88 hours** (high) — "within one working day", read
+literally, means the *next* working day. On a Friday that is Monday evening.
+The entire mechanism of reply assist is the pressure of a number in hours, and
+88 is not a deadline, it is a shrug.
+→ **Handled.** The deadline is today whenever today is a working day with at
+least three hours left, and the next working day otherwise — a reply arriving at
+16:30 gets tomorrow, because a deadline nobody could have met teaches the user
+to ignore deadlines. (`lib/reply-assist.ts`; test: *the deadline is today
+whenever today still has hours in it*.)
+
+**`reply_conflict` was never set by anything** (high) — `resolveReplyConflict`
+handled both resolutions and the dashboard rendered the choice, but no code path
+ever put a company into the state. The decision card was unreachable, and a
+company with two live threads simply stayed that way.
+→ **Handled.** Any real reply — a question and a CV request as much as a yes —
+checks for a colleague mid-sequence at the same org group and raises the
+decision. (`lib/state-machine.ts`; tests: *a reply while a colleague is
+mid-sequence is a decision, not a freeze*, *a mere question raises the same
+conflict a yes would*.)
+
+**A Next Action with no person stacked once per sweep** (high) — the dedupe is a
+partial unique index on `(user_id, person_id, kind)`, and SQLite treats NULLs as
+distinct. An action about the system rather than about somebody — "confirm the
+Eid dates" — would have added a card every fifteen minutes, four an hour, until
+the user stopped reading the list.
+→ **Handled.** Person-less actions are checked explicitly, and marked cold so a
+calendar chore can never sort above someone who wrote to you. (`lib/poller.ts`.)
+
+**A reply the tool could not draft was an unanswerable question** (high) — with
+no drafting service the card asked the user a question, and answering it re-ran
+the drafting that had just failed, which asked again. An infinite loop with a
+deadline attached, on the most time-critical screen in the product.
+→ **Handled.** `needs_fact` and `write_yourself` are different states: one asks
+for a fact only the user knows, the other hands over an empty box and says why.
+(`lib/reply-assist.ts`, migration `003`; test: *a positive reply becomes a card
+with a countdown even with no drafting service*.)
+
+**The Mon–Thu send window existed in `lib/calendar.ts` and was never consulted**
+(critical) — `isSendWindowDay` was written in week 1 straight from `CULTURE.md`
+§9, correctly, and then no caller ever used it. A follow-up whose countdown
+landed on a Friday was offered and sendable.
+→ **Handled.** Enforced in `sendPermission` and shown held-with-a-date in the
+queue. The general lesson is logged here deliberately: a helper that encodes a
+rule is not the same as a rule being enforced, and only running the thing found
+the difference. (`lib/queue.ts`.)
+
+---
+
 ## Deferrals summary
 
 Nothing critical is deferred without a dated reason. Updated at the end of week
