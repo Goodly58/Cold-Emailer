@@ -112,6 +112,42 @@ async function freezeSiblings(userId: string, companyId: string, exceptPersonId:
   );
 }
 
+/**
+ * Someone else at this organisation is already mid-sequence.
+ *
+ * This is the state the register calls `reply_conflict`, and the whole point of
+ * detecting it is that the *user* has to decide, not the code: "person 1 was a
+ * dead end" is a real outcome, and so is "go with the one who answered". Only
+ * email 1 ever went out to person 2, so there is nothing to retract either way
+ * — what there is, is a company with two live threads and no plan.
+ *
+ * Checked at org_group, so "Emirates NBD" and "Emirates NBD Capital" count as
+ * one organisation. Returns null when there is no conflict, which is the
+ * ordinary case.
+ */
+async function conflictingSequence(companyId: string, exceptPersonId: string): Promise<string | null> {
+  const row = await queryOne<{ id: string }>(
+    `SELECT p.id FROM person p
+       JOIN company c ON c.id = p.company_id
+      WHERE c.org_group_id = (SELECT org_group_id FROM company WHERE id = ?)
+        AND p.id <> ? AND p.status = 'in_sequence'
+      LIMIT 1`,
+    [companyId, exceptPersonId]
+  );
+  return row?.id ?? null;
+}
+
+/** Marks the conflict and pauses the other thread, in that order. */
+async function freezeCompanyForConflict(
+  userId: string,
+  companyId: string,
+  keepPersonId: string,
+  at: string
+): Promise<number> {
+  await setCompanyState(userId, companyId, 'reply_conflict', null, at);
+  return freezeSiblings(userId, companyId, keepPersonId, at);
+}
+
 type Handler = (result: ClassificationResult, context: Context) => Promise<TransitionResult>;
 
 const HANDLERS: Record<Classification, Handler> = {
@@ -127,13 +163,16 @@ const HANDLERS: Record<Classification, Handler> = {
     // The whole company freezes, not just this person. No calendar integration
     // exists in v1, so an interview being arranged in Gmail is invisible to us
     // — and a cold email to a colleague mid-arrangement is unrecoverable.
-    await setCompanyState(userId, companyId, 'in_conversation', null, at);
+    const conflict = await conflictingSequence(companyId, personId);
+    await setCompanyState(userId, companyId, conflict ? 'reply_conflict' : 'in_conversation', null, at);
     const frozen = await freezeSiblings(userId, companyId, personId, at);
 
     return {
-      summary: 'Positive reply. The whole company is on hold until you resolve it.',
+      summary: conflict
+        ? 'Positive reply, while a colleague of theirs was mid-sequence. Both are on hold until you choose.'
+        : 'Positive reply. The whole company is on hold until you resolve it.',
       personStatus: 'replied',
-      companyStatus: 'in_conversation',
+      companyStatus: conflict ? 'reply_conflict' : 'in_conversation',
       superseded: superseded + frozen,
       action: {
         kind: 'reply_assist',
@@ -142,26 +181,41 @@ const HANDLERS: Record<Classification, Handler> = {
     };
   },
 
-  neutral_question: async (_result, { personId, now }) => {
+  neutral_question: async (_result, { userId, personId, companyId, now }) => {
     const at = nowIso(now);
     const superseded = await supersedeQueued(personId, at);
     await execute(`UPDATE person SET status = 'replied', updated_at = ? WHERE id = ?`, [at, personId]);
+
+    // A question is a real reply, so a colleague mid-sequence at the same
+    // company is a conflict just as much as a yes would be. Two live threads
+    // into one office is the thing being prevented, not two enthusiastic ones.
+    const conflict = await conflictingSequence(companyId, personId);
+    const frozen = conflict ? await freezeCompanyForConflict(userId, companyId, personId, at) : 0;
+
     return {
-      summary: 'They asked something. Answer it.',
+      summary: conflict
+        ? 'They asked something, while a colleague of theirs was mid-sequence. Answer them, then choose which thread to keep.'
+        : 'They asked something. Answer it.',
       personStatus: 'replied',
-      superseded,
+      companyStatus: conflict ? 'reply_conflict' : undefined,
+      superseded: superseded + frozen,
       action: { kind: 'reply_assist', message: 'They asked you a question. Answering today keeps this alive.' },
     };
   },
 
-  document_request: async (_result, { personId, now }) => {
+  document_request: async (_result, { userId, personId, companyId, now }) => {
     const at = nowIso(now);
     const superseded = await supersedeQueued(personId, at);
     await execute(`UPDATE person SET status = 'replied', updated_at = ? WHERE id = ?`, [at, personId]);
+
+    const conflict = await conflictingSequence(companyId, personId);
+    const frozen = conflict ? await freezeCompanyForConflict(userId, companyId, personId, at) : 0;
+
     return {
       summary: 'They asked for your CV.',
       personStatus: 'replied',
-      superseded,
+      companyStatus: conflict ? 'reply_conflict' : undefined,
+      superseded: superseded + frozen,
       action: {
         kind: 'reply_assist_cv',
         message: 'They asked for your CV. It is ready — this is a two-tap reply, and it is urgent.',

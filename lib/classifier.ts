@@ -237,8 +237,65 @@ export function classifyByPattern(message: InboundMessage): ClassificationResult
     };
   }
 
+  // Referral is checked here, before the CV request, and it is checked by
+  // pattern at all for one reason: it is the classification whose failure
+  // cannot be undone. Miss a CV request and the user sends it a day late; miss
+  // a referral and the person who was warmly introduced to them receives a cold
+  // email from a stranger four days later.
+  //
+  // Without an API key — or when Claude is simply unreachable — the default is
+  // a human reply, which is safe for the sender but does not mark the
+  // introduced colleague warm. These phrasings are unambiguous enough to catch
+  // without the model.
+  if (REFERRAL_PATTERNS.some((p) => p.test(text))) {
+    return {
+      classification: 'referral',
+      via: 'pattern',
+      confidence: 'medium',
+      language,
+      extracted: { successor: extractSuccessor(text) },
+      note: 'Everyone on this thread is warm now. Reply in the thread they made, never with a new cold email.',
+    };
+  }
+
+  if (
+    /\b(send|share|forward|attach|email)\b[^.\n]{0,40}\b(cv|c\.v\.|resume|résumé|portfolio|transcript)\b/i.test(text) ||
+    /\b(cv|resume|résumé)\b[^.\n]{0,25}\b(please|kindly)\b/i.test(text) ||
+    /(أرسل|ارسل|أرفق)[^.\n]{0,30}(السيرة الذاتية|سيرتك)/.test(text)
+  ) {
+    return {
+      classification: 'document_request',
+      via: 'pattern',
+      confidence: 'high',
+      language,
+      extracted: {},
+      note: 'They asked for the CV. It is ready — this is a two-tap reply, and it is urgent.',
+    };
+  }
+
   return null;
 }
+
+/**
+ * Phrasings that mean "talk to someone else instead".
+ *
+ * Deliberately conservative. A false referral pauses the company and waits for
+ * the user, which costs a day; the model catches the rest when it is available.
+ */
+const REFERRAL_PATTERNS: RegExp[] = [
+  // "Looping in Fatima", "copying in my colleague", "cc'ing Sara".
+  /\b(looping|copying|cc'?ing|bringing|adding)\s+(you\s+)?in\b/i,
+  /\b(copied|cc'?d|introduced|connected)\s+you\s+(in\s+)?(to|with)\b/i,
+  /\bplease\s+(contact|speak (to|with)|reach out to|liaise with|coordinate with)\b/i,
+  /\b(is|are|would be)\s+the\s+(right|best|correct)\s+person\b/i,
+  /\b(redirect(ing)?|forward(ing)?|passing)\s+(you|this|your (email|note|message))\s+(on\s+)?to\b/i,
+  /\b(better|best)\s+(placed|person)\s+to\s+(help|answer|advise)\b/i,
+  /\b(handles?|looks after|owns|runs)\s+(this|that|our)\b[^.\n]{0,40}\b(instead|rather than|not me)\b/i,
+  /\b(my|our)\s+colleague\b/i,
+  // "I have added my colleague X" / "please contact my colleague".
+  /\bزميل(ي|تي)\b/,
+  /\bالتواصل مع\b/,
+];
 
 // ---------------------------------------------------------------------------
 // Claude

@@ -21,7 +21,7 @@
  * **The countdown is one working day, shown in hours.** "Due tomorrow" is easy
  * to postpone. "9 hours left" is not.
  */
-import { addDays, nextDue, todayUae } from './calendar';
+import { addDays, isWorkingDay, nextWorkingDay, todayUae, type WorkingCalendar } from './calendar';
 import { loadCalendar } from './calendar-store';
 import type { Classification } from './classifier';
 import { askClaude, isClaudeConfigured } from './claude';
@@ -169,7 +169,7 @@ export async function draftReply(
 
   const profile = await generatorProfile(userId);
   const calendar = await loadCalendar();
-  const due = nextDue(todayUae(now), 1, calendar);
+  const due = replyDeadline(calendar, now);
 
   // The thread, so a reply answers what was actually said rather than the
   // classification label. Our own sent bodies are included: "as I mentioned"
@@ -422,6 +422,33 @@ function toDraft(row: DraftRow, now: Date): ReplyDraft {
     // The one classification where the CV is the entire point of the reply.
     attachCv: row.classification === 'document_request',
   };
+}
+
+/** Below this many hours left, "today" stops being an honest deadline. */
+const TOO_LATE_TODAY_HOURS = 3;
+
+/**
+ * When a reply is due.
+ *
+ * "Within one working day" read literally — the *next* working day — produces
+ * 88 hours on a Friday, and 88 hours is not a deadline, it is a shrug. The
+ * mechanism this whole feature rests on is the pressure of a number in hours,
+ * and a number that large removes it entirely.
+ *
+ * So the deadline is today whenever today is a working day with meaningful time
+ * left in it, and the next working day otherwise. A reply that arrives at 16:30
+ * gets tomorrow rather than a countdown that is already expiring, because a
+ * deadline nobody could have met teaches the user to ignore deadlines.
+ */
+export function replyDeadline(calendar: WorkingCalendar, now: Date = new Date()): string {
+  const today = todayUae(now);
+  if (isWorkingDay(today, calendar) && hoursUntilEndOf(today, now) >= TOO_LATE_TODAY_HOURS) {
+    return today;
+  }
+  // The next working day, not `nextDue(today, 1)`. `nextDue` counts a full
+  // working day *after* its anchor, which on a Saturday lands on Tuesday — a
+  // reply that arrived at the weekend is due Monday, not the day after Monday.
+  return nextWorkingDay(addDays(today, 1), calendar);
 }
 
 /**

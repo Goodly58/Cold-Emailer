@@ -202,14 +202,54 @@ test('a positive reply freezes the whole company, not just the person', async ()
   // Gmail is invisible to us — and a cold email to a colleague mid-arrangement
   // cannot be taken back.
   await person('per_b1');
-  await person('per_b2', { ladder_rank: 2, status: 'in_sequence' });
+  await person('per_b2', { ladder_rank: 2, status: 'ready' });
   await outreach({ id: 'out_b1', personId: 'per_b1', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
-  await outreach({ id: 'out_b2', personId: 'per_b2', step: 2, status: 'drafted', scheduled: '2026-08-06' });
+  await outreach({ id: 'out_b2', personId: 'per_b2', step: 1, status: 'drafted', scheduled: '2026-08-06' });
 
   await apply(classification(), 'per_b1');
 
   assert.equal(await statusOf('out_b2'), 'paused_pending_reply');
   assert.equal((await companyState())!.status, 'in_conversation');
+});
+
+test('a reply while a colleague is mid-sequence is a decision, not a freeze', async () => {
+  // The company now has two live threads. Which one to keep is the user's call:
+  // "person 1 was a dead end" is a real outcome, and only email 1 ever went out
+  // to person 2, so there is nothing to retract either way.
+  await person('per_cf1');
+  await person('per_cf2', { ladder_rank: 2, status: 'in_sequence' });
+  await outreach({ id: 'out_cf1', personId: 'per_cf1', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_cf2', personId: 'per_cf2', step: 1, status: 'sent', sentDate: '2026-08-04', threadId: 't2' });
+  await outreach({ id: 'out_cf2b', personId: 'per_cf2', step: 2, status: 'drafted', scheduled: '2026-08-06' });
+
+  const result = await apply(classification(), 'per_cf1');
+
+  assert.equal((await companyState())!.status, 'reply_conflict');
+  assert.equal(await statusOf('out_cf2b'), 'paused_pending_reply');
+  assert.match(result.summary, /choose/i);
+});
+
+test('a mere question raises the same conflict a yes would', async () => {
+  // Two live threads into one office is the thing being prevented, not two
+  // enthusiastic ones. Only `human_positive` used to reach this.
+  await person('per_cq1');
+  await person('per_cq2', { ladder_rank: 2, status: 'in_sequence' });
+  await outreach({ id: 'out_cq1', personId: 'per_cq1', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_cq2', personId: 'per_cq2', step: 2, status: 'drafted', scheduled: '2026-08-06' });
+
+  await apply(classification({ classification: 'neutral_question' }), 'per_cq1');
+
+  assert.equal((await companyState())!.status, 'reply_conflict');
+  assert.equal(await statusOf('out_cq2'), 'paused_pending_reply');
+});
+
+test('a question with nobody else in play changes no company state', async () => {
+  await person('per_cs1');
+  await outreach({ id: 'out_cs1', personId: 'per_cs1', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+
+  const result = await apply(classification({ classification: 'neutral_question' }), 'per_cs1');
+  assert.equal(result.companyStatus, undefined);
+  assert.equal(await companyState(), null, 'the ordinary case writes nothing');
 });
 
 // ---------------------------------------------------------------------------
@@ -1022,6 +1062,68 @@ test('a resolved action does not come back, and a later one can be raised', asyn
 
   await recordAction('usr_c', 'per_nb', 'cmp_c', transition, null, NOW);
   assert.equal((await openActions('usr_c')).length, 1, 'they can reply again');
+});
+
+// ---------------------------------------------------------------------------
+// Classification without a model
+// ---------------------------------------------------------------------------
+
+test('a referral is caught by pattern, with no model available', async () => {
+  // This is the classification whose failure cannot be undone: miss it and the
+  // person who was warmly introduced receives a cold email from a stranger four
+  // days later. It must not depend on an API key being set.
+  const { classifyByPattern } = await import('../lib/classifier');
+  const cases = [
+    'Thanks for writing. Looping in Fatima who runs our Emiratisation programme.',
+    'Please contact Sara Al Nuaimi about this, she handles our graduate intake.',
+    'I have copied you in to Ahmed, he is the right person for this.',
+    'Forwarding your note on to my colleague in Talent.',
+  ];
+  for (const body of cases) {
+    const result = classifyByPattern({ from: 'x@y.ae', to: [], cc: [], subject: 'Re: hello', body, headers: {} });
+    assert.equal(result?.classification, 'referral', body);
+  }
+});
+
+test('a CV request is caught by pattern too, in either language', async () => {
+  const { classifyByPattern } = await import('../lib/classifier');
+  for (const body of [
+    'Interesting. Please send your CV.',
+    'Could you share a copy of your resume?',
+    'أرسل لي السيرة الذاتية من فضلك',
+  ]) {
+    const result = classifyByPattern({ from: 'x@y.ae', to: [], cc: [], subject: 'Re: hello', body, headers: {} });
+    assert.equal(result?.classification, 'document_request', body);
+  }
+});
+
+test('an ordinary reply is not force-fitted into a pattern', async () => {
+  // A false referral pauses a company for a day. The patterns are deliberately
+  // conservative, and the model catches the rest when it is available.
+  const { classifyByPattern } = await import('../lib/classifier');
+  for (const body of [
+    'Thanks, that is an interesting point about reconciliation costs.',
+    'Which university are you at?',
+    'We are not hiring at the moment.',
+  ]) {
+    const result = classifyByPattern({ from: 'x@y.ae', to: [], cc: [], subject: 'Re: hello', body, headers: {} });
+    assert.equal(result, null, body);
+  }
+});
+
+test('a departure still beats a referral when both could match', async () => {
+  // "No longer with us, please contact X" is a departure: the person is gone,
+  // and their evidence is stale. Ordering matters here.
+  const { classifyByPattern } = await import('../lib/classifier');
+  const result = classifyByPattern({
+    from: 'x@y.ae',
+    to: [],
+    cc: [],
+    subject: 'Re: hello',
+    body: 'Khalid is no longer with the bank. Please contact Fatima Al Marri instead.',
+    headers: {},
+  });
+  assert.equal(result?.classification, 'departed');
 });
 
 // ---------------------------------------------------------------------------

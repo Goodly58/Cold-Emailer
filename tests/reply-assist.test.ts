@@ -45,6 +45,22 @@ test('the countdown is in hours, because "tomorrow" is what gets postponed', () 
   assert.ok(hoursUntilEndOf('2026-08-06', new Date('2026-08-07T09:00:00Z')) < 0);
 });
 
+test('the deadline is today whenever today still has hours in it', async () => {
+  // "Within one working day" read literally means the NEXT working day, which
+  // on a Friday is 88 hours. 88 hours is not a deadline, it is a shrug, and the
+  // pressure of a number in hours is the entire mechanism.
+  const { replyDeadline } = await import('../lib/reply-assist');
+  const { EMPTY_CALENDAR } = await import('../lib/calendar');
+
+  // Thursday 06:00 UTC is 10:00 in Dubai — most of the day is left.
+  assert.equal(replyDeadline(EMPTY_CALENDAR, new Date('2026-08-06T06:00:00Z')), '2026-08-06');
+  // Thursday 12:00 UTC is 16:00 in Dubai. A deadline nobody could meet teaches
+  // the user to ignore deadlines.
+  assert.equal(replyDeadline(EMPTY_CALENDAR, new Date('2026-08-06T12:00:00Z')), '2026-08-07');
+  // Saturday rolls to Monday, because there is no working day in between.
+  assert.equal(replyDeadline(EMPTY_CALENDAR, new Date('2026-08-08T06:00:00Z')), '2026-08-10');
+});
+
 test('an overdue reply is never framed as a failure', () => {
   // The user who missed it by a day is the user most likely to give up. The
   // only useful thing to tell them is that sending it now still works.
