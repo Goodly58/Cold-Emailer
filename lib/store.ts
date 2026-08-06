@@ -15,7 +15,12 @@ import seedJson from '@/data/db.json';
 // collection on every edit would get slow fast.
 
 const seed = seedJson as unknown as Db;
-const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'db.json');
+
+/** Resolved per call, not at import time, so the path can be set after the
+ *  module loads (tests, and any runtime that populates env lazily). */
+function dbPath(): string {
+  return process.env.DB_PATH || path.join(process.cwd(), 'data', 'db.json');
+}
 
 let client: Client | null = null;
 let schemaReady = false;
@@ -133,7 +138,7 @@ export async function readDb(): Promise<Db> {
   }
 
   try {
-    const raw = await fs.readFile(DB_PATH, 'utf8');
+    const raw = await fs.readFile(dbPath(), 'utf8');
     const db = JSON.parse(raw) as Db;
     for (const name of COLLECTIONS) {
       if (!Array.isArray(db[name])) (db[name] as unknown[]) = [];
@@ -202,10 +207,11 @@ export async function writeDb(db: Db): Promise<void> {
   // File backend: serialize writes and write atomically (tmp + rename) so
   // concurrent requests can't leave a half-written file.
   writeQueue = writeQueue.then(async () => {
-    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-    const tmp = `${DB_PATH}.tmp`;
+    await fs.mkdir(path.dirname(dbPath()), { recursive: true });
+    const file = dbPath();
+    const tmp = `${file}.tmp`;
     await fs.writeFile(tmp, JSON.stringify(db, null, 2), 'utf8');
-    await fs.rename(tmp, DB_PATH);
+    await fs.rename(tmp, file);
   });
   await writeQueue;
 }

@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "tsx --test tests/*.test.ts",
+    "lint": "next lint"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
@@ -17,6 +19,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "tsx": "^4.23.9",
     "typescript": "^5"
   }
 }
