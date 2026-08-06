@@ -543,3 +543,63 @@ test('a company can be sourced end to end, and every planted trap is caught', as
     /asked us to stop/
   );
 });
+
+test('an Arabic quote with no translation cannot become a hook', async () => {
+  // The generator's PS line falls back to the original when there is no
+  // translation, which would splice an Arabic sentence verbatim into an English
+  // follow-up — past every lint, because none of them read Arabic.
+  const { storeEvidence } = await import('../lib/evidence');
+  const result = await storeEvidence({
+    companyId: 'cmp_e2e',
+    tier: 5,
+    quote: 'أعلن البنك عن برنامج توطين جديد لخريجي الجامعات',
+    language: 'ar',
+    sourceUrl: 'https://example.ae/news',
+  });
+  assert.equal(result.usable, false);
+  // Blocked with a reason, not dropped: this may be the best hook available,
+  // and the founder can recover it by adding a translation.
+  assert.match(result.reason ?? '', /translation/i);
+});
+
+test('the same quote with a translation is usable', async () => {
+  const { storeEvidence } = await import('../lib/evidence');
+  const result = await storeEvidence({
+    companyId: 'cmp_e2e',
+    tier: 5,
+    quote: 'أعلن البنك عن برنامج توطين جديد لخريجي الجامعات',
+    quoteTranslated: 'The bank announced a new Emiratisation programme for university graduates',
+    language: 'ar',
+    sourceUrl: 'https://example.ae/news2',
+  });
+  assert.equal(result.usable, true);
+});
+
+test('the link checker never makes a request to LinkedIn', async () => {
+  // Hard rule 7 has no exception for a HEAD request: detection there operates
+  // at the TLS layer, so low volume confers no safety.
+  const { checkLinks, storeEvidence } = await import('../lib/evidence');
+  await storeEvidence({
+    companyId: 'cmp_e2e',
+    tier: 3,
+    quote: 'Leads the graduate hiring programme, in their own words',
+    sourceUrl: 'https://ae.linkedin.com/in/someone',
+  });
+
+  const before = globalThis.fetch;
+  let fetched: string[] = [];
+  globalThis.fetch = (async (url: unknown) => {
+    fetched.push(String(url));
+    return new Response(null, { status: 200 });
+  }) as typeof fetch;
+  try {
+    const result = await checkLinks(50);
+    assert.equal(result.skipped >= 1, true, 'the LinkedIn row is skipped, not fetched');
+  } finally {
+    globalThis.fetch = before;
+  }
+  assert.equal(
+    fetched.some((u) => u.includes('linkedin.com')),
+    false
+  );
+});

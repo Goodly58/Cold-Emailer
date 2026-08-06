@@ -75,6 +75,8 @@ export interface SweepResult {
   repliesDrafted: number;
   /** Unconfirmed holiday windows the founder is being nudged about. */
   confirmationTasks: number;
+  /** Evidence whose source page has gone since it was captured. */
+  deadLinks: number;
   freshness: { staled: number; superseded: number };
   skipped: string | null;
 }
@@ -105,6 +107,7 @@ export async function sweep(
     refused: 0,
     repliesDrafted: 0,
     confirmationTasks: 0,
+    deadLinks: 0,
     freshness: { staled: 0, superseded: 0 },
     skipped: null,
   };
@@ -148,6 +151,15 @@ export async function sweep(
   }
 
   result.confirmationTasks = await raiseConfirmationTasks(user, now);
+
+  // The dead-link gate. A hook whose source page has gone cannot be checked by
+  // the user in the ten seconds the Review screen gives them, which is the only
+  // thing standing between a stale claim and a stranger's inbox. Bounded per
+  // sweep, and it never touches LinkedIn — hard rule 7 has no exception for a
+  // HEAD request.
+  const { checkLinks } = await import('./evidence');
+  result.deadLinks = (await checkLinks(20)).dead;
+
   result.freshness = await freshnessPass(user, now);
 
   await logEvent({

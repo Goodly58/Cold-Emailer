@@ -223,6 +223,19 @@ export async function storeEvidence(
     reason = 'Junk drawer. Hobbies and hometowns are not openers, however true they are.';
   }
 
+  // A quote in a language the email is not written in, with no translation.
+  //
+  // The generator's PS line falls back to the original when there is no
+  // translation, which would splice an Arabic sentence verbatim into an English
+  // follow-up — past every lint, because none of them read Arabic. Blocked with
+  // a reason rather than dropped, so the founder can add the translation and
+  // recover what may be the best hook they have.
+  const language = (input.language ?? 'en').toLowerCase();
+  if (usable && !language.startsWith('en') && !input.quoteTranslated?.trim()) {
+    usable = false;
+    reason = `This quote is in ${language} and has no English translation. The email is written in English, so it cannot be used until one is added.`;
+  }
+
   const id = newId('evidence');
   const at = nowIso();
   await execute(
@@ -358,7 +371,19 @@ export async function disputeEvidence(evidenceId: string): Promise<void> {
  * it: the user clicking through to a 404 stops trusting the panel entirely, and
  * the panel is the only defence against a fabricated hook.
  */
-export async function checkLinks(limit = 50): Promise<{ checked: number; dead: number }> {
+/**
+ * Hosts this check must never touch, whatever is stored against them.
+ *
+ * Hard rule 7 is "no LinkedIn automation, ever", and it does not have an
+ * exception for a HEAD request. Tier-3 evidence URLs are `ae.linkedin.com/in/…`
+ * by construction, so a link-checker with no host filter would make automated
+ * requests to LinkedIn from the user's own server — detection there operates at
+ * the TLS layer, so low volume confers no safety. A tier-3 source that has gone
+ * is caught the next time a human looks at it instead.
+ */
+const NEVER_FETCH = [/(^|\.)linkedin\.com$/i];
+
+export async function checkLinks(limit = 50): Promise<{ checked: number; dead: number; skipped: number }> {
   const rows = await query<{ id: string; source_url: string }>(
     `SELECT id, source_url FROM evidence
       WHERE link_dead = 0 AND kind = 'external' AND source_url LIKE 'http%'
@@ -367,7 +392,20 @@ export async function checkLinks(limit = 50): Promise<{ checked: number; dead: n
   );
 
   let dead = 0;
+  let skipped = 0;
   for (const row of rows) {
+    let host: string;
+    try {
+      host = new URL(row.source_url).hostname;
+    } catch {
+      skipped++;
+      continue;
+    }
+    if (NEVER_FETCH.some((pattern) => pattern.test(host))) {
+      skipped++;
+      continue;
+    }
+
     let alive = true;
     try {
       const response = await fetch(row.source_url, {
@@ -393,7 +431,7 @@ export async function checkLinks(limit = 50): Promise<{ checked: number; dead: n
     }
   }
 
-  return { checked: rows.length, dead };
+  return { checked: rows.length - skipped, dead, skipped };
 }
 
 /**
