@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
 import { PLATFORM_DEFS, getPlatform } from '@/lib/ats';
@@ -62,7 +62,10 @@ export default function Sources() {
 
   const [sweeping, setSweeping] = useState(false);
   const [sweepLog, setSweepLog] = useState<string[]>([]);
-  const [sweepStop, setSweepStop] = useState(false);
+  // A ref, not state: the sweep loop closes over its variables once, so a
+  // state value would stay false for the whole run and the button would do
+  // nothing.
+  const stopRequested = useRef(false);
 
   useEffect(() => {
     list<JobSource>('jobSources').then(setSources);
@@ -135,7 +138,7 @@ export default function Sources() {
   /** Walks the company list in batches, registering every board it finds. */
   async function sweepAll() {
     setSweeping(true);
-    setSweepStop(false);
+    stopRequested.current = false;
     setSweepLog([]);
     setErr('');
     let offset = 0;
@@ -162,10 +165,13 @@ export default function Sources() {
         ]);
 
         if (res.scanned === 0 || res.remaining === 0) break;
+        if (stopRequested.current) {
+          setSweepLog((l) => ['— stopped', ...l]);
+          break;
+        }
         // Companies that matched became sources, so they drop out of the
-        // queue — only advance past the ones that didn't match.
+        // queue the server recomputes — rewind past exactly those.
         offset = res.nextOffset - res.found.length;
-        if (sweepStop) break;
       }
       setSources(await list<JobSource>('jobSources'));
     } catch (e) {
@@ -275,7 +281,7 @@ export default function Sources() {
             {sweeping ? 'Sweeping…' : 'Probe the rest'}
           </button>
           {sweeping && (
-            <button onClick={() => setSweepStop(true)}>Stop after this batch</button>
+            <button onClick={() => { stopRequested.current = true; }}>Stop after this batch</button>
           )}
         </div>
         {sweepLog.length > 0 && (
