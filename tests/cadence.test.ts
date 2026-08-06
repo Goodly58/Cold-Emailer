@@ -951,6 +951,44 @@ test('"I got the job" stops the sweep the same way', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// The send window (CULTURE.md §9)
+// ---------------------------------------------------------------------------
+
+/** 2026-08-06 is a Thursday, 08-07 a Friday, 08-08 a Saturday, 08-09 a Sunday. */
+const FRIDAY = new Date('2026-08-07T06:00:00.000Z');
+const SUNDAY = new Date('2026-08-09T06:00:00.000Z');
+
+test('nothing may be sent on a Friday, a Saturday or a Sunday', async () => {
+  const { sendPermission } = await import('../lib/queue');
+  await person('per_sw', { status: 'in_sequence' });
+  await outreach({ id: 'out_sw', personId: 'per_sw', step: 1, status: 'approved' });
+
+  const thursday = await sendPermission(await user(), 'out_sw', NOW);
+  assert.equal(thursday.allowed, true);
+
+  for (const day of [FRIDAY, SUNDAY]) {
+    const blocked = await sendPermission(await user(), 'out_sw', day);
+    assert.equal(blocked.allowed, false);
+    // Friday prayers, a government week ending at midday, and a weekend that is
+    // Sat-Sun for essentially everyone. Monday is the honest answer.
+    assert.match(blocked.message!, /2026-08-10/);
+  }
+});
+
+test('a weekend queue shows what is waiting rather than an empty screen', async () => {
+  const { buildQueue } = await import('../lib/queue');
+  await person('per_sq', { status: 'in_sequence' });
+  await outreach({ id: 'out_sq1', personId: 'per_sq', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  await outreach({ id: 'out_sq2', personId: 'per_sq', step: 2, status: 'drafted', scheduled: '2026-08-07' });
+
+  const queue = await buildQueue(await user(), FRIDAY);
+
+  assert.equal(queue.followUps.length, 1, 'an empty Saturday screen reads as broken');
+  assert.equal(queue.followUps[0].sendable, false, 'but the button is off');
+  assert.match(queue.headline, /held until 2026-08-10/);
+});
+
+// ---------------------------------------------------------------------------
 // Next Actions
 // ---------------------------------------------------------------------------
 

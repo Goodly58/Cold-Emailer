@@ -18,12 +18,23 @@ interface QueueItem {
   blockedReason: string | null;
 }
 
+interface OpenAction {
+  id: string;
+  kind: string;
+  message: string;
+  url: string | null;
+  personName: string | null;
+  companyName: string | null;
+}
+
 interface Queue {
   followUps: QueueItem[];
   firstEmails: QueueItem[];
   needsFact: Array<{ outreachId: string; personName: string; companyName: string; request: string }>;
   budget: { ceiling: number; sentToday: number; target: number; rampNote: string };
   headline: string;
+  actions: OpenAction[];
+  welcome: { show: boolean; headline: string; awayWorkingDays: number };
   sendBlock: { reason: string; message: string } | null;
   paused: boolean;
   error?: string;
@@ -121,6 +132,42 @@ export default function TodayClient({ firstName }: { firstName: string }) {
 
       {queue.sendBlock && queue.sendBlock.reason === 'poll_stale' && (
         <div className="notice info">{queue.sendBlock.message}</div>
+      )}
+
+      {queue.welcome?.show && (
+        // Never a backlog, and never a count of one. The number is the part
+        // that does the damage to someone coming back after a bad fortnight.
+        <div className="notice info" role="status">
+          <strong>Welcome back</strong>
+          {queue.welcome.headline}
+        </div>
+      )}
+
+      {/*
+        A real person said something. This sits above every draft, every count
+        and every heading on the screen, because the reply is the climax of the
+        whole product and the moment the user freezes.
+      */}
+      {queue.actions?.length > 0 && (
+        <>
+          <h2>Waiting on you</h2>
+          {queue.actions.map((action) => (
+            <div className="card" key={action.id} style={{ borderColor: 'var(--accent)' }}>
+              <strong>
+                {action.personName ?? 'Someone'}
+                {action.companyName ? ` at ${action.companyName}` : ''}
+              </strong>
+              <p style={{ margin: '6px 0 0' }}>{action.message}</p>
+              {action.url && (
+                <p style={{ margin: '10px 0 0' }}>
+                  <a className="linkish" href={action.url} target="_blank" rel="noreferrer">
+                    Open it
+                  </a>
+                </p>
+              )}
+            </div>
+          ))}
+        </>
       )}
 
       <p className="lede">{total === 0 ? queue.headline : `${queue.headline}`}</p>

@@ -12,7 +12,10 @@ export function middleware(req: NextRequest) {
 
   // Scheduled jobs authenticate with CRON_SECRET instead of the login cookie.
   // The route itself re-checks the header — this only lets it through.
-  if (pathname.startsWith('/api/cron/')) {
+  // No trailing slash: the route is `/api/cron` exactly, and `/api/cron/` would
+  // never match it — the sweep would then 401 forever behind a password gate,
+  // silently, which is precisely the failure the sweep design exists to avoid.
+  if (pathname === '/api/cron' || pathname.startsWith('/api/cron/')) {
     const secret = process.env.CRON_SECRET;
     if (secret && req.headers.get('authorization') === `Bearer ${secret}`) {
       return NextResponse.next();

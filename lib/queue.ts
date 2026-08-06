@@ -15,7 +15,14 @@
  * Everything here is a maximum the Send button is governed by. There is no
  * "approve all", deliberately, and nothing sends because a number said it could.
  */
-import { addDays, compareDates, todayUae, workingDaysBetween } from './calendar';
+import {
+  addDays,
+  compareDates,
+  isSendWindowDay,
+  nextSendWindowDay,
+  todayUae,
+  workingDaysBetween,
+} from './calendar';
 import { loadCalendar } from './calendar-store';
 import { execute, query, queryOne } from './db/client';
 import { SAME_DOMAIN_SPACING_MS } from './durations';
@@ -177,6 +184,13 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
   const calendar = await loadCalendar();
   const budget = await budgetFor(user, now);
 
+  // CULTURE.md §9: Mon-Thu only. The cards still render — someone opening the
+  // app on a Saturday to an empty screen assumes it is broken, whereas "three
+  // ready, held until Monday" is reassuring and true. The Send button is what
+  // is switched off, not the screen.
+  const outsideWindow = !isSendWindowDay(today, calendar);
+  const nextWindowDay = outsideWindow ? nextSendWindowDay(today, calendar) : null;
+
   const rows = await query<QueueRow>(
     // A paused countdown is excluded outright. A gateway-quarantined step has
     // no scheduled_date, and "no date" would otherwise read as "due now" — the
@@ -235,7 +249,9 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
     if (!isFollowUp && liveSequences.has(row.org_group_id)) continue; // one at a time
 
     let blockedReason: string | null = null;
-    if (recentlyContacted.has(row.org_group_id) || offeredOrgs.has(row.org_group_id)) {
+    if (outsideWindow) {
+      blockedReason = `Held until ${nextWindowDay} — an email landing now would be read on Monday at best.`;
+    } else if (recentlyContacted.has(row.org_group_id) || offeredOrgs.has(row.org_group_id)) {
       blockedReason = 'Someone else at this company heard from you in the last two days. This waits.';
     } else if (row.person_status === 'replied' || row.person_status === 'replied_external') {
       blockedReason = 'They already replied.';
@@ -260,7 +276,11 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
       blockedReason,
     };
 
-    if (blockedReason) {
+    // Everything blocked for a per-contact reason drops out of the list — the
+    // user cannot act on it and a card they cannot use is noise. The send
+    // window is the exception: it blocks the whole day, and an empty screen on
+    // a Saturday reads as broken rather than as "nothing to do today".
+    if (blockedReason && !outsideWindow) {
       deferred++;
       continue;
     }
@@ -283,6 +303,20 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
   firstEmails.sort((a, b) => rank(a.contactType) - rank(b.contactType));
 
   const total = followUps.length + firstEmails.length;
+  if (outsideWindow) {
+    return {
+      followUps,
+      firstEmails,
+      needsFact,
+      budget,
+      deferred,
+      headline:
+        total === 0
+          ? `Nothing to do today. Emails go out Monday to Thursday — anything ready will be waiting on ${nextWindowDay}.`
+          : `${total} ready, held until ${nextWindowDay}. Monday to Thursday is the only window that lands properly in the Gulf, so today is genuinely a day off.`,
+    };
+  }
+
   const headline =
     total === 0
       ? needsFact.length > 0
@@ -357,6 +391,22 @@ export async function sendPermission(
   outreachId: string,
   now: Date = new Date()
 ): Promise<{ allowed: boolean; message?: string }> {
+  // CULTURE.md §9. Monday to Thursday is the only window that is safe for every
+  // org type in the UAE: government works to Friday midday, Friday prayers take
+  // the middle of the day, Saturday is the weekend for essentially everyone,
+  // and Sunday is the weekend for government and most private firms. An email
+  // landing on any of them is buried by Monday morning — which reads to the
+  // sender as silence and to the recipient as nothing at all.
+  const calendar = await loadCalendar();
+  const today = todayUae(now);
+  if (!isSendWindowDay(today, calendar)) {
+    const next = nextSendWindowDay(today, calendar);
+    return {
+      allowed: false,
+      message: `Nothing sends today — it would be read on Monday at best, buried under a weekend of email. Everything is held until ${next}, which costs you nothing.`,
+    };
+  }
+
   const budget = await budgetFor(user, now);
   const row = await queryOne<{ step: number; org_group_id: string }>(
     `SELECT o.step, c.org_group_id

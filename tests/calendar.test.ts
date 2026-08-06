@@ -182,14 +182,27 @@ test('a moon-sighting shift moves a derived due date later', () => {
   assert.equal(compareDates(after, before) > 0, true);
 });
 
-test('a due date may move later freely but only to tomorrow at the earliest', () => {
-  const today = '2026-03-16';
+test('a due date may move later freely but a past one lands no sooner than tomorrow', () => {
+  const today = '2026-03-16'; // a Monday
   // A window shrinking would otherwise pull the date into the past and fire
   // the follow-up the moment the sweep runs.
   assert.equal(clampRecomputedDueDate('2026-03-10', today), '2026-03-17');
-  assert.equal(clampRecomputedDueDate('2026-03-16', today), '2026-03-17', 'today is too soon');
+  // Today is not the past. It is what the countdown has said all along, and
+  // pushing it out would move a legitimate follow-up every time the sweep ran
+  // after 20:00 UTC — the hour Dubai rolls over and the server has not.
+  assert.equal(clampRecomputedDueDate('2026-03-16', today), '2026-03-16');
   assert.equal(clampRecomputedDueDate('2026-03-17', today), '2026-03-17');
   assert.equal(clampRecomputedDueDate('2026-03-25', today), '2026-03-25', 'later is fine');
+});
+
+test('the clamp floor is the next working day, never a Saturday', () => {
+  // Clamping to a bare tomorrow lands follow-ups on the weekend, where they sit
+  // outside the send window while the countdown reads as satisfied.
+  const friday = '2026-03-20';
+  assert.equal(clampRecomputedDueDate('2026-03-01', friday), '2026-03-23', 'Saturday and Sunday are skipped');
+
+  const cal = calendarOf(holiday('2026-03-23', '2026-03-24'));
+  assert.equal(clampRecomputedDueDate('2026-03-01', friday, cal), '2026-03-25', 'and so is a holiday');
 });
 
 test('drafts crossing an unconfirmed window are flagged for regeneration at send', () => {

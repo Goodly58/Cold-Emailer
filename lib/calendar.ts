@@ -251,15 +251,27 @@ export function workingDaysBetween(
  * (ULTRAPROMPT §5): a date may move later freely, but may only move earlier to
  * tomorrow at the soonest — otherwise a retroactive holiday correction can make
  * a follow-up due in the past and fire it the moment the sweep runs.
+ *
+ * Two details that only show up in a live sweep:
+ *
+ *   - The floor is the next **working day** after today, not the next calendar
+ *     day. Clamping to a bare tomorrow lands follow-ups on Saturdays, where
+ *     they sit outside the send window doing nothing while the countdown reads
+ *     as satisfied.
+ *   - A date equal to today is not "in the past" — it is due now, which is what
+ *     the countdown has said all along. Pushing it out would move a legitimate
+ *     follow-up every time the sweep happened to run after 20:00 UTC, when
+ *     Dubai has already rolled over to the next day.
  */
 export function clampRecomputedDueDate(
   recomputed: UaeDate,
-  todayUaeDate: UaeDate
+  todayUaeDate: UaeDate,
+  calendar: WorkingCalendar = EMPTY_CALENDAR
 ): UaeDate {
   assertUaeDate(recomputed);
   assertUaeDate(todayUaeDate);
-  const tomorrow = addDays(todayUaeDate, 1);
-  return compareDates(recomputed, tomorrow) < 0 ? tomorrow : recomputed;
+  if (compareDates(recomputed, todayUaeDate) >= 0) return recomputed;
+  return nextWorkingDay(addDays(todayUaeDate, 1), calendar);
 }
 
 /**
