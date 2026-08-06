@@ -60,9 +60,18 @@ Notes:
   any tier. On Pro you can tighten it to hourly by changing the schedule to `0 * * * *`.
 - The **Refresh all now** button on the Sources page runs the exact same job on demand, so you're
   never waiting on the schedule.
-- Optional: **`HUNTER_API_KEY`** (hunter.io, free tier 25/month) enables mailbox-level email
-  confirmation on the Contacts page. Without it, email finding still works via pattern generation
-  and MX verification.
+### Optional API keys
+
+All optional — the app works without them, and each unlocks one feature.
+
+| Variable | Unlocks | Free tier | Get it |
+|---|---|---|---|
+| `HUNTER_API_KEY` | Mailbox-level email confirmation on Contacts | 25 lookups/month | [hunter.io](https://hunter.io) |
+| `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` | Adzuna aggregator search (UAE-wide) | 250 calls/day | [developer.adzuna.com](https://developer.adzuna.com/signup) |
+| `JOOBLE_API_KEY` | Jooble aggregator search | free key on request | [jooble.org/api/about](https://jooble.org/api/about) |
+
+Without keys: email finding still works via pattern generation + MX verification, and The Muse
+aggregator works with no key at all.
 
 ## Notes
 
