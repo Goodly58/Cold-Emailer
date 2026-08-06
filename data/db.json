@@ -35,17 +35,18 @@
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
-      "id": "c3",
-      "name": "ADCB",
-      "sector": "Banking",
+      "id": "c121",
+      "name": "Abu Dhabi Commercial Bank (ADCB)",
+      "sector": "Commercial Banking",
       "location": "Abu Dhabi",
-      "tier": "target",
+      "tier": "dream",
       "emiratisation": true,
-      "emiratisationNotes": "Tamooha & UAE National development programs.",
-      "careersUrl": "https://www.adcb.com/en/about-us/careers/",
+      "emiratisationNotes": "'Tamooha' programme for Emirati women plus graduate launch-pad programmes; ~40% Emirati workforce; 100% Emiratisation in Al Ain branches.",
+      "careersUrl": "https://adcbcareers.com/",
       "domain": "adcb.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "ats": "successfactors",
+      "createdAt": "2026-08-06T00:00:00Z"
     },
     {
       "id": "c4",
@@ -63,16 +64,17 @@
       "atsSlug": "mashreqbank"
     },
     {
-      "id": "c5",
-      "name": "ADIB",
-      "sector": "Banking",
+      "id": "c122",
+      "name": "Abu Dhabi Islamic Bank (ADIB)",
+      "sector": "Islamic Banking",
       "location": "Abu Dhabi",
-      "tier": "target",
+      "tier": "dream",
       "emiratisation": true,
-      "careersUrl": "https://www.adib.ae/en/careers",
+      "emiratisationNotes": "Emirati Leadership Programme; ~70% of new hires are UAE nationals, ~47% overall Emiratisation; gold sponsor of Ru'ya Careers Fair.",
+      "careersUrl": "https://www.adib.ae/en/pages/careers",
       "domain": "adib.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z"
     },
     {
       "id": "c6",
@@ -129,16 +131,17 @@
       "createdAt": "2026-08-05T00:00:00Z"
     },
     {
-      "id": "c10",
-      "name": "ADIA",
-      "sector": "Sovereign Investment",
+      "id": "c208",
+      "name": "Abu Dhabi Investment Authority (ADIA)",
+      "sector": "Sovereign Wealth Fund",
       "location": "Abu Dhabi",
       "tier": "dream",
       "emiratisation": true,
-      "careersUrl": "https://www.adia.ae/en/careers",
+      "emiratisationNotes": "Runs long-standing UAE national development and scholarship programmes for Emirati graduates.",
       "domain": "adia.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "careersUrl": "https://www.adia.ae/en/people/working-at-adia"
     },
     {
       "id": "c11",
@@ -650,16 +653,16 @@
       "careersUrl": "https://www.dewa.gov.ae/en/career-portal/login"
     },
     {
-      "id": "c52",
-      "name": "EWEC",
-      "sector": "Utilities",
+      "id": "c345",
+      "name": "Emirates Water and Electricity Company (EWEC)",
+      "sector": "Water & Power Procurement / Offtaker",
       "location": "Abu Dhabi",
       "tier": "target",
       "emiratisation": true,
-      "emiratisationNotes": "Government-linked utility.",
-      "createdAt": "2026-08-06T00:00:00Z",
+      "emiratisationNotes": "Small, highly Emiratised technical and commercial teams",
       "domain": "ewec.ae",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "createdAt": "2026-08-06T00:00:00Z"
     },
     {
       "id": "c53",
@@ -1416,13 +1419,13 @@
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
-      "id": "c117",
-      "name": "Mohamed bin Zayed University of AI (MBZUAI)",
-      "sector": "Education / AI",
+      "id": "c467",
+      "name": "Mohamed bin Zayed University of Artificial Intelligence (MBZUAI)",
+      "sector": "AI Research & Higher Education",
       "location": "Abu Dhabi",
-      "tier": "target",
+      "tier": "dream",
       "emiratisation": true,
-      "emiratisationNotes": "National AI talent mandate.",
+      "emiratisationNotes": "Graduate AI university with dedicated Emirati scholarship and research-staff pipelines",
       "domain": "mbzuai.ac.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
@@ -1465,33 +1468,6 @@
       "domain": "gemseducation.com",
       "emailPattern": "first.last",
       "careersUrl": "https://www.gemseducation.com/careers"
-    },
-    {
-      "id": "c121",
-      "name": "Abu Dhabi Commercial Bank (ADCB)",
-      "sector": "Commercial Banking",
-      "location": "Abu Dhabi",
-      "tier": "dream",
-      "emiratisation": true,
-      "emiratisationNotes": "'Tamooha' programme for Emirati women plus graduate launch-pad programmes; ~40% Emirati workforce; 100% Emiratisation in Al Ain branches.",
-      "careersUrl": "https://adcbcareers.com/",
-      "domain": "adcb.com",
-      "emailPattern": "first.last",
-      "ats": "successfactors",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
-      "id": "c122",
-      "name": "Abu Dhabi Islamic Bank (ADIB)",
-      "sector": "Islamic Banking",
-      "location": "Abu Dhabi",
-      "tier": "dream",
-      "emiratisation": true,
-      "emiratisationNotes": "Emirati Leadership Programme; ~70% of new hires are UAE nationals, ~47% overall Emiratisation; gold sponsor of Ru'ya Careers Fair.",
-      "careersUrl": "https://www.adib.ae/en/pages/careers",
-      "domain": "adib.com",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
     },
     {
       "id": "c123",
@@ -2498,19 +2474,6 @@
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
       "careersUrl": "https://www.mubadala.com/en/careers/student"
-    },
-    {
-      "id": "c208",
-      "name": "Abu Dhabi Investment Authority (ADIA)",
-      "sector": "Sovereign Wealth Fund",
-      "location": "Abu Dhabi",
-      "tier": "dream",
-      "emiratisation": true,
-      "emiratisationNotes": "Runs long-standing UAE national development and scholarship programmes for Emirati graduates.",
-      "domain": "adia.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://www.adia.ae/en/people/working-at-adia"
     },
     {
       "id": "c209",
@@ -4013,18 +3976,6 @@
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
-      "id": "c336",
-      "name": "Emirates Nuclear Energy Company (ENEC)",
-      "sector": "Nuclear Energy Development",
-      "location": "Abu Dhabi",
-      "tier": "target",
-      "emiratisation": true,
-      "emiratisationNotes": "Energy Pioneers programme develops Emirati nuclear engineers and operators; high national workforce ratio",
-      "domain": "enec.gov.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
       "id": "c337",
       "name": "Etihad Water and Electricity (EtihadWE)",
       "sector": "Water & Electricity Utility (Northern Emirates)",
@@ -4123,18 +4074,6 @@
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
-      "id": "c345",
-      "name": "Emirates Water and Electricity Company (EWEC)",
-      "sector": "Water & Power Procurement / Offtaker",
-      "location": "Abu Dhabi",
-      "tier": "target",
-      "emiratisation": true,
-      "emiratisationNotes": "Small, highly Emiratised technical and commercial teams",
-      "domain": "ewec.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
       "id": "c346",
       "name": "Abu Dhabi Distribution Company (ADDC)",
       "sector": "Electricity & Water Distribution Utility",
@@ -4169,13 +4108,13 @@
       "createdAt": "2026-08-06T00:00:00Z"
     },
     {
-      "id": "c349",
-      "name": "Department of Education and Knowledge (ADEK)",
-      "sector": "Education Sector Regulation",
+      "id": "c721",
+      "name": "Abu Dhabi Department of Education and Knowledge (ADEK)",
+      "sector": "Education Regulator",
       "location": "Abu Dhabi",
       "tier": "target",
       "emiratisation": true,
-      "emiratisationNotes": "Emirati teacher and school-leadership development, plus scholarship administration",
+      "emiratisationNotes": "Abu Dhabi government education authority overseeing schools, charter schools and higher education; predominantly Emirati workforce",
       "domain": "adek.gov.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
@@ -4499,18 +4438,6 @@
       "emiratisationNotes": "Large Emirati engineering, planning and operations intake via Dubai Careers",
       "careersUrl": "https://www.dubaicareers.ae/en",
       "domain": "rta.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
-      "id": "c377",
-      "name": "Dubai Electricity and Water Authority (DEWA)",
-      "sector": "Electricity & Water Utility",
-      "location": "Dubai",
-      "tier": "dream",
-      "emiratisation": true,
-      "emiratisationNotes": "Among the most Emiratised UAE utilities; graduate engineering and DEWA Academy programmes",
-      "domain": "dewa.gov.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
@@ -4929,18 +4856,6 @@
       "emiratisation": true,
       "emiratisationNotes": "Hires through Sharjah Human Resources Department, Emirati-first",
       "domain": "shjmun.gov.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
-      "id": "c414",
-      "name": "Sharjah Electricity, Water and Gas Authority (SEWA)",
-      "sector": "Electricity, Water & Gas Utility",
-      "location": "Sharjah",
-      "tier": "target",
-      "emiratisation": true,
-      "emiratisationNotes": "Emirati engineering and technical trainee intake; serves over 1.2m residents",
-      "domain": "sewa.gov.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
@@ -5507,18 +5422,6 @@
       "emiratisationNotes": "ADNOC-Presight joint venture; ADNOC-aligned Emirati graduate pipeline for AI/data roles in energy",
       "careersUrl": "https://aiq.ae/",
       "domain": "aiq.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
-      "id": "c467",
-      "name": "Mohamed bin Zayed University of Artificial Intelligence (MBZUAI)",
-      "sector": "AI Research & Higher Education",
-      "location": "Abu Dhabi",
-      "tier": "dream",
-      "emiratisation": true,
-      "emiratisationNotes": "Graduate AI university with dedicated Emirati scholarship and research-staff pipelines",
-      "domain": "mbzuai.ac.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
@@ -6456,18 +6359,6 @@
       "emiratisation": true,
       "emiratisationNotes": "Dubai government authority; Emirati-first hiring for digital, data and cyber roles",
       "domain": "digitaldubai.ae",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
-      "id": "c550",
-      "name": "TDRA (Telecommunications and Digital Government Regulatory Authority)",
-      "sector": "Telecom & Digital Government Regulation",
-      "location": "Abu Dhabi, Dubai",
-      "tier": "target",
-      "emiratisation": true,
-      "emiratisationNotes": "Federal authority; roles largely reserved for UAE nationals",
-      "domain": "tdra.gov.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
@@ -8529,18 +8420,6 @@
       "emiratisation": true,
       "emiratisationNotes": "Long-established British school in Al Ain with a large Emirati parent community; education-sector employer",
       "domain": "aaess.com",
-      "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
-    },
-    {
-      "id": "c721",
-      "name": "Abu Dhabi Department of Education and Knowledge (ADEK)",
-      "sector": "Education Regulator",
-      "location": "Abu Dhabi",
-      "tier": "target",
-      "emiratisation": true,
-      "emiratisationNotes": "Abu Dhabi government education authority overseeing schools, charter schools and higher education; predominantly Emirati workforce",
-      "domain": "adek.gov.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
     },
