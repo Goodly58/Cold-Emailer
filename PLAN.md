@@ -93,6 +93,14 @@ Per company, build a ranked ladder of 2–4 people, then walk it one person at a
 - Every draft stores which evidence IDs it used — that's what powers the Review screen's side-by-side evidence panel.
 - English template in v1. Arabic variant deferred until gov/semi-gov targets justify it (UAE corporate hiring runs in English, even Emirati-to-Emirati).
 
+### 6a. Template doctrine (founder's field experience + Becc Holland framework)
+
+- **Base script:** Becc Holland's personalization approach as used in search-fund outreach — personalize to the *person* (what they wrote/said/did recently), pyramid-ordered, then a short intro, then one ask. A dedicated research pass is digesting her framework properly; its output becomes the canonical template spec in `TEMPLATE.md`.
+- **Subject lines: short and identity-led.** Founder's tested pattern: "UCL student" style — the sender's identity marker, 2–4 words, no clickbait. For this product the natural analogues to A/B test: "Emirati [university] grad", "UAE national — [function]", "[University] student". Subject line is a first-class template variable, tracked per send for reply-rate attribution.
+- **Intro-block library, not a fixed intro.** Onboarding collects rich structured material about the user — education, standout achievement with a number, work/internship experiences, national status, languages, affiliations, interests — stored as discrete intro *blocks*. The generator selects 1–2 blocks per email based on the recipient (manager vs HR), the company, and the role, so the intro flexes without being rewritten. If the profile interview yields thin blocks, the interview asks follow-ups until each block is concrete (same clarify-&-refuse spirit as evidence).
+- **Voice constraints (hard):** no em dashes; no AI-typical phrasing — banned list enforced on generator output includes "I hope this email finds you well", "I came across", "resonated", "I'd love the opportunity", "excited to", "delve", "leverage", "passionate about"; short sentences; plain words; reads like a sharp student typed it in 3 minutes. A lint pass rejects drafts containing banned patterns before they reach the Review screen.
+- Templates are versioned; every outreach row records `template_version` + subject variant so reply rates attribute cleanly.
+
 ## 7. Using the Emiratisation / Nafis angle
 
 - **To HR / Emiratisation leads:** state it plainly — quota contribution + Nafis salary support is their KPI.
@@ -146,6 +154,14 @@ log            append-only state changes (debugging + later analytics)
 **Week 3 — Generate + Review screen.** Clarify-&-refuse generator, split-view Review & Send via Gmail API. First 10 real sends with the friend, calibrating voice.
 **Week 4 — Cadence engine + Dashboard.** Working-day scheduler, follow-up pre-drafting, reply polling, holiday-aware openers, dashboard timeline. Full list live at the ceiling.
 **Weeks 5–6 — Learn.** Reply rate by evidence tier / contact type / template variant. Iterate templates, not architecture.
+
+### Experiment 1 (runs from week 3): HR-first vs manager-first ROI
+
+Founder's hypothesis to test: for Emirati candidates, plain HR/Emiratisation-lead outreach may beat the (much more expensive) manager-targeting on ROI, because the Emirati signal does the work that personalization does elsewhere.
+
+- **Design:** randomize companies into two arms, matched roughly by segment/size. Arm A: ladder starts with the Emiratisation/HR lead, lighter personalization (tier 4 company-level evidence is acceptable). Arm B: ladder starts with the team/hiring manager, full pyramid personalization required.
+- **Measure per arm:** reply rate, positive-reply rate, interviews, AND sourcing cost (minutes spent finding the contact + evidence — logged by the tool per contact, since ROI is outcome ÷ effort, not outcome alone).
+- **Decision rule:** if Arm A is within ~70% of Arm B's positive-reply rate at less than half the effort, HR-first becomes the default ladder and manager-targeting is reserved for dream companies with specific open roles.
 
 **Success bar before commercialising:** ≥ 8–10% reply rate and ≥ 2 interviews or serious intro calls within 6 weeks for the friend.
 
