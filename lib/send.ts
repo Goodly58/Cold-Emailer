@@ -397,9 +397,13 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
  * The same shape as a cold send — claim, persist the Message-ID, call Gmail,
  * probe rather than retry — with three deliberate differences:
  *
- *   - **No budget, no window, no spacing.** Answering someone who wrote to you
- *     is not outreach and must never be rationed by a deliverability ceiling or
- *     held for a Monday. The person is waiting.
+ *   - **No budget, no window, no spacing, and no pause.** Answering someone who
+ *     wrote to you is not outreach and must never be rationed by a
+ *     deliverability ceiling or held for a Monday. The `paused` and `placed`
+ *     gates are skipped for the same reason, and in the placed case it is
+ *     load-bearing: "I got the job" routes every warm thread to a courteous
+ *     withdrawal through this exact path, and blocking it would leave the user
+ *     silently ghosting the people who helped them.
  *   - **No suppression check on the recipient.** They emailed us. Refusing to
  *     answer a removal request because the address is suppressed would be the
  *     tool preventing the one reply that request requires.
@@ -407,7 +411,9 @@ export async function repairStuckSends(userId: string, now: Date = new Date()): 
  *     CV.
  *
  * The connection gate still applies: nothing sends while the Gmail connection
- * is not live.
+ * is not live. Unlike a cold send, the six-hour poll-staleness gate does not —
+ * that rule exists so nobody is chased after they answered, and this *is* the
+ * answer to somebody who wrote.
  */
 export async function sendReply(
   replyId: string,
@@ -506,10 +512,16 @@ export async function sendReply(
         WHERE id = ?`,
       [response.id, response.threadId, body, at, at, replyId]
     );
-    // The action that raised this card is done.
+    // The actions that sending this reply actually discharges — and only
+    // those. Resolving everything open for the person would silently clear the
+    // "mark this as Not Spam" prompt, which is the one that trains Gmail and is
+    // not done by replying, and any "add their successor" note.
     await execute(
-      `UPDATE next_action SET resolved_at = ? WHERE user_id = ? AND person_id = ? AND resolved_at IS NULL`,
-      [at, user.id, reply.person_id, ]
+      `UPDATE next_action SET resolved_at = ?
+        WHERE user_id = ? AND person_id = ? AND resolved_at IS NULL
+          AND kind IN ('reply_assist', 'reply_assist_cv', 'warm_reply', 'confirm_removal',
+                       'apologise_once', 'answer_provenance', 'thank_you', 'honest_pivot')`,
+      [at, user.id, reply.person_id]
     );
 
     await logEvent({
