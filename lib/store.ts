@@ -10,7 +10,15 @@ import seedJson from '@/data/db.json';
 //  - Otherwise (local dev): plain JSON file at data/db.json (or DB_PATH).
 
 const seed = seedJson as unknown as Db;
-const KEYS = ['profile', 'companies', 'contacts', 'applications', 'outreach', 'templates'] as const;
+const KEYS = [
+  'profile',
+  'companies',
+  'contacts',
+  'applications',
+  'outreach',
+  'templates',
+  'jobSources',
+] as const;
 
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'db.json');
 

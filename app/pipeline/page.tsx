@@ -227,6 +227,24 @@ export default function Pipeline() {
                     {a.division ? ` · ${a.division}` : ''}
                     {a.location ? ` · ${a.location}` : ''}
                   </div>
+                  {a.isNew && (
+                    <span
+                      className="badge badge-dream"
+                      style={{ cursor: 'pointer' }}
+                      title="Auto-imported since your last visit — click to clear"
+                      onClick={async () => {
+                        const u = await patch<Application>('applications', a.id, { isNew: false });
+                        setApps((prev) => prev.map((x) => (x.id === a.id ? u : x)));
+                      }}
+                    >
+                      NEW
+                    </span>
+                  )}
+                  {a.closed && (
+                    <span className="badge badge-backup" title="No longer on the company's board">
+                      closed
+                    </span>
+                  )}
                   {a.emiratiAngle && <span className="badge badge-uae">Emirati advantage</span>}
                   {a.nextActionAt && <div className="muted" style={{ fontSize: 12 }}>Next: {a.nextActionAt}</div>}
                   <div className="actions">

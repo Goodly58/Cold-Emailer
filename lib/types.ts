@@ -117,6 +117,12 @@ export interface Application {
   appliedAt?: string;
   nextActionAt?: string;
   notes?: string;
+  /** Auto-import bookkeeping. */
+  sourceId?: string;
+  isNew?: boolean;
+  lastSeenAt?: string;
+  /** Posting disappeared from the board — likely filled or pulled. */
+  closed?: boolean;
   createdAt: string;
 }
 
@@ -143,6 +149,22 @@ export interface Outreach {
   createdAt: string;
 }
 
+/** A company's job board, polled on a schedule to keep the pipeline fresh. */
+export interface JobSource {
+  id: string;
+  companyName: string;
+  platform: string;
+  slug: string;
+  enabled: boolean;
+  /** Comma-separated filter, e.g. "dubai, abu dhabi, analyst". Blank = all. */
+  keywords?: string;
+  lastCheckedAt?: string;
+  lastResult?: string;
+  lastError?: string;
+  totalFound?: number;
+  createdAt: string;
+}
+
 export interface Template {
   id: string;
   name: string;
@@ -165,9 +187,16 @@ export interface Db {
   applications: Application[];
   outreach: Outreach[];
   templates: Template[];
+  jobSources: JobSource[];
 }
 
-export type CollectionName = 'companies' | 'contacts' | 'applications' | 'outreach' | 'templates';
+export type CollectionName =
+  | 'companies'
+  | 'contacts'
+  | 'applications'
+  | 'outreach'
+  | 'templates'
+  | 'jobSources';
 
 export const COLLECTIONS: CollectionName[] = [
   'companies',
@@ -175,4 +204,5 @@ export const COLLECTIONS: CollectionName[] = [
   'applications',
   'outreach',
   'templates',
+  'jobSources',
 ];

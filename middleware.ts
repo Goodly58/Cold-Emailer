@@ -10,6 +10,15 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (pathname === '/login' || pathname === '/api/login') return NextResponse.next();
 
+  // Scheduled jobs authenticate with CRON_SECRET instead of the login cookie.
+  // The route itself re-checks the header — this only lets it through.
+  if (pathname.startsWith('/api/cron/')) {
+    const secret = process.env.CRON_SECRET;
+    if (secret && req.headers.get('authorization') === `Bearer ${secret}`) {
+      return NextResponse.next();
+    }
+  }
+
   if (req.cookies.get('app_auth')?.value === password) return NextResponse.next();
 
   if (pathname.startsWith('/api/')) {

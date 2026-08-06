@@ -42,6 +42,28 @@ the production branch auto-redeploys; your data lives in Turso, untouched by dep
 Run the Dockerfile anywhere with a persistent disk mounted at `/data`, or just
 `npm install && npm run build && npm start` behind a reverse proxy.
 
+## Keeping job data fresh (scheduled refresh)
+
+`vercel.json` registers a daily cron that hits `/api/cron/refresh` at 04:00 UTC (08:00 UAE),
+polling every enabled source on the **Sources** page: new roles land in the pipeline tagged
+**NEW**, and postings that vanish from a board get marked **closed**.
+
+To enable it:
+
+1. In Vercel → Settings → Environment Variables, add **`CRON_SECRET`** = any long random string.
+   Vercel sends it as `Authorization: Bearer …` so only the scheduler can trigger a run.
+2. Redeploy. Vercel picks up `vercel.json` and the job appears under Settings → Cron Jobs.
+
+Notes:
+
+- Vercel's Hobby (free) tier runs cron **once a day**; the schedule above is daily so it works on
+  any tier. On Pro you can tighten it to hourly by changing the schedule to `0 * * * *`.
+- The **Refresh all now** button on the Sources page runs the exact same job on demand, so you're
+  never waiting on the schedule.
+- Optional: **`HUNTER_API_KEY`** (hunter.io, free tier 25/month) enables mailbox-level email
+  confirmation on the Contacts page. Without it, email finding still works via pattern generation
+  and MX verification.
+
 ## Notes
 
 - **Always set `APP_PASSWORD`** on a public deployment — this tracker holds names, emails, and
