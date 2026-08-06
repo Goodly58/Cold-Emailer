@@ -28,6 +28,7 @@ import { CADENCE_WORKING_DAYS, recomputeDerivedDates, type RecomputeResult } fro
 import { generate, loadContext } from './generator';
 import { newId, nowIso } from './ids';
 import { logEvent } from './log';
+import { ORG_FAMILY_SQL, orgFamilyArgs } from './org';
 import { pollReplies, type PollResult } from './poller';
 import { draftPendingReplies } from './reply-assist';
 import { freshnessPass } from './queue';
@@ -241,9 +242,9 @@ async function enforceInvariants(user: User, now: Date): Promise<number> {
           AND status IN ('queued', 'drafted', 'stale', 'needs_fact', 'approved')
           AND person_id IN (
             SELECT p.id FROM person p JOIN company c ON c.id = p.company_id
-             WHERE c.org_group_id = ? AND p.id <> ? AND p.status = 'in_sequence'
+             WHERE c.org_group_id IN ${ORG_FAMILY_SQL} AND p.id <> ? AND p.status = 'in_sequence'
           )`,
-      [at, user.id, conflict.org_group_id, conflict.keep_person]
+      [at, user.id, ...orgFamilyArgs(conflict.org_group_id), conflict.keep_person]
     );
   }
 
@@ -454,8 +455,8 @@ async function rotateLadders(user: User, now: Date): Promise<number> {
     const [live] = await query<{ n: number }>(
       `SELECT count(*) AS n
          FROM person p JOIN company c ON c.id = p.company_id
-        WHERE c.org_group_id = ? AND p.status = 'in_sequence' AND p.id <> ?`,
-      [row.org_group_id, row.person_id]
+        WHERE c.org_group_id IN ${ORG_FAMILY_SQL} AND p.status = 'in_sequence' AND p.id <> ?`,
+      [...orgFamilyArgs(row.org_group_id), row.person_id]
     );
     if ((live?.n ?? 0) > 0) continue;
 

@@ -50,7 +50,7 @@ async function db() {
 async function world() {
   const d = await db();
   await d.executeMultiple(`
-    DELETE FROM calendar_window; DELETE FROM reply_draft;
+    DELETE FROM calendar_window; DELETE FROM reply_draft; DELETE FROM org_group_link;
     DELETE FROM next_action; DELETE FROM thread_poll; DELETE FROM inbound;
     DELETE FROM contact_ledger; DELETE FROM outreach; DELETE FROM person_source;
     DELETE FROM ladder_slot; DELETE FROM person; DELETE FROM user_company_state;
@@ -1439,4 +1439,99 @@ test('the sweep will not draft for someone the Review screen would refuse', asyn
   );
   assert.equal(row!.status, 'needs_fact');
   assert.ok(row!.body.length > 0, 'and it says what would unblock it');
+});
+
+// ---------------------------------------------------------------------------
+// One organisation, two domains
+// ---------------------------------------------------------------------------
+
+/** A linked subsidiary mailing from its own domain. */
+async function subsidiary() {
+  const { execute } = await import('../lib/db/client');
+  const { linkOrgGroups } = await import('../lib/org');
+  await execute(`INSERT INTO org_group (id, normalized_domain, created_at) VALUES ('org_sub', 'endbcapital.ae', ?)`, [AT]);
+  await execute(
+    `INSERT INTO company (id, org_group_id, name, domain, created_at, updated_at)
+     VALUES ('cmp_sub', 'org_sub', 'Alpha Bank Capital', 'endbcapital.ae', ?, ?)`,
+    [AT, AT]
+  );
+  await execute(
+    `INSERT INTO person (id, company_id, ladder_rank, full_name_raw, phonetic_key, contact_type,
+                         source_tier, anchor_source_url, email, email_status, status, created_at, updated_at)
+     VALUES ('per_sub', 'cmp_sub', 1, 'Noura Al Hashimi', 'hashimi noura', 'hr', 2,
+             'https://x.ae/team', 'n@endbcapital.ae', 'verified', 'ready', ?, ?)`,
+    [AT, AT]
+  );
+  await linkOrgGroups('org_c', 'org_sub', 'Same bank, different mail domain');
+  return 'per_sub';
+}
+
+test('a linked subsidiary counts as the same organisation in the queue', async () => {
+  // "Emirates NBD" and "Emirates NBD Capital" are two rows and one office.
+  // Domain grouping cannot see it, which is what org_group_link is for — and
+  // until it was read by anything, both would get a cold email the same
+  // morning.
+  const { buildQueue } = await import('../lib/queue');
+  await person('per_main', { status: 'in_sequence' });
+  await outreach({ id: 'out_main', personId: 'per_main', step: 1, status: 'sent', sentDate: '2026-08-05', threadId: 't1' });
+
+  const subId = await subsidiary();
+  await outreach({ id: 'out_sub', personId: subId, step: 1, status: 'drafted' });
+
+  const queue = await buildQueue(await user(), NOW);
+  assert.equal(queue.firstEmails.length, 0, 'one live sequence per organisation, across the link');
+});
+
+test('an unlinked company at another domain is unaffected', async () => {
+  // The invariant must not become "never write to two companies at once".
+  const { buildQueue } = await import('../lib/queue');
+  const { execute } = await import('../lib/db/client');
+
+  await person('per_x', { status: 'in_sequence' });
+  await outreach({ id: 'out_x', personId: 'per_x', step: 1, status: 'sent', sentDate: '2026-08-05', threadId: 't1' });
+
+  await execute(`INSERT INTO org_group (id, normalized_domain, created_at) VALUES ('org_o', 'other.ae', ?)`, [AT]);
+  await execute(
+    `INSERT INTO company (id, org_group_id, name, domain, created_at, updated_at)
+     VALUES ('cmp_o', 'org_o', 'Other Co', 'other.ae', ?, ?)`,
+    [AT, AT]
+  );
+  await execute(
+    `INSERT INTO person (id, company_id, ladder_rank, full_name_raw, phonetic_key, contact_type,
+                         source_tier, anchor_source_url, email, email_status, status, created_at, updated_at)
+     VALUES ('per_o', 'cmp_o', 1, 'Layla Saeed', 'saeed layla', 'hr', 2,
+             'https://x.ae/team', 'l@other.ae', 'verified', 'ready', ?, ?)`,
+    [AT, AT]
+  );
+  await outreach({ id: 'out_o', personId: 'per_o', step: 1, status: 'drafted' });
+
+  const queue = await buildQueue(await user(), NOW);
+  assert.equal(queue.firstEmails.length, 1);
+});
+
+test('a reply at the parent raises a conflict with a live sequence at the subsidiary', async () => {
+  await person('per_p1');
+  await outreach({ id: 'out_p1c', personId: 'per_p1', step: 1, status: 'sent', sentDate: '2026-08-03', threadId: 't1' });
+  const subId = await subsidiary();
+
+  const { execute } = await import('../lib/db/client');
+  await execute(`UPDATE person SET status = 'in_sequence' WHERE id = ?`, [subId]);
+
+  const result = await apply(classification(), 'per_p1');
+  assert.equal(result.companyStatus, 'reply_conflict');
+});
+
+test('a link can be undone, and never links a group to itself', async () => {
+  const { linkOrgGroups, unlinkOrgGroups, orgFamilyKeys, listOrgLinks } = await import('../lib/org');
+  await subsidiary();
+
+  assert.equal(await linkOrgGroups('org_c', 'org_c'), false, 'a group is not its own subsidiary');
+  assert.equal((await listOrgLinks()).length, 1);
+
+  const keys = await orgFamilyKeys();
+  assert.equal(keys.get('org_c'), keys.get('org_sub'), 'same family key either way round');
+
+  // Two companies wrongly merged means one of them is never written to.
+  assert.equal(await unlinkOrgGroups('org_c', 'org_sub'), true);
+  assert.equal((await orgFamilyKeys()).size, 0);
 });

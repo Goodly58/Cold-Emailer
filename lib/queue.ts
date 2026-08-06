@@ -27,6 +27,7 @@ import { loadCalendar } from './calendar-store';
 import { execute, query, queryOne } from './db/client';
 import { SAME_DOMAIN_SPACING_MS } from './durations';
 import { nowIso } from './ids';
+import { familyOf, orgFamilyKeys, ORG_FAMILY_SQL, orgFamilyArgs } from './org';
 import { logEvent } from './log';
 import type { User } from './user';
 
@@ -191,6 +192,11 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
   const outsideWindow = !isSendWindowDay(today, calendar);
   const nextWindowDay = outsideWindow ? nextSendWindowDay(today, calendar) : null;
 
+  // Two org groups a founder has linked as one employer must compare equal
+  // everywhere below, or a parent and its distinct-domain subsidiary both get
+  // offered the same morning — two emails into one office.
+  const families = await orgFamilyKeys();
+
   const rows = await query<QueueRow>(
     // A paused countdown is excluded outright. A gateway-quarantined step has
     // no scheduled_date, and "no date" would otherwise read as "due now" — the
@@ -211,7 +217,7 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
           WHERE o.user_id = ? AND o.sent_at IS NOT NULL AND o.sent_at > ?`,
         [user.id, new Date(now.getTime() - SAME_DOMAIN_SPACING_MS).toISOString()]
       )
-    ).map((r) => r.org_group_id)
+    ).map((r) => familyOf(r.org_group_id, families))
   );
 
   // One live sequence per organisation.
@@ -223,7 +229,7 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
           WHERE o.user_id = ? AND o.status = 'sent' AND p.status = 'in_sequence'`,
         [user.id]
       )
-    ).map((r) => r.org_group_id)
+    ).map((r) => familyOf(r.org_group_id, families))
   );
 
   const followUps: QueueItem[] = [];
@@ -246,12 +252,13 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
     const isFollowUp = row.step > 1;
     const due = row.scheduled_date;
     if (isFollowUp && due && compareDates(due, today) > 0) continue; // not yet
-    if (!isFollowUp && liveSequences.has(row.org_group_id)) continue; // one at a time
+    const family = familyOf(row.org_group_id, families);
+    if (!isFollowUp && liveSequences.has(family)) continue; // one at a time
 
     let blockedReason: string | null = null;
     if (outsideWindow) {
       blockedReason = `Held until ${nextWindowDay} — an email landing now would be read on Monday at best.`;
-    } else if (recentlyContacted.has(row.org_group_id) || offeredOrgs.has(row.org_group_id)) {
+    } else if (recentlyContacted.has(family) || offeredOrgs.has(family)) {
       blockedReason = 'Someone else at this company heard from you in the last two days. This waits.';
     } else if (row.person_status === 'replied' || row.person_status === 'replied_external') {
       blockedReason = 'They already replied.';
@@ -288,13 +295,13 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
     if (isFollowUp) {
       if (followUps.length < budget.followUpsRemaining) {
         followUps.push(item);
-        offeredOrgs.add(row.org_group_id);
+        offeredOrgs.add(family);
       } else deferred++;
     } else {
       const room = Math.min(budget.firstEmailsRemaining, budget.target);
       if (firstEmails.length < Math.max(0, room - followUps.length)) {
         firstEmails.push(item);
-        offeredOrgs.add(row.org_group_id);
+        offeredOrgs.add(family);
       } else deferred++;
     }
   }
@@ -427,8 +434,8 @@ export async function sendPermission(
   const [recent] = await query<{ n: number }>(
     `SELECT count(*) AS n
        FROM outreach o JOIN person p ON p.id = o.person_id JOIN company c ON c.id = p.company_id
-      WHERE o.user_id = ? AND c.org_group_id = ? AND o.sent_at > ?`,
-    [user.id, row.org_group_id, new Date(now.getTime() - SAME_DOMAIN_SPACING_MS).toISOString()]
+      WHERE o.user_id = ? AND c.org_group_id IN ${ORG_FAMILY_SQL} AND o.sent_at > ?`,
+    [user.id, ...orgFamilyArgs(row.org_group_id), new Date(now.getTime() - SAME_DOMAIN_SPACING_MS).toISOString()]
   );
   if ((recent?.n ?? 0) > 0) {
     return {

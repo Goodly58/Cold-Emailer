@@ -129,10 +129,17 @@ async function conflictingSequence(companyId: string, exceptPersonId: string): P
   const row = await queryOne<{ id: string }>(
     `SELECT p.id FROM person p
        JOIN company c ON c.id = p.company_id
-      WHERE c.org_group_id = (SELECT org_group_id FROM company WHERE id = ?)
+      WHERE c.org_group_id IN (
+              SELECT g.id FROM org_group g
+               WHERE g.id = (SELECT org_group_id FROM company WHERE id = ?)
+               UNION SELECT parent_org_group_id FROM org_group_link
+                      WHERE child_org_group_id = (SELECT org_group_id FROM company WHERE id = ?)
+               UNION SELECT child_org_group_id FROM org_group_link
+                      WHERE parent_org_group_id = (SELECT org_group_id FROM company WHERE id = ?)
+            )
         AND p.id <> ? AND p.status = 'in_sequence'
       LIMIT 1`,
-    [companyId, exceptPersonId]
+    [companyId, companyId, companyId, exceptPersonId]
   );
   return row?.id ?? null;
 }
