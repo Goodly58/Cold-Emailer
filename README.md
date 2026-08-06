@@ -1,74 +1,90 @@
-# Job Search Engine
+# Emirati Cold-Outreach Engine
 
-Personal dashboard for a high-conversion job search: application pipeline, target-company and
-decision-maker tracking, template-driven cold outreach, and a UAE Emiratisation playbook.
+Lands job interviews for an Emirati candidate through personalized cold email,
+using the structural advantage Emiratisation quotas and Nafis create: most large
+UAE employers have hiring targets for Emiratis, salary subsidies for hiring
+them, and often a named Emiratisation lead whose KPI is hiring people like the
+user.
 
-See [PLAN.md](./PLAN.md) for the full strategy and roadmap.
+A human approves every single send. There is no auto-send path in this codebase,
+and that is a schema-level fact, not a setting.
 
-## Run it
+## The documents that govern this build
+
+Read in this order. Where they conflict, the earlier one wins.
+
+| Document | What it governs |
+|---|---|
+| `ULTRAPROMPT.md` | The build contract: mission, hard rules, the edge-case register, build order |
+| `PLAN.md` | Product plan v3, with §14 indexing the research and §15 recording dated amendments |
+| `CULTURE.md` | The register engine — salutation, honorifics, timing, the pre-send lint |
+| `research/template-doctrine.md` | The canonical email spec |
+| `research/company-universe.md` | How the target list is assembled |
+| `research/people-discovery.md` | Contact-finding playbooks |
+| `research/linkedin-access.md` | Why hard rule 7 exists and why it stays |
+| `EDGE_CASES.md` | Living ledger of everything found while building |
+
+## Running it
 
 ```bash
 npm install
-npm run dev
+npm run db:migrate      # creates data/engine.db
+npm run db:seed         # 50 target companies, their ladder plans, the UAE calendar
+npm run dev             # http://localhost:3000
 ```
 
-Open http://localhost:3000.
+The database is created on first access, so `db:migrate` is really just a way to
+see what happened. `npm run db:seed` is idempotent.
 
-## What's inside
+### Environment
 
-| Page | What it does |
-|---|---|
-| **Overview** | Stats, due follow-ups, queued emails, setup checklist |
-| **Pipeline** | Kanban (Found → … → Offer) with search, filters, relevance scores, and manual import |
-| **Sources** | Job boards polled on a schedule; auto-discovery of which ATS a company uses |
-| **Companies** | ~1,000 seeded UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes; sector and tier filters, bulk import |
-| **Contacts** | Decision-makers with email finding, research links, and hook capture |
-| **Outreach** | Template composer with merge fields, pre-filled Gmail compose, follow-up log |
-| **Templates** | Profile + job preferences (drive scoring) + editable email templates |
-| **Health** | Scraper run history, broken-source alerts, backup/restore |
-| **UAE Playbook** | Emiratisation quotas, Nafis, career fairs, and how to use them in outreach |
+| Variable | Needed for | Notes |
+|---|---|---|
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Connecting Gmail | Without these the connect step says so plainly instead of failing |
+| `APP_BASE_URL` | The OAuth redirect | Defaults to `http://localhost:3000` |
+| `TOKEN_ENCRYPTION_KEY` | Encrypting tokens at rest | 32 bytes hex. **Required in production** — the app refuses to start without it |
+| `ANTHROPIC_API_KEY` | The interview follow-up, and generation from week 3 | Without it the interview falls back to fixed follow-up questions rather than stalling |
+| `DB_PATH` | Moving the database | Defaults to `data/engine.db` |
+| `APP_PASSWORD` | Password-gating a hosted copy | Unset means open, which is right locally |
 
-## Tests
+## Checks
 
 ```bash
-npm test     # 52 tests: unit + refresh-cycle integration
+npm run check           # typecheck + date-arithmetic guard + tests
 ```
 
-CI runs these plus a build and a seed-database check on every push.
+Three gates, each protecting something specific:
 
-## The scraper
+- **`npm run check:dates`** fails if any file outside `lib/calendar.ts` takes a
+  `Date` apart. A UTC server doing its own date arithmetic anchors day 0 to the
+  wrong day and the bug stays invisible until a follow-up lands on a Saturday.
+- **`npm test`** runs under `TZ=America/New_York`, so a timezone assumption
+  fails in CI rather than in a recipient's inbox.
+- **`tests/schema.test.ts`** proves the hard rules are unreachable states rather
+  than documented intentions — an honorific with no source URL, evidence with no
+  source, a fourth touch, two live rows for one step.
 
-Polls public ATS board APIs — the same endpoints that power companies' own careers pages, so no
-scraping and no ToS problem.
+## Where things are
 
-- **Platforms**: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee
-- **Schedule**: daily via Vercel Cron (`vercel.json`), plus a manual "Refresh now"
-- **Discovery**: probes all platforms with derived slugs to find a company's board
-- **Resilience**: retries with exponential backoff on 429/5xx, fails fast on 4xx, bounded
-  concurrency, per-source failure counters
-- **Dedupe**: job URLs are normalized (tracking params stripped) before comparison
-- **Lifecycle**: postings that vanish are marked closed and pruned after 30 days; roles you've
-  already applied to are never auto-closed
-- **Scoring**: every imported role is ranked 0–100 against your job preferences
+```
+lib/calendar.ts        the ONLY date module — nextDue() and the send window
+lib/db/migrations/     the schema, with the hard rules as constraints
+lib/gmail/             OAuth (two scopes) and the one API wrapper
+lib/interview.ts       chip catalogue, thinness check, the profile gate
+lib/profile.ts         answers → intro blocks and profile-claim evidence rows
+lib/cv.ts              the one-page CV, generated from answered fields only
+lib/derived-dates.ts   recomputing scheduled_date from the current calendar
+app/onboarding/        screen 1 — connect, identity, interview, hygiene, CV
+app/today/             screen 2 — Review & Send (shell; the queue lands week 3)
+app/dashboard/         screen 3 — what is in play
+app/calendar/          founder-only: confirm Eid dates, watch countdowns move
+```
 
-Big UAE corporates (ADNOC, FAB, Emirates NBD…) run Oracle/SAP career portals with no public feed —
-those stay manual via their careers links on the Companies page.
+## Status
 
-## Data
+**Week 1 complete.** Next.js skeleton, the full global-keyed SQLite schema,
+Gmail OAuth with the granted-scope check, the profile interview with its
+minimum-viable gate, the CV step, and the UAE working-day calendar. 62 tests.
 
-Two backends, picked automatically:
-
-- **Locally**: plain JSON at `data/db.json` (set `DB_PATH` to store it elsewhere) — zero setup,
-  easy to back up or edit by hand. Using the app mutates this file, so live data shows up as git
-  changes; commit it (private repo) or point `DB_PATH` outside the repo.
-- **Hosted**: set `TURSO_DATABASE_URL` (+ `TURSO_AUTH_TOKEN`) and everything is stored in a free
-  [Turso](https://turso.tech) cloud database instead. Seeds itself on first load.
-
-To put it online for $0/month (Vercel + Turso), follow [DEPLOY.md](./DEPLOY.md).
-
-## Deliberate non-goals
-
-- **No auto-apply bots** — they violate LinkedIn/Indeed ToS and produce weak applications. The
-  pipeline + import flow gets you to one-click-ready instead.
-- **No mass sending** — emails open pre-filled in Gmail for review. Job outreach converts on
-  personalization, not volume.
+Weeks 2–4 — sourcing tooling, the clarify-and-refuse generator with the Review
+screen, then the cadence engine — follow the build order in `ULTRAPROMPT.md` §6.

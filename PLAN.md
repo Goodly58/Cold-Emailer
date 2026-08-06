@@ -186,3 +186,34 @@ Deep-research documents now govern their areas; where they conflict with the sec
 - **`research/linkedin-access.md`** — the login is the legal line. Amendments to §3 Tier 3: **Bing Search API is retired**; use Google CSE if still obtainable, else DataForSEO/Serper; optional Tier 2.5 = one-time Bright Data UAE snapshot (~$250) as a corroborating source. Hard rule 7 (no LinkedIn automation) is fully vindicated — detection operates at the TLS layer, so low volume does not confer safety.
 - **`research/template-doctrine.md`** — the canonical email spec (Becc Holland adapted). Amendments to §5–6: cadence becomes **Day 0 heavy → Day +4 Lite reply-on-thread ("Any thoughts?" + value-carrying PS) → Day +15 break-up on a new subject**, hard cap 3 touches; intro = slot library (A identity / B credibility / C status / D affinity, max 2 per email); the 49-word blocklist ships as a lint gate; premise tiers stored per send for reply-rate attribution.
 - **`CULTURE.md`** — the register engine spec: recipient-tier matrix (senior Emirati → expat → HR), Arabic name tokenization rules (never split "Al", `Mr. + first name` fallback for patronymic chains, full-name fallback always safe), honorifics **copied from a source, never derived** (H.E./Dr./Eng.; Sheikh → manual review halt), religious-greeting gate, Mon–Thu 08:30–11:00 GST send window, pre-send lint rules. §13 of that file lists the questions to validate with the Emirati friend before first send.
+
+## 15. Build amendments (dated)
+
+Where the build diverged from the plan, with the reason. Per ULTRAPROMPT §7,
+`PLAN.md` is maintained alongside the code rather than left to drift.
+
+### 2026-08-06 — week 1
+
+- **Storage: `@libsql/client` with numbered `.sql` migrations, not Prisma or
+  Drizzle** (§8 said "SQLite via Prisma/Drizzle"). The driver was already a
+  dependency, it needs no codegen step, and a schema the founder can read at
+  midnight beats a generated artifact. The contract's intent — a single-file
+  SQLite database as the system of record, easy to back up — is unchanged.
+  Migrations apply on first access, so there is no setup step for the user.
+- **OAuth scopes are two, not three** (§2 listed `gmail.compose`). Already
+  amended by ULTRAPROMPT §4; recorded here because §2 still read the old list.
+  SQLite is the only draft store, so compose has nothing to do, and dropping it
+  shrinks the CASA audit surface.
+- **The cadence is Day 0 → +4 → +15 working days**, per
+  `research/template-doctrine.md` §(d), superseding §5's "+4 then +5 more". The
+  break-up email converts highest of the three, and it needs distance from the
+  bump to read as a close rather than a third chase. Encoded as
+  `CADENCE_WORKING_DAYS` in `lib/derived-dates.ts`.
+- **Friday is a working day for counting and never a send day.** §5 counts
+  Mon–Fri; `CULTURE.md` §9 establishes Mon–Thu as the only universally safe send
+  band. Both are implemented, as separate functions, in `lib/calendar.ts`.
+- **Seeded people are not seeded.** §11 says "seed the friend's profile and
+  30–50 companies with ranked ladders". Companies and ladder *plans* are seeded;
+  the ladder slots carry no person rows, because inventing a name to fill one is
+  exactly what hard rule 2 exists to prevent. The friend's profile comes from
+  the real interview for the same reason. Week 2 sourcing fills the slots.

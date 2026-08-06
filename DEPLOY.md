@@ -1,81 +1,99 @@
-# Deploying online
+# Deploying
 
-The app supports two storage backends, picked automatically:
+The database is a single SQLite file. Anywhere with a persistent disk works;
+anywhere without one does not, because the file *is* the system of record —
+drafts, tokens, threads, the calendar and the log all live in it.
 
-- **Turso** (cloud SQLite) when `TURSO_DATABASE_URL` is set — use this for hosted deployments.
-- **JSON file** at `data/db.json` otherwise — zero-setup local dev, and Docker hosts with a volume.
+## Before user #1 — the Google work
 
-## Option A — Vercel + Turso (recommended, $0/month)
+This is the longest-lead item in the whole build, and it is not code. Start it
+before it blocks anything.
 
-**1. Create the free database (turso.tech):**
+**1. Move the OAuth app to production publishing status.** While the app is in
+testing status, Google expires refresh tokens after **seven days**. On day 8
+polling fails silently, sends 401, and follow-ups vanish during the exact week
+they come due. Production status removes that expiry even before verification
+completes.
 
-1. Sign up at [turso.tech](https://turso.tech) (GitHub login works, no credit card).
-2. Create a database (any name, pick a nearby region).
-3. Copy the **database URL** (looks like `libsql://yourdb-yourname.turso.io`).
-4. Create an **auth token** for the database and copy it.
+**2. Start Google verification.** The two scopes this app uses —
+`gmail.send` and `gmail.readonly` — are restricted. Verification requires a
+security assessment (CASA) with **two to three months of lead time** and real
+money. Unverified, the app caps at 100 users behind a warning screen. That is
+enough for the friend and not enough for user #2, so the clock starts now.
 
-**2. Deploy the app (vercel.com):**
+The build already minimizes what the assessment has to cover, and it is worth
+being able to say so:
 
-1. Sign up at [vercel.com](https://vercel.com) with your GitHub account.
-2. **Add New → Project** → import `Goodly58/Cold-Emailer`.
-3. Before hitting Deploy, expand **Environment Variables** and add:
-   - `TURSO_DATABASE_URL` = the URL from step 1.3
-   - `TURSO_AUTH_TOKEN` = the token from step 1.4
-   - `APP_PASSWORD` = a password of your choosing (locks the site)
-4. Click **Deploy**. You'll get a URL like `cold-emailer.vercel.app`.
+- Two scopes. `gmail.compose` is deliberately absent — SQLite is the only draft
+  store, so there is nothing for it to do.
+- Polling only ever touches threads this tool created, by stored thread id.
+  There is no broad inbox query anywhere in the codebase.
+- Only reply content on tool-created threads is persisted.
+- Refresh tokens are encrypted at rest (AES-256-GCM, `lib/crypto.ts`).
 
-Vercel deploys the repo's default branch for production. If your code is on a feature branch,
-either merge it to `main`, or set **Project Settings → Git → Production Branch** to that branch.
+**3. Configure the OAuth client.** Authorized redirect URI must be
+`<APP_BASE_URL>/api/gmail/callback`, exactly.
 
-On first load the database seeds itself with the starter companies and templates. Every push to
-the production branch auto-redeploys; your data lives in Turso, untouched by deploys.
+## Environment
 
-## Option B — Railway (~$5/mo, uses the Dockerfile + a volume)
+| Variable | Required | Notes |
+|---|---|---|
+| `GOOGLE_CLIENT_ID` | to connect Gmail | From the Google Cloud console |
+| `GOOGLE_CLIENT_SECRET` | to connect Gmail | |
+| `APP_BASE_URL` | yes in production | The public origin. The redirect URI is derived from it |
+| `TOKEN_ENCRYPTION_KEY` | **yes in production** | 32 bytes hex. The app refuses to start without it rather than storing refresh tokens in the clear |
+| `ANTHROPIC_API_KEY` | for generation | Without it the interview uses fixed follow-up questions instead of stalling |
+| `APP_PASSWORD` | yes on anything public | This database holds names and email addresses of real people who did not opt in |
+| `DB_PATH` | no | Defaults to `data/engine.db`. Point it at your mounted volume |
 
-1. [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo**.
-2. Settings → Volumes → mount path `/data`.
-3. Variables → `APP_PASSWORD`. (No Turso vars → it uses the JSON file on the volume.)
-4. Settings → Networking → Generate Domain.
+Generate an encryption key:
 
-## Option C — Any VM (e.g. Oracle Cloud always-free)
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-Run the Dockerfile anywhere with a persistent disk mounted at `/data`, or just
-`npm install && npm run build && npm start` behind a reverse proxy.
+## Hosting
 
-## Keeping job data fresh (scheduled refresh)
+**A VM or container with a mounted disk** is the right shape. The Dockerfile in
+this repo builds it; mount a volume and set `DB_PATH` to a path inside it.
 
-`vercel.json` registers a daily cron that hits `/api/cron/refresh` at 04:00 UTC (08:00 UAE),
-polling every enabled source on the **Sources** page: new roles land in the pipeline tagged
-**NEW**, and postings that vanish from a board get marked **closed**.
+```bash
+npm ci && npm run build && npm start
+```
 
-To enable it:
+**Serverless is the wrong shape for v1.** A single-file SQLite database on
+ephemeral function storage loses everything between invocations, and the
+scheduler that lands in week 4 assumes a process that can be woken on a
+schedule and read the same file.
 
-1. In Vercel → Settings → Environment Variables, add **`CRON_SECRET`** = any long random string.
-   Vercel sends it as `Authorization: Bearer …` so only the scheduler can trigger a run.
-2. Redeploy. Vercel picks up `vercel.json` and the job appears under Settings → Cron Jobs.
+## Backups
 
-Notes:
+Copy the database file. It is one file, and it is everything:
 
-- Vercel's Hobby (free) tier runs cron **once a day**; the schedule above is daily so it works on
-  any tier. On Pro you can tighten it to hourly by changing the schedule to `0 * * * *`.
-- The **Refresh all now** button on the Sources page runs the exact same job on demand, so you're
-  never waiting on the schedule.
-### Optional API keys
+```bash
+sqlite3 data/engine.db ".backup /backups/engine-$(date +%F).db"
+```
 
-All optional — the app works without them, and each unlocks one feature.
+Worth doing before any migration, and worth automating before the first real
+send — the contact history and the threads it maps to cannot be reconstructed
+from Gmail alone.
 
-| Variable | Unlocks | Free tier | Get it |
-|---|---|---|---|
-| `HUNTER_API_KEY` | Mailbox-level email confirmation on Contacts | 25 lookups/month | [hunter.io](https://hunter.io) |
-| `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` | Adzuna aggregator search (UAE-wide) | 250 calls/day | [developer.adzuna.com](https://developer.adzuna.com/signup) |
-| `JOOBLE_API_KEY` | Jooble aggregator search | free key on request | [jooble.org/api/about](https://jooble.org/api/about) |
+## What the database holds
 
-Without keys: email finding still works via pattern generation + MX verification, and The Muse
-aggregator works with no key at all.
+Names, business email addresses, and quoted public statements of people who did
+not opt in, which is personal-data processing under UAE PDPL (Federal
+Decree-Law 45/2021). The v1 posture, per the register:
 
-## Notes
+- Public business-contact data only. Never phone numbers, photographs, or
+  nationality guesses.
+- Every evidence row carries the source URL it came from — that provenance is
+  the compliance artefact, not a nicety.
+- Suppression is permanent and keyed on an email hash, so honouring a removal
+  request does not require keeping the address.
+- Retention: purge N months after a company reaches `exhausted`. **Not yet
+  implemented** — tracked in `EDGE_CASES.md`.
 
-- **Always set `APP_PASSWORD`** on a public deployment — this tracker holds names, emails, and
-  notes about real people. Without it the app runs open (fine locally, not online).
-- The password unlocks the site for 90 days per browser via a cookie.
-- Backup: Turso dashboard can export your database; locally, copy `data/db.json`.
+The commercial-phase items — a privacy notice, a legitimate-interest analysis, a
+DSR workflow, and UAE counsel on whether TDRA's unsolicited-communications rules
+reach one-to-one job-seeking email — are budgeted, not built. See
+`research/people-discovery.md` §11 and `CULTURE.md` §14.
