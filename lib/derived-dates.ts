@@ -18,6 +18,7 @@
 import { loadCalendar } from './calendar-store';
 import {
   clampRecomputedDueDate,
+  compareDates,
   crossesUnconfirmedWindow,
   nextDue,
   todayUae,
@@ -45,7 +46,21 @@ interface PendingRow {
   due_working_days: number | null;
   scheduled_date: string | null;
   anchor_sent_date: string | null;
+  previous_sent_date: string | null;
+  hold_until: string | null;
+  countdown_paused: number;
 }
+
+/**
+ * The minimum gap between what the recipient actually last received and the
+ * next touch, whatever the doctrine's offset from day 0 works out to.
+ *
+ * Both offsets are counted from touch 1 (0 → +4 → +15), which is right when the
+ * sequence runs on time. It is wrong when it does not: a user who disappears
+ * and sends touch 2 on day 13 would otherwise get touch 3 two days later, which
+ * reads as pestering to the only person whose opinion matters here.
+ */
+const MIN_GAP_AFTER_PREVIOUS_SEND = 4;
 
 export interface RecomputeResult {
   examined: number;
@@ -67,13 +82,19 @@ export async function recomputeDerivedDates(
   const calendar = options.calendar ?? (await loadCalendar());
   const today = todayUae(options.now ?? new Date());
 
-  // The anchor is the send date of the previous step: "+4 working days" is
-  // counted from when the recipient could first have read us, not from when
-  // the row was created.
+  // The anchor is touch 1's send date — template-doctrine §(d) counts both
+  // offsets from day 0, not from the step before. `previous_sent_date` is what
+  // the recipient actually last received, which only sets a floor.
   const pending = await query<PendingRow>(
     `SELECT o.id, o.person_id, o.step, o.due_working_days, o.scheduled_date,
-            prev.sent_date_uae AS anchor_sent_date
+            o.hold_until, o.countdown_paused,
+            first.sent_date_uae AS anchor_sent_date,
+            prev.sent_date_uae  AS previous_sent_date
        FROM outreach o
+       LEFT JOIN outreach first
+              ON first.person_id = o.person_id
+             AND first.step = 1
+             AND first.status IN ('sent', 'replied', 'bounced')
        LEFT JOIN outreach prev
               ON prev.person_id = o.person_id
              AND prev.step = o.step - 1
@@ -90,12 +111,29 @@ export async function recomputeDerivedDates(
     // there is nothing to derive.
     if (row.step === 1 || !row.anchor_sent_date || !row.due_working_days) continue;
 
+    // A gateway challenge stops the clock rather than moving it. There is no
+    // honest date to count from when the recipient never received the email.
+    if (row.countdown_paused === 1) continue;
+
+    const fromDayZero = nextDue(row.anchor_sent_date, row.due_working_days, calendar);
+    const floors = [
+      // What the recipient actually last received sets a floor of its own.
+      row.previous_sent_date && row.previous_sent_date !== row.anchor_sent_date
+        ? nextDue(row.previous_sent_date, MIN_GAP_AFTER_PREVIOUS_SEND, calendar)
+        : null,
+      // "Back on the 18th" is a fact about the recipient, so it survives the
+      // recomputation instead of being overwritten by it.
+      row.hold_until,
+    ].filter((d): d is string => d !== null);
+
     const derived = clampRecomputedDueDate(
-      nextDue(row.anchor_sent_date, row.due_working_days, calendar),
+      floors.reduce((latest, floor) => (compareDates(floor, latest) > 0 ? floor : latest), fromDayZero),
       today
     );
     const regenerate = crossesUnconfirmedWindow(today, derived, calendar);
-    const gap = workingDaysBetween(row.anchor_sent_date, derived, calendar);
+    // The gap the wording must match is the one the recipient experiences:
+    // measured from their last email, not from the start of the sequence.
+    const gap = workingDaysBetween(row.previous_sent_date ?? row.anchor_sent_date, derived, calendar);
 
     if (derived !== row.scheduled_date) changed++;
     if (regenerate) flagged++;

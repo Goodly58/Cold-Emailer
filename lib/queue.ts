@@ -178,7 +178,11 @@ export async function buildQueue(user: User, now: Date = new Date()): Promise<To
   const budget = await budgetFor(user, now);
 
   const rows = await query<QueueRow>(
+    // A paused countdown is excluded outright. A gateway-quarantined step has
+    // no scheduled_date, and "no date" would otherwise read as "due now" — the
+    // follow-up offered into a quarantine the recipient never released.
     `${QUEUE_SELECT} AND o.status IN ('drafted', 'stale', 'approved', 'needs_fact')
+       AND o.countdown_paused = 0
      ORDER BY o.step DESC, o.scheduled_date ASC NULLS LAST, o.created_at ASC`,
     [user.id]
   );

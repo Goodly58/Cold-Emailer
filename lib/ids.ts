@@ -24,6 +24,7 @@ export const ID_PREFIX = {
   calendarWindow: 'cal',
   blockedDomain: 'blk',
   event: 'evt',
+  action: 'act',
 } as const;
 
 export type IdKind = keyof typeof ID_PREFIX;
