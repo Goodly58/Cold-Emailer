@@ -638,7 +638,9 @@ function Composer() {
             href={toEmail && subject && !blocked ? gmailComposeUrl(toEmail, subject, body) : undefined}
             target="_blank"
             rel="noreferrer"
-            aria-disabled={blocked}
+            aria-disabled={blocked || !toEmail || !subject}
+            style={blocked || !toEmail || !subject ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
+            title={blocked ? 'Fix the ✕ items above, or tick "Send anyway"' : undefined}
             onClick={(e) => {
               if (blocked || !toEmail || !subject) {
                 e.preventDefault();

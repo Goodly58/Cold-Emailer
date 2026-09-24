@@ -27,6 +27,9 @@ const PRICE_PER_MTOK: Record<string, { input: number; output: number }> = {
   'claude-haiku-4-5': { input: 1, output: 5 },
 };
 
+/** Web search is billed per search as well as for the tokens its results add. */
+const SEARCH_PRICE_USD = 0.01;
+
 export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 
 export class AiUnavailableError extends Error {
@@ -195,11 +198,10 @@ export async function aiResearch<S extends z.ZodType>(opts: {
     if (record) {
       const parsed = opts.schema.safeParse(record.input);
       if (parsed.success) {
-        return {
-          data: parsed.data,
-          usage: { ...usageOf(model, { input_tokens: inputTokens, output_tokens: outputTokens }) },
-          searches,
-        };
+        const usage = usageOf(model, { input_tokens: inputTokens, output_tokens: outputTokens });
+        // Searches are billed on top of tokens, at $10 per 1,000.
+        usage.costUsd = Math.round((usage.costUsd + searches * SEARCH_PRICE_USD) * 10_000) / 10_000;
+        return { data: parsed.data, usage, searches };
       }
       // Tell the model exactly what was wrong and let it try once more.
       messages.push({ role: 'assistant', content: response.content });

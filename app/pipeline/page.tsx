@@ -252,7 +252,7 @@ export default function Pipeline() {
             onChange={(e) => setQuery(e.target.value)}
           />
           {view === 'ranked' && (
-            <select className="fixed" value={sort} onChange={(e) => { setSort(e.target.value as SortKey); store('pipeline.sort', e.target.value); }}>
+            <select className="fixed" style={{ width: 'auto' }} value={sort} onChange={(e) => { setSort(e.target.value as SortKey); store('pipeline.sort', e.target.value); }}>
               {SORTS.map(([k, label]) => (
                 <option key={k} value={k}>
                   Sort: {label}

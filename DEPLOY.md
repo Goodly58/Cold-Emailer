@@ -42,11 +42,15 @@ the production branch auto-redeploys; your data lives in Turso, untouched by dep
 Run the Dockerfile anywhere with a persistent disk mounted at `/data`, or just
 `npm install && npm run build && npm start` behind a reverse proxy.
 
-## Keeping job data fresh (scheduled refresh)
+## Keeping job data fresh (scheduled jobs)
 
-`vercel.json` registers a daily cron that hits `/api/cron/refresh` at 04:00 UTC (08:00 UAE),
-polling every enabled source on the **Sources** page: new roles land in the pipeline tagged
-**NEW**, and postings that vanish from a board get marked **closed**.
+`vercel.json` registers two cron jobs:
+
+- **`/api/cron/refresh`**, daily at 04:00 UTC (08:00 UAE), polls every enabled source on the
+  **Sources** page: new roles land in the pipeline tagged **NEW**, and postings that vanish from a
+  board get marked **closed**.
+- **`/api/cron/events`**, Mondays at 04:30 UTC, searches the web for new UAE career fairs and newly
+  announced dates. It needs `ANTHROPIC_API_KEY` (below) and skips quietly without it.
 
 To enable it:
 
@@ -56,10 +60,37 @@ To enable it:
 
 Notes:
 
-- Vercel's Hobby (free) tier runs cron **once a day**; the schedule above is daily so it works on
-  any tier. On Pro you can tighten it to hourly by changing the schedule to `0 * * * *`.
+- Vercel's Hobby (free) tier runs each cron job **at most once a day**, at some point within the
+  scheduled hour; both schedules fit that. On Pro you can tighten the refresh to hourly by changing
+  its schedule to `0 * * * *`.
+- The daily refresh runs for up to four minutes and the AI routes can take a minute or two, so
+  they set `maxDuration = 300`. That's within the limit for projects on Vercel's fluid compute,
+  which is the default for new projects. If a deploy complains about the duration, turn on fluid
+  compute under Project Settings → Functions.
 - The **Refresh all now** button on the Sources page runs the exact same job on demand, so you're
   never waiting on the schedule.
+### AI features (Anthropic API key)
+
+Add **`ANTHROPIC_API_KEY`** to switch on everything marked ✨ in the app: reading your CV from a
+PDF, drafting and improving emails (and Arabic versions), researching a company for a hook, fit
+analysis and tailored CV bullets per role, interview prep kits, the weekly review and the weekly
+event search.
+
+1. Create a key at [console.anthropic.com](https://console.anthropic.com) → API Keys. The API is
+   pay-as-you-go, separate from a Claude.ai subscription; add a little credit and set a monthly
+   spend limit there.
+2. In Vercel → Settings → Environment Variables, add `ANTHROPIC_API_KEY` = the key, then redeploy.
+
+The default model is `claude-opus-5`. Set **`ANTHROPIC_MODEL`** to use another one (a cheaper
+model such as `claude-sonnet-5` cuts costs by more than half). Each action shows its approximate
+cost at list prices when it finishes. Roughly: a few US cents to draft an email, tens of cents
+for a fit analysis, and more for anything that searches the web (hook research, interview prep,
+the weekly event search), which pays per search and for the pages it reads, up to a dollar or so.
+Nothing runs without you clicking, except the weekly event search.
+
+Requests opt into Anthropic's server-side fallback: if the model declines a request on policy
+grounds, the API retries it on its recommended substitute model instead of failing.
+
 ### Optional API keys
 
 All optional — the app works without them, and each unlocks one feature.
@@ -67,7 +98,6 @@ All optional — the app works without them, and each unlocks one feature.
 | Variable | Unlocks | Free tier | Get it |
 |---|---|---|---|
 | `HUNTER_API_KEY` | Mailbox-level email confirmation on Contacts | 25 lookups/month | [hunter.io](https://hunter.io) |
-| `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` | Adzuna aggregator search (UAE-wide) | 250 calls/day | [developer.adzuna.com](https://developer.adzuna.com/signup) |
 | `JOOBLE_API_KEY` | Jooble aggregator search | free key on request | [jooble.org/api/about](https://jooble.org/api/about) |
 
 Without keys: email finding still works via pattern generation + MX verification, and The Muse

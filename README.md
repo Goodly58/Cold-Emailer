@@ -1,7 +1,8 @@
 # Job Search Engine
 
-Personal dashboard for a high-conversion job search: application pipeline, target-company and
-decision-maker tracking, template-driven cold outreach, and a UAE Emiratisation playbook.
+Personal dashboard for a high-conversion job search in the UAE: every open role ranked by what
+it's worth to you, target companies and decision-makers, tailored cold outreach with follow-ups,
+career events, and AI help grounded in your own CV.
 
 See [PLAN.md](./PLAN.md) for the full strategy and roadmap.
 
@@ -18,21 +19,26 @@ Open http://localhost:3000.
 
 | Page | What it does |
 |---|---|
-| **Overview** | Stats, due follow-ups, queued emails, setup checklist |
-| **Pipeline** | Kanban (Found → … → Offer) with search, filters, relevance scores, and manual import |
-| **Sources** | Job boards polled on a schedule; auto-discovery of which ATS a company uses |
-| **Companies** | ~1,000 seeded UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes; sector and tier filters, bulk import |
+| **Overview** | Next best actions, what's due today (follow-ups, event thank-yous, registrations), the best open roles right now, upcoming events, and an AI weekly review of your numbers |
+| **Pipeline** | Every role **ranked** by an opportunity score (fit, pay with your Nafis top-up, freshness, employer), sortable by pay, pay + Nafis, newest, fit or employer, and filterable by minimum pay, posting age, remote/hybrid and stated pay. Each role opens to its full description, and with AI: a fit check against your CV, tailored CV bullets, a cover letter and an interview prep kit. A kanban board view too |
+| **Sources** | Job boards polled daily; auto-discovery of which ATS a company uses; aggregator search |
+| **Health** | Scraper run history (added, merged, descriptions saved, failures), broken-source alerts, backup/restore |
+| **Companies** | 1,265 UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes |
 | **Contacts** | Decision-makers with email finding, research links, and hook capture |
-| **Events** | UAE career fairs and expos with countdowns, prep checklists, registration tracking, and likely exhibitors linked to your companies; pre-event and follow-up email templates |
-| **Outreach** | Template composer with merge fields, pre-filled Gmail compose, follow-up log |
-| **Templates** | Profile + job preferences (drive scoring) + editable email templates |
-| **Health** | Scraper run history, broken-source alerts, backup/restore |
-| **UAE Playbook** | Emiratisation quotas, Nafis, career fairs, and how to use them in outreach |
+| **Events** | UAE career fairs and expos with countdowns and prep checklists; a weekly web search adds new events and fills in announced dates; log the people you meet and get reminded to thank them |
+| **Outreach** | Composer with contact and role linking, pre-send checks, AI drafting (and Arabic versions), web research for a personal hook, pre-filled Gmail, a daily send cap, and two follow-ups scheduled on the UAE Monday–Friday week |
+| **Templates** | Editable email templates with the reply rate each one gets |
+| **Profile** | Your CV (PDF or pasted), details, what you're looking for, minimum pay, education (sets your Nafis top-up) |
+| **UAE Playbook** | Emiratisation quotas, Nafis after the September 2026 changes, career fairs, and how to use them in outreach |
+
+AI features need an Anthropic API key; everything else works without one. See
+[DEPLOY.md](./DEPLOY.md#ai-features-anthropic-api-key).
 
 ## Tests
 
 ```bash
-npm test     # 82 tests: unit + refresh-cycle integration
+npm test          # unit + integration tests; the model is never called
+npm run typecheck
 ```
 
 CI runs these plus a build and a seed-database check on every push.
@@ -40,20 +46,19 @@ CI runs these plus a build and a seed-database check on every push.
 ## The scraper
 
 Polls public ATS board APIs — the same endpoints that power companies' own careers pages, so no
-scraping and no ToS problem.
+scraping and no ToS problem. Details in [SCRAPER.md](./SCRAPER.md).
 
-- **Platforms**: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee
+- **Platforms**: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee (plus unverified
+  Personio, Breezy, Pinpoint, Teamtailor, Workday and Oracle)
+- **What it collects**: title, link, location, department, posting date, pay (from salary fields
+  or the description), remote/hybrid, contract type, and the full description
 - **Schedule**: daily via Vercel Cron (`vercel.json`), plus a manual "Refresh now"
-- **Discovery**: probes all platforms with derived slugs to find a company's board
-- **Resilience**: retries with exponential backoff on 429/5xx, fails fast on 4xx, bounded
-  concurrency, per-source failure counters
-- **Dedupe**: job URLs are normalized (tracking params stripped) before comparison
+- **Dedupe**: normalised links, and the same role reached through two sources is linked, not
+  added twice
 - **Lifecycle**: postings that vanish are marked closed and pruned after 30 days; roles you've
-  already applied to are never auto-closed
-- **Scoring**: every imported role is ranked 0–100 against your job preferences
-
-Big UAE corporates (ADNOC, FAB, Emirates NBD…) run Oracle/SAP career portals with no public feed —
-those stay manual via their careers links on the Companies page.
+  applied to are never auto-closed; roles you dismiss aren't re-imported
+- **Resilience**: retries with backoff on 429/5xx, fails fast on 4xx, bounded concurrency, a time
+  budget, per-source failure counters
 
 ## Data
 
@@ -73,3 +78,6 @@ To put it online for $0/month (Vercel + Turso), follow [DEPLOY.md](./DEPLOY.md).
   pipeline + import flow gets you to one-click-ready instead.
 - **No mass sending** — emails open pre-filled in Gmail for review. Job outreach converts on
   personalization, not volume.
+- **No invented facts** — AI output may use only what's in your CV, the job description and your
+  research notes. Where a strong email or CV bullet needs a fact that isn't there, it leaves a
+  [placeholder], and the pre-send checks block an email that still has one.

@@ -187,8 +187,8 @@ export default function Overview() {
                       <strong>{x.title}</strong>
                       {x.detail && <div className="muted" style={{ fontSize: 12 }}>{x.detail}</div>}
                     </td>
-                    <td style={{ width: 110, textAlign: 'right' }}>
-                      <Link className="btn small" href={x.href}>
+                    <td style={{ whiteSpace: 'nowrap', textAlign: 'right', verticalAlign: 'middle' }}>
+                      <Link className="btn small" href={x.href} style={{ whiteSpace: 'nowrap' }}>
                         {x.cta} →
                       </Link>
                     </td>
