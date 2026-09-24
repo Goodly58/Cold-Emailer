@@ -61,6 +61,11 @@ export default function Overview() {
   const due = apps.filter((a) => a.nextActionAt && a.nextActionAt <= today && !['offer', 'rejected'].includes(a.stage));
   const queuedEmails = outreach.filter((o) => ['draft', 'ready'].includes(o.status));
   const followUps = followUpsDue(outreach, today);
+  // People met at an event who haven't had their thank-you email yet.
+  const eventById = new Map(events.map((e) => [e.id, e]));
+  const metNotFollowed = contacts.filter(
+    (c) => c.metAtEventId && c.status === 'identified' && eventById.has(c.metAtEventId)
+  );
 
   const liveEvents = sortEvents(events.filter((e) => !e.hidden && e.status !== 'skipped'))
     .map((e) => ({ event: e, timing: eventTiming(e, today) }))
@@ -123,7 +128,11 @@ export default function Overview() {
 
       <h2>Due today</h2>
       <div className="card">
-        {due.length === 0 && queuedEmails.length === 0 && unregistered.length === 0 && followUps.length === 0 ? (
+        {due.length === 0 &&
+        queuedEmails.length === 0 &&
+        unregistered.length === 0 &&
+        followUps.length === 0 &&
+        metNotFollowed.length === 0 ? (
           <p className="muted">
             Nothing due. Add roles in the <Link href="/pipeline">Pipeline</Link> or queue emails in{' '}
             <Link href="/outreach">Outreach</Link>.
@@ -147,6 +156,17 @@ export default function Overview() {
               <li key={a.id}>
                 <strong>{a.roleTitle}</strong> at {a.companyName} — {STAGE_LABELS[a.stage]}, next action{' '}
                 {a.nextActionAt}
+              </li>
+            ))}
+            {metNotFollowed.map((c) => (
+              <li key={`met-${c.id}`}>
+                Thank <strong>{c.name}</strong> ({c.companyName}) for meeting you at{' '}
+                {eventById.get(c.metAtEventId!)?.name} —{' '}
+                <Link
+                  href={`/outreach?contactId=${encodeURIComponent(c.id)}&to=${encodeURIComponent(c.name)}&email=${encodeURIComponent(c.email || '')}&company=${encodeURIComponent(c.companyName)}&event=${encodeURIComponent(eventById.get(c.metAtEventId!)?.name || '')}&template=t8`}
+                >
+                  write it
+                </Link>
               </li>
             ))}
             {followUps.map((o) => (

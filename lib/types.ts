@@ -120,6 +120,8 @@ export interface Contact {
   recentActivity?: string;
   /** The one personalized sentence that goes in the email. */
   hook?: string;
+  /** The career event where you met them, for the post-event follow-up. */
+  metAtEventId?: string;
   createdAt: string;
 }
 
@@ -292,6 +294,10 @@ export interface CareerEvent {
   notes?: string;
   /** Seeded events are hidden rather than deleted, so a re-sync can't bring them back. */
   hidden?: boolean;
+  /** Found by the weekly web search rather than seeded or added by you. */
+  discovered?: boolean;
+  /** Where the discovered details came from. */
+  sourceUrl?: string;
   createdAt: string;
 }
 

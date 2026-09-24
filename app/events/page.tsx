@@ -14,13 +14,22 @@ import {
 } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
 import {
+  CONTACT_KINDS,
+  CONTACT_KIND_LABELS,
   EVENT_KIND_LABELS,
   EVENT_STATUSES,
   type CareerEvent,
   type Company,
+  type Contact,
+  type ContactKind,
   type EventKind,
   type EventStatus,
 } from '@/lib/types';
+
+interface DiscoveryStatus {
+  configured: boolean;
+  last: { at: string; added: number; updated: number; searches: number; costUsd: number } | null;
+}
 
 /** Seeded events have stable ids; anything you add gets a UUID. */
 const isSeeded = (e: CareerEvent) => e.id.startsWith('ev-');
@@ -43,19 +52,61 @@ export default function Events() {
   const [showHidden, setShowHidden] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [discovery, setDiscovery] = useState<DiscoveryStatus | null>(null);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoveryMsg, setDiscoveryMsg] = useState('');
   const today = todayLocal();
+
+  async function load() {
+    const [e, c, k] = await Promise.all([
+      list<CareerEvent>('events'),
+      list<Company>('companies'),
+      list<Contact>('contacts'),
+    ]);
+    setEvents(e);
+    setCompanies(c);
+    setContacts(k);
+  }
 
   useEffect(() => {
     (async () => {
       // Pull in any events added to the starter set since this database was
       // created. Idempotent, so running it on every visit is harmless.
       await api('/api/sync-seed', { method: 'POST' }).catch(() => undefined);
-      const [e, c] = await Promise.all([list<CareerEvent>('events'), list<Company>('companies')]);
-      setEvents(e);
-      setCompanies(c);
+      await load();
       setLoaded(true);
+      api<DiscoveryStatus>('/api/events-discover').then(setDiscovery).catch(() => undefined);
     })();
   }, []);
+
+  async function discover() {
+    setDiscovering(true);
+    setDiscoveryMsg('');
+    try {
+      const r = await api<{ added: string[]; updated: Array<{ name: string; fields: string[] }>; searches: number; usage: { costUsd: number } }>(
+        '/api/events-discover',
+        { method: 'POST' }
+      );
+      await load();
+      const parts = [
+        r.added.length ? `Added ${r.added.join(', ')}.` : 'No new events.',
+        r.updated.length ? `Updated ${r.updated.map((u) => `${u.name} (${u.fields.join(', ')})`).join('; ')}.` : '',
+        `${r.searches} searches, about $${r.usage.costUsd.toFixed(2)}.`,
+      ];
+      setDiscoveryMsg(parts.filter(Boolean).join(' '));
+      setDiscovery(await api<DiscoveryStatus>('/api/events-discover'));
+    } catch (e) {
+      setDiscoveryMsg(e instanceof Error ? e.message : 'Search failed');
+    } finally {
+      setDiscovering(false);
+    }
+  }
+
+  async function addContact(fields: Partial<Contact>) {
+    const item = await create<Contact>('contacts', { ...fields, status: 'identified' });
+    setContacts((prev) => [item, ...prev]);
+  }
 
   const companyIndex = useMemo(() => indexByName(companies), [companies]);
 
@@ -106,6 +157,8 @@ export default function Events() {
       event={e}
       today={today}
       companyIndex={companyIndex}
+      met={contacts.filter((c) => c.metAtEventId === e.id)}
+      onAddContact={addContact}
       onSave={(fields) => save(e.id, fields)}
       onDelete={() => del(e.id)}
     />
@@ -120,6 +173,29 @@ export default function Events() {
         in person. Email recruiters at the exhibiting companies <em>before</em> you go. Walking up to
         a stand where they&apos;re expecting you beats walking up cold.
       </p>
+
+      <div className="card mb flex spread" style={{ fontSize: 13 }}>
+        <div>
+          <strong>Keeping this list current</strong>
+          <div className="muted">
+            {discovery?.configured
+              ? discovery.last
+                ? `Checked the web on ${discovery.last.at.slice(0, 10)}: ${discovery.last.added} added, ${discovery.last.updated} updated. It checks again every Monday.`
+                : 'Every Monday the app searches the web for new UAE career fairs and newly announced dates.'
+              : 'With an Anthropic API key, the app searches the web every Monday for new UAE career fairs and newly announced dates.'}
+          </div>
+          {discoveryMsg && <div className="mt">{discoveryMsg}</div>}
+        </div>
+        {discovery?.configured ? (
+          <button className="fixed" disabled={discovering} onClick={discover}>
+            {discovering ? 'Searching… (1–2 minutes)' : '🔎 Check for new events now'}
+          </button>
+        ) : (
+          <Link className="btn small" href="/profile">
+            Set up AI
+          </Link>
+        )}
+      </div>
 
       {/* One shared list for every card's "add exhibitor" box — a copy per
           card would be thousands of DOM nodes. */}
@@ -232,12 +308,16 @@ function EventCard({
   event,
   today,
   companyIndex,
+  met,
+  onAddContact,
   onSave,
   onDelete,
 }: {
   event: CareerEvent;
   today: string;
   companyIndex: Map<string, Company>;
+  met: Contact[];
+  onAddContact: (fields: Partial<Contact>) => Promise<void>;
   onSave: (fields: Partial<CareerEvent>) => void;
   onDelete: () => void;
 }) {
@@ -278,6 +358,11 @@ function EventCard({
             </span>
             <span className={`badge ${timingBadge}`}>{timing.label}</span>
             {event.hidden && <span className="badge badge-backup">hidden</span>}
+            {event.discovered && (
+              <span className="badge badge-status" title="Found by the weekly web search. Check the source before relying on it.">
+                found online
+              </span>
+            )}
           </div>
         </div>
         <select
@@ -324,6 +409,11 @@ function EventCard({
         {calendarUrl && !ended && (
           <a className="btn small" href={calendarUrl} target="_blank" rel="noreferrer">
             Add to Google Calendar ↗
+          </a>
+        )}
+        {event.sourceUrl && event.sourceUrl !== event.url && (
+          <a className="btn small" href={event.sourceUrl} target="_blank" rel="noreferrer">
+            Source ↗
           </a>
         )}
         {isSeeded(event) ? (
@@ -446,6 +536,22 @@ function EventCard({
         </div>
       </details>
 
+      {ended && (event.status === 'registered' || event.status === 'attending' || event.status === 'interested') && (
+        <div className="flex mt" style={{ fontSize: 13 }}>
+          <span>Did you go?</span>
+          <button className="small primary" onClick={() => onSave({ status: 'attended' })}>
+            Yes
+          </button>
+          <button className="small" onClick={() => onSave({ status: 'skipped' })}>
+            No
+          </button>
+        </div>
+      )}
+
+      {(timing.state === 'live' || event.status === 'attending' || event.status === 'attended') && (
+        <MetPeople event={event} met={met} onAdd={onAddContact} />
+      )}
+
       <div className="mt">
         <label>Notes: who you met, what they said, what to follow up</label>
         <textarea
@@ -458,5 +564,96 @@ function EventCard({
         />
       </div>
     </div>
+  );
+}
+
+/** People met at an event: captured on the day, followed up within 48 hours. */
+function MetPeople({
+  event,
+  met,
+  onAdd,
+}: {
+  event: CareerEvent;
+  met: Contact[];
+  onAdd: (fields: Partial<Contact>) => Promise<void>;
+}) {
+  const [f, setF] = useState({ name: '', role: '', companyName: '', email: '', note: '', kind: 'ta-recruiter' as ContactKind });
+  const [busy, setBusy] = useState(false);
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    if (!f.name.trim() || !f.companyName.trim()) return;
+    setBusy(true);
+    await onAdd({
+      name: f.name.trim(),
+      role: f.role.trim(),
+      companyName: f.companyName.trim(),
+      email: f.email.trim() || undefined,
+      emailStatus: f.email.trim() ? 'verified' : 'unknown',
+      kind: f.kind,
+      metAtEventId: event.id,
+      notes: f.note.trim() || undefined,
+      // The follow-up template already says where you met; the hook adds what you talked about.
+      hook: f.note.trim() ? `You mentioned ${f.note.trim()}, and I'd love to hear more about it.` : undefined,
+    });
+    setF({ ...f, name: '', role: '', email: '', note: '' });
+    setBusy(false);
+  }
+
+  return (
+    <details className="mt" open>
+      <summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>People you met · {met.length}</summary>
+      {met.length > 0 && (
+        <table className="mt" style={{ fontSize: 13 }}>
+          <tbody>
+            {met.map((c) => (
+              <tr key={c.id}>
+                <td>
+                  <strong>{c.name}</strong>
+                  <div className="muted">
+                    {c.role ? `${c.role}, ` : ''}
+                    {c.companyName}
+                  </div>
+                </td>
+                <td className="muted">{c.status}</td>
+                <td>
+                  {c.status === 'identified' ? (
+                    <Link
+                      className="btn small primary"
+                      href={`/outreach?contactId=${encodeURIComponent(c.id)}&to=${encodeURIComponent(c.name)}&email=${encodeURIComponent(c.email || '')}&company=${encodeURIComponent(c.companyName)}&hook=${encodeURIComponent(c.hook || '')}&event=${encodeURIComponent(event.name)}&template=t8`}
+                    >
+                      ✉ Follow up
+                    </Link>
+                  ) : (
+                    <span className="success">✓ followed up</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <form onSubmit={add} className="mt">
+        <div className="form-row">
+          <input placeholder="Name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+          <input placeholder="Role" value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })} />
+          <input list="event-company-names" placeholder="Company" value={f.companyName} onChange={(e) => setF({ ...f, companyName: e.target.value })} />
+          <input placeholder="Email (from their card)" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
+        </div>
+        <div className="form-row">
+          <input placeholder="What you talked about (becomes the hook in your follow-up)" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
+          <select className="fixed" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as ContactKind })}>
+            {CONTACT_KINDS.map((k) => (
+              <option key={k} value={k}>
+                {CONTACT_KIND_LABELS[k]}
+              </option>
+            ))}
+          </select>
+          <button className="fixed" type="submit" disabled={busy || !f.name.trim() || !f.companyName.trim()}>
+            Add person
+          </button>
+        </div>
+      </form>
+    </details>
   );
 }

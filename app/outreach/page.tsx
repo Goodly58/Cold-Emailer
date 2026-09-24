@@ -110,7 +110,8 @@ function Composer() {
       const contact = c.find((x) => x.id === search.get('contactId'));
       const wanted = search.get('template') || (contact?.kind ? TEMPLATE_FOR_KIND[contact.kind] : undefined);
       setTemplateId((t.find((x) => x.id === wanted) ?? t[0])?.id ?? '');
-      if (contact) pickContact(contact);
+      // A template named in the link (e.g. the post-event follow-up) wins over the contact's default.
+      if (contact) pickContact(contact, Boolean(search.get('template')));
       const app = a.find((x) => x.id === search.get('applicationId'));
       if (app) {
         setRole(app.roleTitle);
@@ -152,13 +153,13 @@ function Composer() {
   const errors = issues.filter((i) => i.level === 'error');
   const blocked = errors.length > 0 && !override;
 
-  function pickContact(c: Contact) {
+  function pickContact(c: Contact, keepTemplate = false) {
     setContactId(c.id);
     setToName(c.name);
     setToEmail(c.email || '');
     setCompany(c.companyName);
     setHook(c.hook || '');
-    if (c.kind && TEMPLATE_FOR_KIND[c.kind]) setTemplateId(TEMPLATE_FOR_KIND[c.kind]!);
+    if (!keepTemplate && c.kind && TEMPLATE_FOR_KIND[c.kind]) setTemplateId(TEMPLATE_FOR_KIND[c.kind]!);
   }
 
   function applyTemplate(t = template) {

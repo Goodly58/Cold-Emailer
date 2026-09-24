@@ -63,6 +63,7 @@ export function contactBlock(contact: Contact): string {
     ['Background', contact.background],
     ['Recent activity', contact.recentActivity],
     ['Hook you noted', contact.hook],
+    ['Your notes', contact.notes],
   ])}\n</recipient>`;
 }
 
