@@ -160,3 +160,23 @@ test('imported roles carry their field tags, including mentions from the descrip
   assert.deepEqual(app.interestMentions, ['finance']);
   assert.ok(app.scoreReasons!.some((r) => /mentions Finance/.test(r)));
 });
+
+/* ---------------------------------------------------------- regression */
+
+/**
+ * Titles found by stress-testing the rules against real UAE postings: each
+ * must (or must not) be tagged with its field. Adding a phrase that breaks
+ * one of these means it catches more than it should.
+ */
+test('regression titles from the stress test', async () => {
+  const fixtures = (await import('./fixtures/interest-titles.json')).default as Record<
+    string,
+    { mustMatch: string[]; mustNotMatch: string[] }
+  >;
+  const failures: string[] = [];
+  for (const [id, { mustMatch, mustNotMatch }] of Object.entries(fixtures)) {
+    for (const t of mustMatch) if (!titleTags(t).includes(id as never)) failures.push(`${id} should match: ${t}`);
+    for (const t of mustNotMatch) if (titleTags(t).includes(id as never)) failures.push(`${id} should NOT match: ${t}`);
+  }
+  assert.deepEqual(failures, []);
+});

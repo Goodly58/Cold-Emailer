@@ -19,7 +19,11 @@
       "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z",
       "ats": "smartrecruiters",
-      "atsSlug": "FirstAbuDhabiBank"
+      "atsSlug": "FirstAbuDhabiBank",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c2",
@@ -32,7 +36,11 @@
       "careersUrl": "https://www.emiratesnbd.com/en/careers",
       "domain": "emiratesnbd.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c3",
@@ -46,7 +54,11 @@
       "domain": "adcb.com",
       "emailPattern": "first.last",
       "ats": "successfactors",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c4",
@@ -61,7 +73,11 @@
       "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z",
       "ats": "taleo",
-      "atsSlug": "mashreqbank"
+      "atsSlug": "mashreqbank",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c5",
@@ -74,7 +90,10 @@
       "careersUrl": "https://www.adib.ae/en/pages/careers",
       "domain": "adib.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c6",
@@ -87,7 +106,11 @@
       "careersUrl": "https://www.eand.com/en/careers.html",
       "domain": "eand.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c7",
@@ -100,7 +123,10 @@
       "domain": "du.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z",
-      "emiratisationNotes": "Quota-liable mainland telecom; long-running Emirati graduate and engineering development programmes"
+      "emiratisationNotes": "Quota-liable mainland telecom; long-running Emirati graduate and engineering development programmes",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c8",
@@ -128,7 +154,10 @@
       "careersUrl": "https://www.mubadala.com/en/careers",
       "domain": "mubadala.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c10",
@@ -141,7 +170,10 @@
       "domain": "adia.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://www.adia.ae/en/people/working-at-adia"
+      "careersUrl": "https://www.adia.ae/en/people/working-at-adia",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c11",
@@ -154,7 +186,10 @@
       "domain": "adq.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z",
-      "emiratisationNotes": "Abu Dhabi sovereign investor with dedicated UAE national graduate and early-careers programmes."
+      "emiratisationNotes": "Abu Dhabi sovereign investor with dedicated UAE national graduate and early-careers programmes.",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c12",
@@ -232,7 +267,11 @@
       "careersUrl": "https://www.g42.ai/careers",
       "domain": "g42.ai",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c18",
@@ -298,7 +337,11 @@
       "careersUrl": "https://careers.microsoft.com/",
       "domain": "microsoft.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c23",
@@ -311,7 +354,11 @@
       "domain": "google.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z",
-      "emiratisationNotes": "MENA hub in Dubai; UAE national early-career and cloud sovereign programmes"
+      "emiratisationNotes": "MENA hub in Dubai; UAE national early-career and cloud sovereign programmes",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c24",
@@ -336,7 +383,10 @@
       "careersUrl": "https://www.mckinsey.com/careers",
       "domain": "mckinsey.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c26",
@@ -348,7 +398,10 @@
       "careersUrl": "https://careers.bcg.com/",
       "domain": "bcg.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c27",
@@ -361,7 +414,13 @@
       "careersUrl": "https://www.pwc.com/m1/en/careers.html",
       "domain": "pwc.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-05T00:00:00Z"
+      "createdAt": "2026-08-05T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance",
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c28",
@@ -374,7 +433,13 @@
       "domain": "deloitte.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-05T00:00:00Z",
-      "emiratisationNotes": "Runs an Emirati National Talent programme and UAE National graduate hiring track; partners with UAE universities and NAFIS."
+      "emiratisationNotes": "Runs an Emirati National Talent programme and UAE National graduate hiring track; partners with UAE universities and NAFIS.",
+      "interests": [
+        "investing",
+        "finance",
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c29",
@@ -387,7 +452,10 @@
       "careersUrl": "https://www.dib.ae/careers",
       "domain": "dib.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c30",
@@ -400,7 +468,10 @@
       "domain": "emiratesislamic.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://www.emiratesislamic.ae/en/about-us/careers"
+      "careersUrl": "https://www.emiratesislamic.ae/en/about-us/careers",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c31",
@@ -413,7 +484,10 @@
       "domain": "rakbank.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://careers.rakbank.ae/"
+      "careersUrl": "https://careers.rakbank.ae/",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c32",
@@ -425,7 +499,10 @@
       "emiratisationNotes": "CBUAE points system.",
       "domain": "cbd.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c33",
@@ -437,7 +514,10 @@
       "emiratisationNotes": "CBUAE points system.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "nbf.ae",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c34",
@@ -450,7 +530,10 @@
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "sib.ae",
       "emailPattern": "first.last",
-      "careersUrl": "https://www.sib.ae/en/about-us/careers"
+      "careersUrl": "https://www.sib.ae/en/about-us/careers",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c35",
@@ -463,7 +546,10 @@
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "ajmanbank.ae",
       "emailPattern": "first.last",
-      "careersUrl": "https://www.ajmanbank.ae/site/careers.html"
+      "careersUrl": "https://www.ajmanbank.ae/site/careers.html",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c36",
@@ -473,7 +559,11 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable; CBUAE points system.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c37",
@@ -483,7 +573,11 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Mainland entity — quota-liable; CBUAE points system.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c38",
@@ -497,7 +591,11 @@
       "domain": "citi.com",
       "emailPattern": "first.last",
       "ats": "workday",
-      "atsSlug": "citi"
+      "atsSlug": "citi",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c39",
@@ -509,7 +607,10 @@
       "emiratisationNotes": "Insurance sector has its own Emiratisation regime.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "sukoon.com",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c40",
@@ -521,7 +622,10 @@
       "emiratisationNotes": "Insurance sector Emiratisation regime.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "insuranceuae.com",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c41",
@@ -533,7 +637,10 @@
       "emiratisationNotes": "Semi-government; strong national preference.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "damanhealth.ae",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c42",
@@ -545,7 +652,10 @@
       "emiratisationNotes": "Largest listed company in the region; rapid hiring.",
       "domain": "ihcuae.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c43",
@@ -557,7 +667,10 @@
       "emiratisationNotes": "Government-owned holding group.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "dubaiholding.com",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c44",
@@ -569,7 +682,10 @@
       "emiratisationNotes": "Dubai's sovereign holding vehicle.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "icd.gov.ae",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c45",
@@ -581,7 +697,10 @@
       "emiratisationNotes": "Federal sovereign fund; Emiratis strongly preferred.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "eia.gov.ae",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c46",
@@ -591,7 +710,10 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "IHC group company.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c47",
@@ -601,7 +723,10 @@
       "tier": "backup",
       "emiratisation": true,
       "emiratisationNotes": "IHC group company.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c48",
@@ -795,7 +920,10 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "ICD-owned.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c64",
@@ -820,7 +948,10 @@
       "domain": "edgegroup.ae",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://edgegroup.ae/careers"
+      "careersUrl": "https://edgegroup.ae/careers",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c66",
@@ -844,7 +975,10 @@
       "emiratisationNotes": "National space champion; Emirati talent priority.",
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "space42.ai",
-      "emailPattern": "first.last"
+      "emailPattern": "first.last",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c68",
@@ -854,7 +988,11 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "G42/Core42 group; national talent programs.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c69",
@@ -905,7 +1043,10 @@
       "emiratisationNotes": "High-growth fintech; quota-liable.",
       "domain": "tabby.ai",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c73",
@@ -918,7 +1059,10 @@
       "createdAt": "2026-08-06T00:00:00Z",
       "domain": "astratech.ae",
       "emailPattern": "first.last",
-      "careersUrl": "https://careers.astratech.ae/"
+      "careersUrl": "https://careers.astratech.ae/",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c74",
@@ -953,7 +1097,10 @@
       "emiratisationNotes": "Mainland entity — quota-liable.",
       "domain": "oracle.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c77",
@@ -977,7 +1124,11 @@
       "emiratisationNotes": "Mainland entity — quota-liable.",
       "domain": "ibm.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c79",
@@ -989,7 +1140,10 @@
       "emiratisationNotes": "Mainland entity — quota-liable.",
       "domain": "cisco.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c80",
@@ -1031,7 +1185,13 @@
       "emiratisationNotes": "UAE National programs; quota-liable.",
       "domain": "ey.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance",
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c84",
@@ -1044,7 +1204,13 @@
       "domain": "kpmg.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://kpmg.com/ae/en/careers.html"
+      "careersUrl": "https://kpmg.com/ae/en/careers.html",
+      "interests": [
+        "investing",
+        "finance",
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c85",
@@ -1091,7 +1257,11 @@
       "domain": "accenture.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://www.accenture.com/ae-en/careers"
+      "careersUrl": "https://www.accenture.com/ae-en/careers",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c89",
@@ -1100,7 +1270,10 @@
       "location": "Dubai",
       "tier": "backup",
       "emiratisation": true,
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c90",
@@ -1451,7 +1624,10 @@
       "emiratisationNotes": "Graduate AI university with dedicated Emirati scholarship and research-staff pipelines",
       "domain": "mbzuai.ac.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c118",
@@ -1502,7 +1678,10 @@
       "careersUrl": "https://www.bankofsharjah.com/en/careers",
       "domain": "bankofsharjah.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c122",
@@ -1514,7 +1693,10 @@
       "emiratisationNotes": "Sharjah Government majority shareholder following 2019 recapitalisation.",
       "domain": "investbank.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c123",
@@ -1527,7 +1709,10 @@
       "careersUrl": "https://www.uab.ae/careers/job-vacancy",
       "domain": "uab.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c124",
@@ -1539,7 +1724,10 @@
       "emiratisationNotes": "Umm Al Quwain's national bank; one of very few sizeable financial employers headquartered in UAQ.",
       "domain": "nbq.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c125",
@@ -1552,7 +1740,10 @@
       "careersUrl": "https://www.cbiuae.com/en/careers/careers/",
       "domain": "cbiuae.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c126",
@@ -1565,7 +1756,10 @@
       "careersUrl": "https://www.mbank.ae/careers/",
       "domain": "mbank.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c127",
@@ -1577,7 +1771,10 @@
       "emiratisationNotes": "Backed by ADQ, Alpha Dhabi, e& and FAB; Abu Dhabi digital bank with Emirati talent pipeline.",
       "domain": "wio.io",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c128",
@@ -1589,7 +1786,10 @@
       "emiratisationNotes": "UAE's first fully licensed all-digital bank; CBUAE licensed onshore.",
       "domain": "zand.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c129",
@@ -1601,7 +1801,10 @@
       "emiratisationNotes": "ADCB Group subsidiary; Shari'ah-compliant digital bank, inherits ADCB Emiratisation frameworks.",
       "domain": "alhilalbank.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c130",
@@ -1613,7 +1816,10 @@
       "emiratisationNotes": "Federal government-owned development bank; strong Emirati-first hiring mandate.",
       "domain": "edb.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c131",
@@ -1624,7 +1830,10 @@
       "emiratisation": true,
       "domain": "almasraf.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c132",
@@ -1636,7 +1845,11 @@
       "emiratisationNotes": "Independent private bank serving HNW clients; Al-Futtaim linked.",
       "domain": "eibank.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c133",
@@ -1646,7 +1859,10 @@
       "tier": "backup",
       "emiratisation": true,
       "emiratisationNotes": "Digital Islamic bank launched by Ajman Bank; domain not verified so email generation should be skipped.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c134",
@@ -1658,7 +1874,11 @@
       "emiratisationNotes": "Onshore CBUAE-licensed branch network; runs UAE national graduate and internship programmes.",
       "domain": "hsbc.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c135",
@@ -1670,7 +1890,11 @@
       "emiratisationNotes": "Onshore branch network; UAE national graduate programme and Emiratisation targets under CBUAE rules.",
       "domain": "sc.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c136",
@@ -1681,7 +1905,11 @@
       "emiratisation": true,
       "domain": "db.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c137",
@@ -1692,7 +1920,11 @@
       "emiratisation": true,
       "domain": "bnpparibas.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c138",
@@ -1703,7 +1935,11 @@
       "emiratisation": true,
       "domain": "barclays.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c139",
@@ -1715,7 +1951,10 @@
       "emiratisationNotes": "Operating in the UAE since 1974 with onshore branches in three emirates.",
       "domain": "habibbank.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c140",
@@ -1726,7 +1965,10 @@
       "emiratisation": true,
       "domain": "icicibank.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c141",
@@ -1737,7 +1979,10 @@
       "emiratisation": true,
       "domain": "dohabank.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c142",
@@ -1749,7 +1994,10 @@
       "careersUrl": "https://www.arabbank.ae/smartmenu/smart-menu/careers",
       "domain": "arabbank.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c143",
@@ -1762,7 +2010,11 @@
       "domain": "jpmorgan.com",
       "emailPattern": "first.last",
       "ats": "oracle",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c144",
@@ -1774,7 +2026,11 @@
       "emiratisationNotes": "DIFC/ADGM regulated entities (financial free zones) so outside MOHRE quota, but does recruit Emirati analysts regionally.",
       "domain": "gs.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c145",
@@ -1786,7 +2042,11 @@
       "emiratisationNotes": "DIFC-registered entity (financial free zone).",
       "domain": "morganstanley.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c146",
@@ -1799,7 +2059,10 @@
       "domain": "blackrock.com",
       "emailPattern": "first.last",
       "ats": "workday",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c147",
@@ -1811,7 +2074,10 @@
       "emiratisationNotes": "Federal regulator; overwhelmingly Emirati workforce, runs national trainee and scholarship schemes.",
       "domain": "centralbank.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c148",
@@ -1823,7 +2089,11 @@
       "emiratisationNotes": "Federal regulator; Emirati-priority recruitment.",
       "domain": "sca.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c149",
@@ -1836,7 +2106,10 @@
       "careersUrl": "https://www.dfsa.ae/career/experienced-professionals",
       "domain": "dfsa.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c150",
@@ -1848,7 +2121,10 @@
       "emiratisationNotes": "ADGM Academy runs Emirati talent development initiatives with UAE banks.",
       "domain": "adgm.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c151",
@@ -1861,7 +2137,10 @@
       "careersUrl": "https://www.difc.com/who-we-are/careers",
       "domain": "difc.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c152",
@@ -1874,7 +2153,10 @@
       "careersUrl": "https://www.dfm.ae/discover-dfm/careers",
       "domain": "dfm.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c153",
@@ -1887,7 +2169,10 @@
       "careersUrl": "https://www.adx.ae/about-adx/careers/overview",
       "domain": "adx.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c154",
@@ -1899,7 +2184,10 @@
       "emiratisationNotes": "DIFC-based international exchange majority owned by DFM.",
       "domain": "nasdaqdubai.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c155",
@@ -1911,7 +2199,10 @@
       "emiratisationNotes": "Federal government-owned PJSC; applications via careers@aecb.gov.ae; strongly Emirati-staffed.",
       "domain": "aecb.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c156",
@@ -1923,7 +2214,11 @@
       "emiratisationNotes": "Dubai government regulator for virtual assets; Emirati-priority hiring.",
       "domain": "vara.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c157",
@@ -1935,7 +2230,10 @@
       "emiratisationNotes": "Second largest UAE insurer by premium; long-running UAE national development programmes.",
       "domain": "adnic.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c158",
@@ -1947,7 +2245,10 @@
       "emiratisationNotes": "Abu Dhabi government-owned health insurer; among the highest Emiratisation rates in UAE insurance.",
       "domain": "damanhealth.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c159",
@@ -1958,7 +2259,10 @@
       "emiratisation": true,
       "domain": "eminsco.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c160",
@@ -1969,7 +2273,10 @@
       "emiratisation": true,
       "domain": "alaininsurance.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c161",
@@ -1981,7 +2288,10 @@
       "emiratisationNotes": "First locally incorporated insurer in Dubai (1970).",
       "domain": "dubins.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c162",
@@ -1992,7 +2302,10 @@
       "emiratisation": true,
       "domain": "dni.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c163",
@@ -2004,7 +2317,10 @@
       "emiratisationNotes": "DFM-listed national insurer, Emirates NBD affiliated.",
       "domain": "ngi.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c164",
@@ -2015,7 +2331,10 @@
       "emiratisation": true,
       "domain": "unioninsurance.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c165",
@@ -2027,7 +2346,10 @@
       "emiratisationNotes": "One of the few insurance employers headquartered in Ras Al Khaimah.",
       "domain": "rakinsurance.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c166",
@@ -2039,7 +2361,10 @@
       "emiratisationNotes": "Sharjah-headquartered national insurer.",
       "domain": "albuhaira.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c167",
@@ -2050,7 +2375,10 @@
       "emiratisation": true,
       "domain": "awnic.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c168",
@@ -2061,7 +2389,10 @@
       "emiratisation": true,
       "domain": "alliance-uae.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c169",
@@ -2073,7 +2404,10 @@
       "emiratisationNotes": "Gulf Insurance Group subsidiary; 70+ years in the GCC with onshore UAE operations.",
       "domain": "giggulf.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c170",
@@ -2084,7 +2418,10 @@
       "emiratisation": true,
       "domain": "takaful.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c171",
@@ -2096,7 +2433,10 @@
       "emiratisationNotes": "Formed from the merger of National Takaful (Watania) and Dar Al Takaful.",
       "domain": "watania.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c172",
@@ -2108,7 +2448,10 @@
       "emiratisationNotes": "One of the world's oldest and largest takaful operators.",
       "domain": "salama.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c173",
@@ -2119,7 +2462,10 @@
       "emiratisation": true,
       "domain": "takafulemarat.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c174",
@@ -2131,7 +2477,10 @@
       "emiratisationNotes": "CBUAE-licensed intermediary since 1994; mainland broker across three emirates.",
       "domain": "gargashinsurance.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c175",
@@ -2143,7 +2492,10 @@
       "emiratisationNotes": "Largest financial advisory business in the GCC by adviser headcount.",
       "domain": "nexusadvice.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c176",
@@ -2154,7 +2506,10 @@
       "emiratisation": true,
       "domain": "insurancemarket.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c177",
@@ -2165,7 +2520,10 @@
       "emiratisation": true,
       "domain": "marsh.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c178",
@@ -2177,7 +2535,10 @@
       "domain": "aon.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://jobs.aon.com/"
+      "careersUrl": "https://jobs.aon.com/",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c179",
@@ -2188,7 +2549,10 @@
       "emiratisation": true,
       "domain": "wtwco.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c180",
@@ -2199,7 +2563,10 @@
       "emiratisation": true,
       "domain": "policybazaar.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c181",
@@ -2211,7 +2578,10 @@
       "emiratisationNotes": "Largest UAE exchange house by branch network (200+); DFM-listed parent Al Ansari Financial Services.",
       "domain": "alansariexchange.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c182",
@@ -2223,7 +2593,10 @@
       "emiratisationNotes": "Established 1971; 85+ branches across the UAE.",
       "domain": "alfardanexchange.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c183",
@@ -2235,7 +2608,10 @@
       "emiratisationNotes": "140+ branches nationwide including heavy Sharjah and Northern Emirates coverage.",
       "domain": "luluexchange.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c184",
@@ -2246,7 +2622,10 @@
       "emiratisation": true,
       "domain": "wallstreet.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c185",
@@ -2257,7 +2636,10 @@
       "emiratisation": true,
       "domain": "unimoni.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c186",
@@ -2268,7 +2650,10 @@
       "emiratisation": true,
       "domain": "gccexchange.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c187",
@@ -2279,7 +2664,10 @@
       "emiratisation": true,
       "domain": "sharafexchange.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c188",
@@ -2291,7 +2679,10 @@
       "emiratisationNotes": "Established 1979; 31 branches across the UAE; part of Al Rostamani Group.",
       "domain": "alrostamaniexchange.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c189",
@@ -2303,7 +2694,10 @@
       "emiratisationNotes": "Largest MEA payments platform; merged with FAB's Magnati in 2025.",
       "domain": "network.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c190",
@@ -2318,7 +2712,10 @@
       "createdAt": "2026-08-06T00:00:00Z",
       "careersUrl": "https://job-boards.eu.greenhouse.io/ziina",
       "ats": "greenhouse",
-      "atsSlug": "ziina"
+      "atsSlug": "ziina",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c191",
@@ -2330,7 +2727,10 @@
       "emiratisationNotes": "ADGM FSRA regulated (financial free zone).",
       "domain": "pyypl.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c192",
@@ -2341,7 +2741,10 @@
       "emiratisation": true,
       "domain": "telr.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c193",
@@ -2353,7 +2756,10 @@
       "emiratisationNotes": "CBUAE-licensed Abu Dhabi payment service provider.",
       "domain": "payby.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c194",
@@ -2365,7 +2771,10 @@
       "emiratisationNotes": "DIFC-based fintech.",
       "domain": "mamopay.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c195",
@@ -2377,7 +2786,10 @@
       "emiratisationNotes": "ADGM-licensed banking-as-a-service provider.",
       "domain": "nymcard.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c196",
@@ -2389,7 +2801,11 @@
       "emiratisationNotes": "ADGM FSRA and DFSA regulated robo-advisory platform.",
       "domain": "sarwa.co",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c197",
@@ -2401,7 +2817,11 @@
       "emiratisationNotes": "DFSA-regulated (DIFC) investing app.",
       "domain": "getbaraka.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c198",
@@ -2413,7 +2833,11 @@
       "emiratisationNotes": "DFSA-regulated DIFC entity.",
       "domain": "stashaway.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c199",
@@ -2425,7 +2849,10 @@
       "emiratisationNotes": "DFSA-regulated crowdfunding platform in DIFC.",
       "domain": "beehive.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c200",
@@ -2437,7 +2864,10 @@
       "emiratisationNotes": "DIFC-based corporate cards and expense fintech.",
       "domain": "alaan.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c201",
@@ -2448,7 +2878,10 @@
       "emiratisation": false,
       "domain": "postpay.io",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c202",
@@ -2460,7 +2893,11 @@
       "emiratisationNotes": "Shariah-compliant digital investment platform regulated in DIFC.",
       "domain": "wahed.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c203",
@@ -2472,7 +2909,11 @@
       "emiratisationNotes": "VARA-licensed virtual asset service provider (Dubai free zone regime).",
       "domain": "bitoasis.net",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c204",
@@ -2484,7 +2925,11 @@
       "emiratisationNotes": "ADGM FSRA licensed digital asset platform.",
       "domain": "m2.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c205",
@@ -2497,7 +2942,10 @@
       "domain": "mubadala.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "careersUrl": "https://www.mubadala.com/en/careers/student"
+      "careersUrl": "https://www.mubadala.com/en/careers/student",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c206",
@@ -2509,7 +2957,10 @@
       "emiratisationNotes": "Abu Dhabi-based global alternative investment manager with ~$105bn AUM; strong Emirati talent focus.",
       "domain": "lunate.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c207",
@@ -2520,7 +2971,10 @@
       "emiratisation": true,
       "domain": "investcorp.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c208",
@@ -2531,7 +2985,10 @@
       "emiratisation": true,
       "domain": "wahacapital.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c209",
@@ -2542,7 +2999,10 @@
       "emiratisation": true,
       "domain": "gulfcapital.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c210",
@@ -2553,7 +3013,10 @@
       "emiratisation": true,
       "domain": "shuaa.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c211",
@@ -2565,7 +3028,10 @@
       "emiratisationNotes": "DIFC-headquartered with an SCA-regulated onshore brokerage (Arqaam Securities UAE).",
       "domain": "arqaamcapital.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c212",
@@ -2577,7 +3043,10 @@
       "emiratisationNotes": "DFSA-regulated plus SCA-licensed UAE brokerage; part of EFG Holding.",
       "domain": "efghermes.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c213",
@@ -2589,7 +3058,10 @@
       "emiratisationNotes": "ADX/DFM-listed SCA-regulated broker, market maker and liquidity provider; launched ARAM Capital asset management.",
       "domain": "alramz.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c214",
@@ -2601,7 +3073,10 @@
       "emiratisationNotes": "Originally the brokerage arm of First Gulf Bank; trades ADX, DFM and Nasdaq Dubai.",
       "domain": "intlsecurities.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c215",
@@ -2612,7 +3087,10 @@
       "emiratisation": true,
       "domain": "daman.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c216",
@@ -2624,7 +3102,10 @@
       "emiratisationNotes": "Subsidiary of Dubai Investments PJSC; manages the DFM-listed Al Mal Capital REIT.",
       "domain": "almalcapital.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c217",
@@ -2636,7 +3117,10 @@
       "emiratisationNotes": "DIFC-regulated investment bank (financial free zone).",
       "domain": "rasmala.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c218",
@@ -2648,7 +3132,10 @@
       "emiratisationNotes": "Owned by Investment Corporation of Dubai; national savings scheme with a heavily Emirati workforce.",
       "domain": "nationalbonds.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c219",
@@ -2660,7 +3147,10 @@
       "domain": "amanat.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "emiratisationNotes": "DFM-listed investment company focused exclusively on healthcare and education assets across the GCC; small but high-calibre Dubai team"
+      "emiratisationNotes": "DFM-listed investment company focused exclusively on healthcare and education assets across the GCC; small but high-calibre Dubai team",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c220",
@@ -2672,7 +3162,10 @@
       "domain": "dubaiinvestments.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "emiratisationNotes": "DFM-listed holding with property and building-materials subsidiaries; quota-liable."
+      "emiratisationNotes": "DFM-listed holding with property and building-materials subsidiaries; quota-liable.",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c221",
@@ -2684,7 +3177,10 @@
       "emiratisationNotes": "DFM-listed Shariah-compliant property financier, CBUAE-licensed finance company.",
       "domain": "amlakfinance.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c222",
@@ -2696,7 +3192,11 @@
       "emiratisationNotes": "CBUAE-licensed Shariah-compliant finance company with AED 1bn paid-up capital.",
       "domain": "mawarid.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c223",
@@ -2707,7 +3207,10 @@
       "emiratisation": true,
       "domain": "reemfinance.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c224",
@@ -3832,7 +4335,10 @@
       "emiratisationNotes": "Federal civil service; Emirati-first hiring through the federal IRecruitment portal",
       "domain": "mof.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c319",
@@ -3952,7 +4458,10 @@
       "emiratisationNotes": "Emirati tax auditor and analyst development tracks",
       "domain": "tax.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c329",
@@ -3987,7 +4496,10 @@
       "emiratisationNotes": "Digital government and ICT graduate development for Emiratis",
       "domain": "tdra.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c332",
@@ -4084,7 +4596,10 @@
       "emiratisationNotes": "Administers pensions for UAE nationals; predominantly Emirati workforce",
       "domain": "gpssa.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c340",
@@ -4239,7 +4754,10 @@
       "emiratisationNotes": "Emirati data science, cybersecurity and digital government talent programmes",
       "domain": "adda.gov.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c353",
@@ -4287,7 +4805,11 @@
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
       "careersUrl": "https://www.g42.ai/careers",
-      "ats": "phenom"
+      "ats": "phenom",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c357",
@@ -4299,7 +4821,10 @@
       "domain": "presight.ai",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z",
-      "emiratisationNotes": "ADX-listed G42 company; Emirati data scientist and analyst development tracks"
+      "emiratisationNotes": "ADX-listed G42 company; Emirati data scientist and analyst development tracks",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c358",
@@ -4324,7 +4849,10 @@
       "emiratisationNotes": "Mandate is funding Emirati entrepreneurs; staff base is predominantly Emirati",
       "domain": "khalifafund.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c360",
@@ -4348,7 +4876,11 @@
       "emiratisationNotes": "Small, highly Emiratised development finance team",
       "domain": "adfd.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c362",
@@ -4360,7 +4892,11 @@
       "emiratisationNotes": "Emirati researcher and PhD sponsorship programmes under ATRC",
       "domain": "tii.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c363",
@@ -4372,7 +4908,10 @@
       "emiratisationNotes": "NexTech and Emirati research scholarship programmes",
       "domain": "atrc.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c364",
@@ -4575,7 +5114,10 @@
       "emiratisationNotes": "Dubai Future Fellows / One Million Arab Coders and Emirati innovation talent tracks",
       "domain": "dubaifuture.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c381",
@@ -4623,7 +5165,10 @@
       "emiratisationNotes": "DIFC Academy and Emirati talent programmes in financial services",
       "domain": "difc.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c385",
@@ -4739,7 +5284,11 @@
       "emiratisationNotes": "Emirati data, AI and cybersecurity talent programmes for Dubai Government",
       "domain": "digitaldubai.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c395",
@@ -5070,7 +5619,8 @@
       "emiratisationNotes": "Established 2021 to manage Ajman's free zone assets including Ajman Media City and Al Zorah Free Zone",
       "domain": "fza.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": []
     },
     {
       "id": "c424",
@@ -5092,7 +5642,10 @@
       "emiratisation": true,
       "domain": "ajmandof.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c426",
@@ -5448,7 +6001,10 @@
       "emiratisationNotes": "G42 company (absorbed Injazat); sovereign cloud mandate drives Emirati hiring in cloud, cyber and digital services",
       "domain": "core42.ai",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c459",
@@ -5461,7 +6017,10 @@
       "careersUrl": "https://aiq.ae/",
       "domain": "aiq.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c460",
@@ -5473,7 +6032,10 @@
       "emiratisationNotes": "DEWA subsidiary; Dubai government-linked entity with strong Emiratisation targets",
       "domain": "morohub.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c461",
@@ -5510,7 +6072,10 @@
       "emailPattern": "first.last",
       "ats": "phenom",
       "atsSlug": "cpx",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c464",
@@ -5522,7 +6087,10 @@
       "emiratisationNotes": "Part of e& enterprise; inherits e& group Emiratisation commitments",
       "domain": "helpag.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c465",
@@ -5533,7 +6101,10 @@
       "emiratisation": true,
       "domain": "spiresolutions.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c466",
@@ -5544,7 +6115,10 @@
       "emiratisation": true,
       "domain": "paloaltonetworks.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c467",
@@ -5555,7 +6129,10 @@
       "emiratisation": true,
       "domain": "fortinet.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c468",
@@ -5567,7 +6144,10 @@
       "emiratisationNotes": "Regional office registered in a Dubai free zone; small headcount",
       "domain": "kaspersky.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c469",
@@ -5580,7 +6160,10 @@
       "careersUrl": "https://www.alpha.ae/careers/",
       "domain": "alpha.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c470",
@@ -5603,7 +6186,10 @@
       "emiratisation": true,
       "domain": "gbmme.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c472",
@@ -5614,7 +6200,10 @@
       "emiratisation": true,
       "domain": "intertecsystems.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c473",
@@ -5625,7 +6214,10 @@
       "emiratisation": true,
       "domain": "finessedirect.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c474",
@@ -5659,7 +6251,10 @@
       "emiratisation": true,
       "domain": "emircom.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c477",
@@ -5759,7 +6354,10 @@
       "emiratisationNotes": "AWS UAE Region operator; runs AWS Emirati/UAE national cloud skills and graduate programmes",
       "domain": "amazon.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c486",
@@ -5883,7 +6481,10 @@
       "emiratisation": true,
       "domain": "nvidia.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c497",
@@ -5905,7 +6506,10 @@
       "emiratisation": true,
       "domain": "visa.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c499",
@@ -5916,7 +6520,10 @@
       "emiratisation": true,
       "domain": "mastercard.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c500",
@@ -6098,7 +6705,11 @@
       "emiratisation": true,
       "domain": "getstake.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c516",
@@ -6110,7 +6721,10 @@
       "emiratisationNotes": "Spun out of First Abu Dhabi Bank; Abu Dhabi mainland payments employer",
       "domain": "magnati.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c517",
@@ -6121,7 +6735,10 @@
       "emiratisation": true,
       "domain": "flow48.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c518",
@@ -6132,7 +6749,10 @@
       "emiratisation": true,
       "domain": "klaim.ai",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c519",
@@ -6144,7 +6764,10 @@
       "emiratisationNotes": "VARA-licensed free-zone entity in Dubai",
       "domain": "binance.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c520",
@@ -6156,7 +6779,11 @@
       "emiratisationNotes": "VARA-licensed free-zone entity in Dubai",
       "domain": "crypto.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c521",
@@ -6168,7 +6795,10 @@
       "emiratisationNotes": "Operates in the UAE under an SCA licence via a free-zone entity",
       "domain": "bybit.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c522",
@@ -6180,7 +6810,10 @@
       "emiratisationNotes": "VARA-licensed free-zone entity in Dubai",
       "domain": "okx.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c523",
@@ -6192,7 +6825,10 @@
       "emiratisationNotes": "HR/payroll platform used by thousands of UAE employers; Dubai product and engineering team",
       "domain": "bayzat.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c524",
@@ -6402,7 +7038,11 @@
       "emiratisationNotes": "Dubai government authority; Emirati-first hiring for digital, data and cyber roles",
       "domain": "digitaldubai.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c542",
@@ -6446,7 +7086,8 @@
       "tier": "backup",
       "emiratisation": true,
       "emiratisationNotes": "Ras Al Khaimah government tech free zone launched 2023, relaunched 2025. Domain omitted - could not verify corporate email domain",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": []
     },
     {
       "id": "c546",
@@ -6974,7 +7615,10 @@
       "emiratisationNotes": "Allianz Partners' regional health claims administrator; sizeable UAE operation subject to Emiratisation targets",
       "domain": "nextcarehealth.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c590",
@@ -6986,7 +7630,10 @@
       "emiratisationNotes": "Major UAE third-party health claims administrator; mainland quota-liable employer",
       "domain": "neuron.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c591",
@@ -6998,7 +7645,10 @@
       "emiratisationNotes": "Munich Re-owned health benefits administrator; mainland quota-liable employer",
       "domain": "mednet-uae.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c592",
@@ -7010,7 +7660,10 @@
       "emiratisationNotes": "Long-established UAE health TPA; quota-liable mainland employer",
       "domain": "nas.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c593",
@@ -7022,7 +7675,10 @@
       "emiratisationNotes": "UAE health claims and network management company; mainland quota-liable employer",
       "domain": "almadallah.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c594",
@@ -7034,7 +7690,10 @@
       "emiratisationNotes": "Regional hub in Dubai serving the Middle East; subject to UAE Emiratisation targets for its onshore entity",
       "domain": "cigna.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c595",
@@ -7046,7 +7705,10 @@
       "emiratisationNotes": "Regional life and medical insurer headquartered in Dubai; mainland quota-liable employer",
       "domain": "metlife.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c596",
@@ -11468,7 +12130,10 @@
       "tier": "target",
       "emiratisation": true,
       "emiratisationNotes": "Investment arm of the Government of Sharjah.",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c972",
@@ -11547,7 +12212,13 @@
       "careersUrl": "https://www.ey.com/en_ae/careers",
       "domain": "ey.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance",
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c980",
@@ -11560,7 +12231,10 @@
       "careersUrl": "https://www.grantthornton.ae/careers/",
       "domain": "grantthornton.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c981",
@@ -11573,7 +12247,10 @@
       "careersUrl": "https://www.bdo.ae/en-gb/careers",
       "domain": "bdo.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c982",
@@ -11585,7 +12262,10 @@
       "careersUrl": "https://www.crowe.com/ae/careers",
       "domain": "crowe.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c983",
@@ -11596,7 +12276,10 @@
       "emiratisation": true,
       "domain": "rsm.global",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c984",
@@ -11607,7 +12290,10 @@
       "emiratisation": true,
       "domain": "bakertilly.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c985",
@@ -11618,7 +12304,10 @@
       "emiratisation": true,
       "domain": "forvismazars.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c986",
@@ -11629,7 +12318,10 @@
       "emiratisation": true,
       "domain": "pkfuae.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c987",
@@ -11641,7 +12333,10 @@
       "careersUrl": "https://www.tagorg.com/careers",
       "domain": "tagorg.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c988",
@@ -11653,7 +12348,10 @@
       "careersUrl": "https://www.hlbhamt.com/careers/",
       "domain": "hlbhamt.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c989",
@@ -11665,7 +12363,10 @@
       "careersUrl": "https://krestonmenon.com/careers/",
       "domain": "krestonmenon.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c990",
@@ -11676,7 +12377,10 @@
       "emiratisation": true,
       "domain": "mbgcorp.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c991",
@@ -11687,7 +12391,10 @@
       "emiratisation": true,
       "domain": "uhy-ae.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c992",
@@ -11698,7 +12405,10 @@
       "emiratisation": true,
       "domain": "emiratesca.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c993",
@@ -11709,7 +12419,10 @@
       "emiratisation": true,
       "domain": "akwconsultants.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c994",
@@ -11720,7 +12433,10 @@
       "emiratisation": true,
       "domain": "farahatco.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c995",
@@ -11731,7 +12447,10 @@
       "emiratisation": true,
       "domain": "reyson.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c996",
@@ -11742,7 +12461,10 @@
       "emiratisation": true,
       "domain": "pushdigits.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c997",
@@ -11753,7 +12475,10 @@
       "emiratisation": false,
       "domain": "spectrumaccounts.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c998",
@@ -11764,7 +12489,10 @@
       "emiratisation": true,
       "domain": "andersen.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c999",
@@ -11776,7 +12504,10 @@
       "emiratisationNotes": "Small DIFC-based tax boutique; below Emiratisation quota thresholds.",
       "domain": "aurifer.tax",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1000",
@@ -11787,7 +12518,10 @@
       "emiratisation": true,
       "domain": "dhruvaadvisors.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1001",
@@ -11798,7 +12532,10 @@
       "emiratisation": false,
       "domain": "taxgian.ae",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1002",
@@ -11811,7 +12548,10 @@
       "careersUrl": "https://www.mckinsey.com/careers",
       "domain": "mckinsey.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c1003",
@@ -11824,7 +12564,10 @@
       "careersUrl": "https://careers.bcg.com/",
       "domain": "bcg.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c1004",
@@ -11849,7 +12592,10 @@
       "careersUrl": "https://www.oliverwyman.com/careers.html",
       "domain": "oliverwyman.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1006",
@@ -11898,7 +12644,10 @@
       "careersUrl": "https://www.alvarezandmarsal.com/careers",
       "domain": "alvarezandmarsal.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing"
+      ]
     },
     {
       "id": "c1010",
@@ -11910,7 +12659,10 @@
       "careersUrl": "https://www.fticonsulting.com/careers",
       "domain": "fticonsulting.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1011",
@@ -11923,7 +12675,11 @@
       "careersUrl": "https://www.protiviti.com/ae-en/careers",
       "domain": "protiviti.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance",
+        "cyber"
+      ]
     },
     {
       "id": "c1012",
@@ -11947,7 +12703,11 @@
       "careersUrl": "https://www.kroll.com/en/careers",
       "domain": "kroll.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c1014",
@@ -12029,7 +12789,10 @@
       "careersUrl": "https://careers.marshmclennan.com/",
       "domain": "marsh.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1021",
@@ -12041,7 +12804,10 @@
       "careersUrl": "https://careers.wtwco.com/",
       "domain": "wtwco.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1022",
@@ -12052,7 +12818,10 @@
       "emiratisation": true,
       "domain": "lockton.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1023",
@@ -12063,7 +12832,10 @@
       "emiratisation": true,
       "domain": "ajg.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1024",
@@ -12074,7 +12846,10 @@
       "emiratisation": true,
       "domain": "howdengroup.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1025",
@@ -13873,7 +14648,11 @@
       "emiratisation": true,
       "domain": "spglobal.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c1184",
@@ -13884,7 +14663,11 @@
       "emiratisation": true,
       "domain": "moodys.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c1185",
@@ -13895,7 +14678,11 @@
       "emiratisation": true,
       "domain": "fitchratings.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c1186",
@@ -13906,7 +14693,11 @@
       "emiratisation": true,
       "domain": "bloomberg.net",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c1187",
@@ -13917,7 +14708,11 @@
       "emiratisation": true,
       "domain": "lseg.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "investing",
+        "finance"
+      ]
     },
     {
       "id": "c1188",
@@ -14413,7 +15208,10 @@
       "careersUrl": "https://careers.thalesgroup.com/",
       "domain": "thalesgroup.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c1232",
@@ -14561,7 +15359,10 @@
       "careersUrl": "https://www.google.com/about/careers/applications/",
       "domain": "google.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c1245",
@@ -14622,7 +15423,11 @@
       "careersUrl": "https://www.ibm.com/careers",
       "domain": "ibm.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "c1250",
@@ -14648,7 +15453,10 @@
       "careersUrl": "https://jobs.cisco.com/",
       "domain": "cisco.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "cyber"
+      ]
     },
     {
       "id": "c1252",
@@ -14670,7 +15478,10 @@
       "emiratisation": true,
       "domain": "sas.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "ai"
+      ]
     },
     {
       "id": "c1254",
@@ -14772,7 +15583,10 @@
       "careersUrl": "https://corporate.visa.com/en/jobs.html",
       "domain": "visa.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1263",
@@ -14784,7 +15598,10 @@
       "careersUrl": "https://careers.mastercard.com/",
       "domain": "mastercard.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1264",
@@ -14795,7 +15612,10 @@
       "emiratisation": true,
       "domain": "westernunion.com",
       "emailPattern": "first.last",
-      "createdAt": "2026-08-06T00:00:00Z"
+      "createdAt": "2026-08-06T00:00:00Z",
+      "interests": [
+        "finance"
+      ]
     },
     {
       "id": "c1265",
@@ -14807,6 +15627,813 @@
       "domain": "rakicc.com",
       "emailPattern": "first.last",
       "createdAt": "2026-08-06T00:00:00Z"
+    },
+    {
+      "id": "c1266",
+      "name": "MGX",
+      "sector": "AI & Technology Investment",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi state-backed investment company; Mubadala and G42 are its founding partners",
+      "domain": "mgx.ae",
+      "notes": "Abu Dhabi's AI and advanced-technology investment company, set up in 2024 by Mubadala and G42 and chaired by Sheikh Tahnoon bin Zayed. It is an equity partner in the US Stargate AI infrastructure venture and co-founded the AI Infrastructure Partnership with BlackRock, GIP and Microsoft.",
+      "interests": [
+        "investing",
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1267",
+      "name": "Abu Dhabi Pension Fund (ADPF)",
+      "sector": "Pension Fund",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi government fund serving UAE nationals' pensions",
+      "domain": "pension.gov.ae",
+      "notes": "Abu Dhabi government fund that manages pensions and benefits for UAE nationals working in Abu Dhabi and invests the fund's assets for long-term sustainability.",
+      "interests": [
+        "investing",
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1268",
+      "name": "Al Etihad Payments (AEP)",
+      "sector": "Payments Infrastructure",
+      "location": "UAE",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Wholly owned subsidiary of the Central Bank of the UAE",
+      "notes": "The Central Bank of the UAE's payments subsidiary. It runs national payment rails, including the Aani instant-payments platform and the Jaywan domestic card scheme.",
+      "interests": [
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1269",
+      "name": "Etihad Credit Insurance (ECI)",
+      "sector": "Export Credit Insurance",
+      "location": "UAE",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal export credit agency owned by the UAE federal government and emirate governments",
+      "domain": "eci.gov.ae",
+      "notes": "The UAE's federal export credit agency, set up in 2018. It provides trade credit insurance, export financing and investment insurance.",
+      "interests": [
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1270",
+      "name": "UBS",
+      "sector": "Wealth Management & Investment Banking",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "Operates as a DIFC branch (free-zone entity)",
+      "careersUrl": "https://www.ubs.com/global/en/careers.html",
+      "domain": "ubs.com",
+      "notes": "The world's largest wealth manager, with a DIFC branch in Dubai serving Middle East clients across wealth management and investment banking.",
+      "interests": [
+        "investing",
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1271",
+      "name": "Bank of America",
+      "sector": "Investment Banking",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DIFC branches (free-zone entities)",
+      "careersUrl": "https://careers.bankofamerica.com/en-us",
+      "domain": "bofa.com",
+      "notes": "Runs corporate and investment banking, markets and wealth business in the UAE from DIFC, including a Merrill Lynch International DIFC branch. It advertises a Dubai investment banking full-time analyst programme.",
+      "interests": [
+        "investing",
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1272",
+      "name": "Julius Baer",
+      "sector": "Private Banking & Wealth Management",
+      "location": "Dubai (DIFC) & Abu Dhabi (ADGM)",
+      "tier": "target",
+      "emiratisation": false,
+      "emiratisationNotes": "DIFC office; new advisory office in ADGM (free-zone entities)",
+      "careersUrl": "https://juliusbaer.wd3.myworkdayjobs.com/external",
+      "domain": "juliusbaer.com",
+      "notes": "Swiss private bank with a long-established Dubai office in DIFC and a newer advisory office in Abu Dhabi's ADGM. It runs a Dubai-based private-banking graduate programme.",
+      "interests": [
+        "investing",
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1273",
+      "name": "Brevan Howard",
+      "sector": "Hedge Fund",
+      "location": "Abu Dhabi (ADGM)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "ADGM/FSRA-licensed entities (free zone)",
+      "careersUrl": "https://brevanhoward.wd3.myworkdayjobs.com/bh_externalcareers",
+      "domain": "brevanhoward.com",
+      "notes": "Global macro hedge fund that set up in ADGM in 2023 and has grown into one of the largest hedge fund teams in Abu Dhabi, reported at about 150 people.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1274",
+      "name": "Millennium Management",
+      "sector": "Hedge Fund",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DIFC office (free zone)",
+      "domain": "mlp.com",
+      "notes": "A multi-strategy hedge fund with a sizeable DIFC team that added a Dubai commodities pod in 2025. Bloomberg reported in March 2026 that it was exploring relocating some Dubai staff, so check the office's current status before applying.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1275",
+      "name": "Balyasny Asset Management",
+      "sector": "Hedge Fund",
+      "location": "Dubai (DIFC) & Abu Dhabi (ADGM)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DIFC office plus ADGM-licensed Balyasny Asset Management (AD) Limited (free-zone entities)",
+      "domain": "bamfunds.com",
+      "notes": "A multi-strategy hedge fund with a Dubai DIFC office that won ADGM approval to expand into Abu Dhabi.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1276",
+      "name": "Point72",
+      "sector": "Hedge Fund",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DFSA-regulated Point72 (DIFC) Limited (free zone)",
+      "careersUrl": "https://job-boards.greenhouse.io/point72",
+      "domain": "point72.com",
+      "notes": "Steve Cohen's hedge fund, which operates in Dubai through DFSA-regulated Point72 (DIFC) Limited and publishes a privacy notice for its DIFC employees.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1277",
+      "name": "KKR",
+      "sector": "Private Equity",
+      "location": "Dubai (DIFC) & Abu Dhabi (ADGM)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DIFC office since 2009; ADGM office (free-zone entities)",
+      "domain": "kkr.com",
+      "notes": "A global private equity and alternatives firm with a Dubai office since 2009, which has also opened an Abu Dhabi office in ADGM.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1278",
+      "name": "Brookfield Asset Management",
+      "sector": "Alternative Asset Management",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DFSA-regulated DIFC entity (free zone)",
+      "careersUrl": "https://brookfield.wd5.myworkdayjobs.com/brookfield",
+      "domain": "brookfield.com",
+      "notes": "A major global alternative asset manager whose Middle East business operates from Dubai through DFSA-regulated Brookfield Private Capital (DIFC) Limited.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1279",
+      "name": "Apollo Global Management",
+      "sector": "Private Equity & Credit",
+      "location": "Abu Dhabi (ADGM)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "ADGM branch of Apollo Management International LLP (free zone)",
+      "domain": "apollo.com",
+      "notes": "A leading global private credit and private equity manager with an ADGM-registered branch in Abu Dhabi.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1280",
+      "name": "Alpha Wave Global",
+      "sector": "Growth Investing",
+      "location": "Abu Dhabi (ADGM)",
+      "tier": "target",
+      "emiratisation": false,
+      "emiratisationNotes": "ADGM-regulated (free zone)",
+      "domain": "alphawaveglobal.com",
+      "notes": "A growth-stage and credit investor (formerly Falcon Edge Capital) with an ADGM-regulated Abu Dhabi office. It co-owns Abu Dhabi Catalyst Partners with Mubadala Capital.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1281",
+      "name": "Lazard",
+      "sector": "M&A Advisory",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "Lazard Gulf Limited is in DIFC (free zone)",
+      "domain": "lazard.com",
+      "notes": "An independent financial advisory and asset management firm that operates in the UAE through Lazard Gulf Limited in DIFC. It announced a strategic expansion of its UAE financial advisory base.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1282",
+      "name": "Moelis & Company",
+      "sector": "Investment Banking Advisory",
+      "location": "Dubai (DIFC)",
+      "tier": "dream",
+      "emiratisation": false,
+      "emiratisationNotes": "DIFC office (free zone)",
+      "careersUrl": "https://moelis.wd1.myworkdayjobs.com/experienced-hires",
+      "domain": "moelis.com",
+      "notes": "An independent investment bank with a Dubai office and a large Gulf advisory business. Its Middle East clients include Aramco and ADNOC, and Bloomberg reported in 2024 that its Middle East bet was paying off.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1283",
+      "name": "Rothschild & Co",
+      "sector": "Wealth Management & Advisory",
+      "location": "Dubai (DIFC)",
+      "tier": "target",
+      "emiratisation": false,
+      "emiratisationNotes": "DFSA-regulated DIFC entity (free zone)",
+      "careersUrl": "https://rothschildandco.wd3.myworkdayjobs.com/rothschildandco_lateral",
+      "domain": "rothschildandco.com",
+      "notes": "A global advisory and wealth group with a Dubai presence. It opened a DIFC wealth management office in 2024 and agreed in 2025 to take over LLB's UAE operations.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1284",
+      "name": "BECO Capital",
+      "sector": "Venture Capital",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "becocapital.com",
+      "notes": "A Dubai-based venture capital firm founded in 2012 and an early investor in Careem. In September 2025 it announced $370m raised across two funds for Gulf founders.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1285",
+      "name": "Global Ventures",
+      "sector": "Venture Capital",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "global.vc",
+      "notes": "A Dubai-based venture capital firm founded in 2018 that backs growth-stage startups across the Middle East and other emerging markets, including fintech.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1286",
+      "name": "Shorooq Partners",
+      "sector": "Venture Capital",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "shorooq.com",
+      "notes": "An Abu Dhabi-based investment firm founded in 2017 that backs early-stage tech and fintech companies in the Gulf.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1287",
+      "name": "Checkout.com",
+      "sector": "Payments",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "emiratisationNotes": "Holds a UAE Central Bank payment acquiring licence",
+      "careersUrl": "https://jobs.ashbyhq.com/checkout.com",
+      "domain": "checkout.com",
+      "notes": "A global payments platform with a Dubai office serving the Middle East. It says it was the first global payments platform to receive an acquiring licence from the UAE Central Bank.",
+      "interests": [
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1288",
+      "name": "Revolut",
+      "sector": "Digital Banking & Payments",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "emiratisationNotes": "Reported to hold UAE Central Bank payment licences",
+      "domain": "revolut.com",
+      "notes": "A global digital banking and payments app preparing its UAE launch. It was reported in 2026 to have received UAE Central Bank payment licences, and it has been hiring finance, legal and compliance staff for its Dubai office.",
+      "interests": [
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1289",
+      "name": "Deriv",
+      "sector": "Online Trading Platform",
+      "location": "Dubai (Business Bay)",
+      "tier": "target",
+      "emiratisation": false,
+      "emiratisationNotes": "Operates as Deriv DMCC (free zone)",
+      "domain": "deriv.com",
+      "notes": "An online trading fintech (formerly Binary.com) with a large Dubai office that hires across engineering, cyber security, compliance and marketing.",
+      "interests": [
+        "investing",
+        "finance"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1290",
+      "name": "Century Financial",
+      "sector": "Brokerage",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Onshore Dubai firm regulated by the SCA",
+      "domain": "century.ae",
+      "notes": "One of the UAE's older investment services firms (founded 1989), a Dubai-based brokerage that holds an SCA Category 1 licence.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1291",
+      "name": "ADSS",
+      "sector": "Online Brokerage",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi-headquartered firm",
+      "domain": "adss.com",
+      "notes": "An Abu Dhabi-headquartered online trading, brokerage and wealth management firm, formerly known as ADS Securities.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1292",
+      "name": "BHM Capital Financial Services",
+      "sector": "Brokerage",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": true,
+      "emiratisationNotes": "Onshore joint stock company listed on DFM",
+      "domain": "bhmuae.ae",
+      "notes": "A DFM-listed brokerage and investment services firm headquartered in Dubai's Business Bay, with branches in other emirates.",
+      "interests": [
+        "investing"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1293",
+      "name": "UAE Cyber Security Council (CSC)",
+      "sector": "National Cybersecurity Authority",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal government body.",
+      "domain": "csc.gov.ae",
+      "notes": "The federal body behind the UAE's national cybersecurity strategy, headed by Dr. Mohamed Al Kuwaiti, Head of Cybersecurity for the UAE Government.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1294",
+      "name": "Dubai Electronic Security Center (DESC)",
+      "sector": "Government Cybersecurity Authority",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Dubai Government entity.",
+      "domain": "desc.gov.ae",
+      "notes": "Dubai's official cybersecurity authority, set up by Law No. 11 of 2014. It protects Dubai Government networks and information systems.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1295",
+      "name": "CrowdStrike Middle East",
+      "sector": "Endpoint & Threat Intelligence Security",
+      "location": "Dubai",
+      "tier": "dream",
+      "emiratisation": false,
+      "careersUrl": "https://www.crowdstrike.com/en-us/careers/",
+      "domain": "crowdstrike.com",
+      "notes": "A top global endpoint-security and threat-intelligence vendor with its Middle East regional office in Dubai.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1296",
+      "name": "Check Point Software Technologies (Dubai)",
+      "sector": "Network & Cloud Security",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "careersUrl": "https://careers.checkpoint.com/index.php?m=cpcareers&a=search",
+      "domain": "checkpoint.com",
+      "notes": "A major firewall and network-security vendor with a Dubai regional office. Its careers site lists Dubai-based roles.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1297",
+      "name": "Group-IB",
+      "sector": "Threat Intelligence & Digital Forensics",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "group-ib.com",
+      "notes": "A threat-intelligence, fraud-prevention and digital-forensics company whose Middle East & Africa regional headquarters is in Dubai.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1298",
+      "name": "Trend Micro Middle East",
+      "sector": "Enterprise Cybersecurity",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "trendmicro.com",
+      "notes": "A large global enterprise-security vendor with a Middle East office in Dubai.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1299",
+      "name": "SentinelOne (Middle East, Turkey & Africa)",
+      "sector": "Endpoint Security (XDR)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "careersUrl": "https://www.sentinelone.com/jobs/",
+      "domain": "sentinelone.com",
+      "notes": "An AI-driven endpoint and XDR security vendor that opened a Dubai office in 2023 as its hub for the Middle East, Turkey and Africa.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1300",
+      "name": "Sophos Middle East",
+      "sector": "Endpoint Security & MDR",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "careersUrl": "https://www.sophos.com/en-us/careers",
+      "domain": "sophos.com",
+      "notes": "An endpoint-security and managed detection and response (MDR) vendor with a Dubai office. It acquired Secureworks in February 2025.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1301",
+      "name": "Proofpoint Middle East",
+      "sector": "Email & Data Security",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "careersUrl": "https://www.proofpoint.com/us/company/careers",
+      "domain": "proofpoint.com",
+      "notes": "A leading email and data-security vendor with a Middle East regional office in Dubai.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1302",
+      "name": "Cloudflare (Middle East)",
+      "sector": "Network & Application Security",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "careersUrl": "https://www.cloudflare.com/careers/",
+      "domain": "cloudflare.com",
+      "notes": "A network, application-security and zero-trust company whose first Middle East regional office opened in Dubai in 2022.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1303",
+      "name": "Darktrace (Dubai)",
+      "sector": "AI-driven Threat Detection",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "darktrace.com",
+      "notes": "A UK company that uses AI for cyber defence, with a regional office in Dubai.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1304",
+      "name": "Trellix (Dubai)",
+      "sector": "XDR & Threat Detection",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "trellix.com",
+      "notes": "The XDR and threat-detection company formed in 2022 from McAfee Enterprise and FireEye, with a Dubai office covering the region.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1305",
+      "name": "StarLink",
+      "sector": "Cybersecurity Distribution (VAD)",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "starlinkme.net",
+      "notes": "A Dubai-headquartered cybersecurity and cloud value-added distributor operating across the Middle East and Africa. Not related to SpaceX's Starlink.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1306",
+      "name": "Paramount Computer Systems",
+      "sector": "Cybersecurity Services & Integration",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "paramountassure.com",
+      "notes": "A Dubai-headquartered regional cybersecurity solutions and services provider founded in 1992.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1307",
+      "name": "CyberKnight Technologies",
+      "sector": "Cybersecurity Distribution (VAD)",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "cyberknight.tech",
+      "notes": "A Dubai-headquartered zero-trust cybersecurity value-added distributor launched in 2020.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1308",
+      "name": "AmiViz",
+      "sector": "Cybersecurity Distribution (VAD)",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "amiviz.com",
+      "notes": "A Dubai-headquartered cybersecurity value-added distributor and B2B marketplace.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1309",
+      "name": "Exclusive Networks Middle East",
+      "sector": "Cybersecurity Distribution (VAD)",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "exclusive-networks.com",
+      "notes": "The Dubai-based Middle East arm of a global cybersecurity distributor, covering distribution, pre-sales and technical services.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1310",
+      "name": "DTS Solution",
+      "sector": "Cybersecurity Consulting & MDR",
+      "location": "Dubai, Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "dts-solution.com",
+      "notes": "A UAE cybersecurity consultancy that runs the HAWKEYE managed SOC/XDR service and offers penetration testing and incident response.",
+      "interests": [
+        "cyber"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1311",
+      "name": "Inception (a G42 company)",
+      "sector": "Applied AI / Large Language Models (G42 Group)",
+      "location": "Abu Dhabi",
+      "tier": "dream",
+      "emiratisation": true,
+      "emiratisationNotes": "Wholly owned G42 company and a government AI partner (Abu Dhabi DGE). Check its Emirati programmes directly.",
+      "domain": "inceptionai.ai",
+      "notes": "G42's applied-AI product company. It is behind the Jais Arabic LLM family (Jais 2 built with MBZUAI and Cerebras) and the (In)X enterprise AI suite, and has been the Abu Dhabi Government Enablement Department's AI partner since February 2026. Its parent G42 is already listed, but Inception is not.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1312",
+      "name": "AI71",
+      "sector": "Enterprise Generative AI (Falcon LLMs)",
+      "location": "Abu Dhabi",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Abu Dhabi government-linked (ATRC / VentureOne venture).",
+      "domain": "ai71.ai",
+      "notes": "AI company launched in November 2023 through Abu Dhabi's Advanced Technology Research Council (via its VentureOne arm) to sell TII's Falcon LLMs to businesses and government. Its first government deployment was TAMM, its models are offered through AWS, and it was advertising Abu Dhabi machine-learning jobs in 2026. Its parents ATRC and TII are already listed, but AI71 is not.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1313",
+      "name": "Artificial Intelligence, Digital Economy and Remote Work Applications Office (UAE AI Office)",
+      "sector": "Government - National AI Policy",
+      "location": "Dubai",
+      "tier": "target",
+      "emiratisation": true,
+      "emiratisationNotes": "Federal government office (Minister of State for AI's office); federal government jobs give priority to UAE nationals.",
+      "domain": "ai.gov.ae",
+      "notes": "The federal office of Omar Sultan Al Olama, who became the world's first Minister of State for AI in October 2017. It shapes the UAE National AI Strategy 2031 and national AI policy and charters, and runs technical programmes such as Coders HQ.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1314",
+      "name": "AppliedAI (The Applied AI Company, AAICO)",
+      "sector": "Enterprise AI Automation",
+      "location": "Abu Dhabi / Dubai",
+      "tier": "target",
+      "emiratisation": false,
+      "domain": "aaico.com",
+      "notes": "Company founded in 2021 and headquartered in Abu Dhabi, with offices in Abu Dhabi, Dubai and Berlin. Its Opus platform automates document-heavy work in banking, insurance, healthcare and government. It raised a $55M Series A led by G42, with Palantir, Bessemer, McKinsey, e& and Accrete Capital also investing.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1315",
+      "name": "Clarity AI",
+      "sector": "Sustainability AI for Investors",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "clarity.ai",
+      "notes": "Company of more than 300 people that uses AI and machine learning to give investors, banks and governments sustainability data and tools. It is backed by BlackRock, SoftBank and Deutsche Börse and says Abu Dhabi is one of its five offices.",
+      "interests": [
+        "investing",
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1316",
+      "name": "Cognite",
+      "sector": "Industrial AI",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "cognite.com",
+      "notes": "Industrial data and AI company that sells the Cognite Data Fusion platform and AI agents to heavy industry. Its September 2026 job postings list Abu Dhabi among its international locations, which makes it relevant for energy-sector AI roles.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1317",
+      "name": "SAAL.ai",
+      "sector": "Cognitive AI and Arabic NLP",
+      "location": "Abu Dhabi",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "saal.ai",
+      "notes": "Abu Dhabi AI company (listed at Al Bateen Offices in 2019) that builds Arabic NLP, speech and generative-AI products. It is listed among the UAE's Arabic-AI companies, announced collaborations with ADX (January 2026) and NTT DATA (February 2026), and has run graduate-trainee and data-scientist intern roles.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1318",
+      "name": "Kore.ai",
+      "sector": "Conversational and Agentic AI Platform",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": false,
+      "domain": "kore.ai",
+      "notes": "Enterprise conversational and agentic AI company that lists Dubai among its offices. In April 2025 it partnered with G42's Inception to speed up enterprise AI adoption in the UAE.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "c1319",
+      "name": "Micropolis AI Robotics",
+      "sector": "AI Robotics / Autonomous Vehicles",
+      "location": "Dubai",
+      "tier": "backup",
+      "emiratisation": false,
+      "emiratisationNotes": "Operating subsidiary is Micropolis Digital Development FZ-LLC (a free-zone entity); headquarters in Dubai Production City.",
+      "domain": "micropolis.ai",
+      "notes": "Dubai company founded in 2014 (formerly Micropolis Holding Company, about 69 staff) and listed on NYSE American as MCRP since its March 2025 IPO. It builds AI-powered autonomous robots, including the autonomous patrol vehicle Dubai Police deployed at Global Village in October 2025.",
+      "interests": [
+        "ai"
+      ],
+      "createdAt": "2026-09-24T00:00:00Z"
     }
   ],
   "contacts": [],
@@ -14964,7 +16591,11 @@
       "status": "interested",
       "exhibitors": [],
       "exhibitorsNote": "The exhibitor list is on gitex.com.",
-      "createdAt": "2026-09-24T00:00:00Z"
+      "createdAt": "2026-09-24T00:00:00Z",
+      "interests": [
+        "cyber",
+        "ai"
+      ]
     },
     {
       "id": "ev-sharjah-nce",
@@ -15014,6 +16645,182 @@
       "city": "Abu Dhabi",
       "url": "https://gulfnews.com/amp/story/uae/uae-job-fair-connects-4500-emiratis-with-industrial-careers-1.500569729",
       "description": "Industrial-sector fair for Emiratis. The 2026 edition drew 4,500 job seekers, with 1,000+ vacancies across engineering, manufacturing, AI and digital technology.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-gisec",
+      "name": "GISEC Global",
+      "shortName": "GISEC",
+      "kind": "industry-expo",
+      "interests": [
+        "cyber"
+      ],
+      "dateNote": "Held every year in Dubai; the 2027 dates aren't announced yet. Check gisec.ae.",
+      "venue": "Dubai Exhibition Centre, Expo City Dubai",
+      "city": "Dubai",
+      "url": "https://gisec.ae/",
+      "description": "The region's largest cybersecurity exhibition and conference. Global and UAE security vendors exhibit alongside the UAE Cyber Security Council and other government cyber bodies, so it's the main annual place to meet cyber hiring managers.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-adfw",
+      "name": "Abu Dhabi Finance Week",
+      "shortName": "ADFW",
+      "kind": "industry-expo",
+      "interests": [
+        "investing",
+        "finance"
+      ],
+      "dateNote": "Usually held in December at ADGM. Event trackers list 7–10 December 2026, but the organiser hadn't confirmed it when this was written. Check adfw.com.",
+      "venue": "ADGM, Al Maryah Island",
+      "city": "Abu Dhabi",
+      "url": "https://www.adfw.com/",
+      "description": "ADGM's flagship finance week, covering capital markets, asset management, private capital and fintech. Sovereign investors, asset managers, hedge funds, banks and fintechs based in ADGM take part.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-dubai-fintech-summit",
+      "name": "Dubai FinTech Summit",
+      "shortName": "DFS",
+      "kind": "industry-expo",
+      "interests": [
+        "finance",
+        "investing"
+      ],
+      "dateNote": "The 2026 edition was reported rescheduled from May to 2–3 November 2026 at Madinat Jumeirah. Confirm on dubaifintechsummit.com, then set the dates.",
+      "venue": "Madinat Jumeirah",
+      "city": "Dubai",
+      "url": "https://dubaifintechsummit.com/",
+      "description": "DIFC's annual fintech conference and exhibition, bringing together banks, fintech startups, venture investors and regulators.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-seamless-me",
+      "name": "Seamless Middle East",
+      "shortName": "Seamless",
+      "kind": "industry-expo",
+      "interests": [
+        "finance"
+      ],
+      "dateNote": "Held every year in Dubai (May in 2025; the 2026 edition was listed for September). 2027 dates not announced.",
+      "venue": "Dubai World Trade Centre",
+      "city": "Dubai",
+      "url": "https://www.terrapinn.com/exhibition/seamless-middle-east/",
+      "description": "Terrapinn's payments and fintech exhibition. Payment providers, banks, fintechs and money-transfer firms exhibit: useful for payments, digital banking and financial-operations teams.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-aim-congress",
+      "name": "AIM Congress (Annual Investment Meeting)",
+      "shortName": "AIM",
+      "kind": "industry-expo",
+      "interests": [
+        "investing"
+      ],
+      "dateNote": "The 2026 edition moved from Abu Dhabi to Dubai and ran in September. 2027 dates and host city not announced.",
+      "venue": "Dubai World Trade Centre",
+      "city": "Dubai",
+      "url": "https://www.aimcongress.com/",
+      "description": "An annual investment forum on foreign direct investment, startups, future finance and AI, attended by investment promotion agencies, funds and government economic bodies.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-investopia",
+      "name": "Investopia",
+      "shortName": "Investopia",
+      "kind": "industry-expo",
+      "interests": [
+        "investing"
+      ],
+      "dateNote": "Past UAE editions were held in Abu Dhabi early in the year. 2027 dates not announced.",
+      "venue": "",
+      "city": "Abu Dhabi",
+      "url": "https://investopia.ae/",
+      "description": "The UAE Ministry of Economy's investment platform and annual conference. Investors, sovereign and family-office leaders and government economic teams attend; it's for networking rather than recruiting.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-dubai-ai-week",
+      "name": "Dubai AI Week",
+      "shortName": "Dubai AI Week",
+      "kind": "industry-expo",
+      "interests": [
+        "ai"
+      ],
+      "dateNote": "First held in April 2025. The next edition's dates aren't confirmed.",
+      "venue": "Venues across Dubai",
+      "city": "Dubai",
+      "url": "https://week.dub.ai/",
+      "description": "A week of AI events across Dubai run with the Dubai Future Foundation, including the Dubai AI Festival and the Machines Can See summit. Government AI teams, AI startups and the Dubai AI Campus community take part.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-machines-can-see",
+      "name": "Machines Can See",
+      "shortName": "MCS",
+      "kind": "industry-expo",
+      "interests": [
+        "ai"
+      ],
+      "dateNote": "Held in April during Dubai AI Week (23–24 April in 2025). 2027 dates not announced.",
+      "venue": "Museum of the Future",
+      "city": "Dubai",
+      "url": "https://machinescansee.com/",
+      "description": "An AI investment and networking summit where AI startups pitch to investors, with talks from AI researchers and industry leaders. ML engineers, researchers and AI founders attend.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-expand-north-star-2026",
+      "name": "Expand North Star 2026",
+      "shortName": "North Star",
+      "kind": "industry-expo",
+      "interests": [
+        "investing",
+        "ai"
+      ],
+      "startDate": "2026-12-08",
+      "endDate": "2026-12-10",
+      "venue": "Dubai Exhibition Centre, Expo City Dubai",
+      "city": "Dubai",
+      "url": "https://expandnorthstar.com/",
+      "description": "The startup and venture-investor event run by the GITEX organisers during GITEX week. Venture funds, corporate venture arms and fast-growing tech and AI startups attend: useful for VC associate and startup roles.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-xops-dubai-2026",
+      "name": "X-Ops Conference Dubai 2026",
+      "shortName": "X-Ops",
+      "kind": "industry-expo",
+      "interests": [
+        "cyber",
+        "ai"
+      ],
+      "startDate": "2026-11-30",
+      "endDate": "2026-12-03",
+      "venue": "",
+      "city": "Dubai",
+      "url": "https://dubai.xopsconference.com/",
+      "description": "The first Dubai edition of a DevOps, DevSecOps, AIOps and MLOps conference: an executive summit (30 Nov–1 Dec) then a technical conference (2–3 Dec). A small practitioner event, good for meeting DevSecOps and MLOps engineers.",
       "status": "interested",
       "exhibitors": [],
       "createdAt": "2026-09-24T00:00:00Z"
