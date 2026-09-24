@@ -11,9 +11,8 @@ export default function UaePlaybook() {
 
       <div className="callout">
         <strong>The one-line pitch to employers:</strong> hiring you helps them hit a legally
-        mandated quota, avoids monthly fines, and Nafis subsidizes part of your cost. You are
-        simultaneously the compliant choice <em>and</em> the cheaper choice — before your CV is even
-        opened.
+        mandated quota and avoid the fines for missing it, and Nafis tops up your salary so their
+        offer goes further. You are the compliant choice before your CV is even opened.
       </div>
 
       <h2>1. Emiratisation quotas (MoHRE)</h2>
@@ -82,19 +81,47 @@ export default function UaePlaybook() {
         Many large groups hold both mainland and free-zone entities.
       </p>
 
-      <h2>2. Nafis benefits (what the employer saves)</h2>
+      <h2>2. Nafis in 2026 (what changed in September)</h2>
+      <p>
+        Nafis was extended to 2040, and a new framework applies to anyone enrolling from
+        September 2026 (announced by the Emirati Talent Competitiveness Council in April 2026):
+      </p>
       <ul>
-        <li>Salary support / top-up paid by the government for Emiratis in private-sector roles.</li>
-        <li>Government contribution toward your pension — reducing the employer&apos;s cost further.</li>
-        <li>Child allowance and subsidized training programs on top.</li>
         <li>
-          Register on <strong>nafis.gov.ae</strong> — many quota-driven employers source candidates
-          directly from the Nafis platform, and some roles are Nafis-exclusive.
+          <strong>Salary top-up</strong>, paid to you by the government on top of your salary, for
+          private-sector jobs paying AED 6,000–20,000 a month: up to <strong>AED 6,000</strong>{' '}
+          with a bachelor&apos;s degree, <strong>5,000</strong> with a diploma,{' '}
+          <strong>4,000</strong> with secondary school. The Pipeline adds this to each eligible
+          role&apos;s pay.
+        </li>
+        <li>
+          <strong>Minimum wage</strong>: since 1 January 2026, private-sector employers must pay
+          Emiratis at least AED 6,000 a month.
+        </li>
+        <li>
+          <strong>Pension</strong>: Nafis no longer covers part of the employer&apos;s pension
+          contribution, so the employer pays its full share. Don&apos;t pitch &ldquo;Nafis
+          subsidises my pension&rdquo; to a new employer; the quota and the fines are still the
+          argument.
+        </li>
+        <li>
+          <strong>Child allowance</strong>: the four-child cap was removed. Reports differ on the
+          amount per child (AED 600 in most, 800 in some).
+        </li>
+        <li>
+          Government and semi-government jobs are outside Nafis salary support, but usually pay
+          more to begin with.
+        </li>
+        <li>
+          Register on <strong>nafis.gov.ae</strong>. Many quota-driven employers find candidates
+          there directly, and some roles are listed only on Nafis.
         </li>
       </ul>
       <p className="muted">
-        Figures change yearly — verify current numbers on mohre.gov.ae and nafis.gov.ae before
-        quoting them in an email.
+        These figures come from press coverage of the announcement (Khaleej Times, Gulf Business,
+        The National, KPMG). The official pages couldn&apos;t be read when this was written, so
+        check nafis.gov.ae before relying on an exact number. If you enrolled before September
+        2026, the old amounts taper down to the new ones by AED 500 every six months.
       </p>
 
       <h2>3. How to use it in outreach</h2>

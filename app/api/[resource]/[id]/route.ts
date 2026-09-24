@@ -20,8 +20,14 @@ export async function PATCH(
   }
 
   let patch: Record<string, unknown>;
+  // A null value clears that field, e.g. removing pay you entered by hand.
+  let clear: string[] = [];
   try {
-    patch = stripProtected(sanitize(await req.json()));
+    const body = await req.json();
+    patch = stripProtected(sanitize(body));
+    clear = Object.keys(stripProtected(body as Record<string, unknown>)).filter(
+      (k) => (body as Record<string, unknown>)[k] === null && /^[a-zA-Z][a-zA-Z0-9]{0,60}$/.test(k)
+    );
   } catch (e) {
     if (e instanceof ValidationError) {
       return NextResponse.json({ error: e.message }, { status: 400 });
@@ -34,6 +40,7 @@ export async function PATCH(
     const item = list.find((x) => x.id === id);
     if (!item) return null;
     Object.assign(item, patch, { id: item.id });
+    for (const key of clear) delete (item as Record<string, unknown>)[key];
     return item;
   });
 

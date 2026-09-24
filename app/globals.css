@@ -187,3 +187,7 @@ label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-2); font-size: 12px; }
 .chip a { font-size: 12px; }
+
+.split { display: grid; gap: 16px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+@media (max-width: 800px) { .split { grid-template-columns: 1fr; } }
+details > summary { list-style: revert; }

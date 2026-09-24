@@ -373,7 +373,9 @@ export default function ProfilePage() {
               </select>
             </div>
             <div>
-              <label>Minimum monthly pay (AED, total)</label>
+              <label title="Compared with the role's pay plus any Nafis top-up you'd qualify for">
+                Minimum monthly pay (AED, incl. Nafis)
+              </label>
               <input
                 type="number"
                 min={0}

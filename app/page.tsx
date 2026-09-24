@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, list } from '@/lib/client';
 import { eventTiming, formatEventDates, sortEvents, todayLocal } from '@/lib/events';
+import { findByName, indexByName } from '@/lib/names';
+import { opportunity } from '@/lib/pay';
+import { formatMonthly } from '@/lib/salary';
 import {
   STAGE_LABELS,
   type Application,
@@ -11,6 +14,7 @@ import {
   type Company,
   type Contact,
   type Outreach,
+  type Profile,
 } from '@/lib/types';
 
 export default function Overview() {
@@ -19,6 +23,7 @@ export default function Overview() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [outreach, setOutreach] = useState<Outreach[]>([]);
   const [events, setEvents] = useState<CareerEvent[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -26,13 +31,15 @@ export default function Overview() {
       // New starter events reach an existing database here too, so the
       // countdown shows even if the Events page has never been opened.
       await api('/api/sync-seed', { method: 'POST' }).catch(() => undefined);
-      const [a, co, ct, o, ev] = await Promise.all([
+      const [a, co, ct, o, ev, p] = await Promise.all([
         list<Application>('applications'),
         list<Company>('companies'),
         list<Contact>('contacts'),
         list<Outreach>('outreach'),
         list<CareerEvent>('events'),
+        api<Profile>('/api/profile'),
       ]);
+      setProfile(p);
       setApps(a);
       setCompanies(co);
       setContacts(ct);
@@ -60,6 +67,19 @@ export default function Overview() {
   const unregistered = liveEvents.filter(
     (x) => x.event.status === 'interested' && x.timing.daysUntil !== undefined && x.timing.daysUntil <= 7
   );
+
+  // The handful of open roles most worth your time today.
+  const companyIndex = indexByName(companies);
+  const best = profile
+    ? apps
+        .filter((a) => !a.dismissed && !a.closed && (a.stage === 'found' || a.stage === 'tailored'))
+        .map((a) => {
+          const company = findByName(companyIndex, a.companyName);
+          return { app: a, opp: opportunity(a, profile, company, today) };
+        })
+        .sort((x, y) => y.opp.score - x.opp.score)
+        .slice(0, 6)
+    : [];
 
   if (!loaded) return <p className="muted">Loading…</p>;
 
@@ -135,6 +155,64 @@ export default function Overview() {
             ))}
           </ul>
         )}
+      </div>
+
+      <h2>Best opportunities right now</h2>
+      <div className="card">
+        {best.length === 0 ? (
+          <p className="muted">
+            No open roles yet. Add job boards on <Link href="/sources">Sources</Link> and the
+            scraper fills this in daily.
+          </p>
+        ) : (
+          <table>
+            <tbody>
+              {best.map(({ app, opp }) => (
+                <tr key={app.id}>
+                  <td style={{ width: 48 }}>
+                    <span
+                      className={`badge ${opp.score >= 65 ? 'badge-uae' : opp.score >= 40 ? 'badge-target' : 'badge-backup'}`}
+                      title={opp.parts.map((p) => `${p.label}: ${p.points}`).join('\n')}
+                    >
+                      {opp.score}
+                    </span>
+                  </td>
+                  <td>
+                    {app.jobUrl ? (
+                      <a href={app.jobUrl} target="_blank" rel="noreferrer">
+                        <strong>{app.roleTitle}</strong>
+                      </a>
+                    ) : (
+                      <strong>{app.roleTitle}</strong>
+                    )}
+                    <div className="muted" style={{ fontSize: 12 }}>
+                      {app.companyName}
+                      {app.isNew ? ' · new' : ''}
+                    </div>
+                  </td>
+                  <td style={{ fontSize: 13, whiteSpace: 'nowrap' }} title={opp.pay?.notes.join('\n')}>
+                    {opp.pay ? (
+                      <span className={opp.pay.basis === 'estimate' ? 'muted' : 'success'}>
+                        {opp.pay.basis === 'estimate' ? '~' : ''}
+                        {formatMonthly(opp.pay.low, opp.pay.high)}
+                      </span>
+                    ) : (
+                      <span className="muted">pay unknown</span>
+                    )}
+                    {opp.nafis.eligible && opp.nafis.amount ? (
+                      <div className="muted" style={{ fontSize: 11 }} title={opp.nafis.reason}>
+                        + up to {opp.nafis.amount.toLocaleString('en-US')} Nafis
+                      </div>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <p className="mt" style={{ fontSize: 13 }}>
+          <Link href="/pipeline">All roles, ranked by pay, fit and freshness →</Link>
+        </p>
       </div>
 
       <h2>Upcoming events</h2>
