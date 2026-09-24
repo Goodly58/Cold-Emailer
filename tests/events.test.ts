@@ -275,10 +275,38 @@ test('sync-seed brings new events into an existing database exactly once', async
   const seed = (await import('../data/db.json')) as unknown as Db;
   assert.equal(first.events, seed.events.length - 1, 'every seeded event except the one already present');
   assert.ok(first.templates >= 2, 'the event templates arrive too');
-  assert.deepEqual(second, { events: 0, templates: 0 }, 'a second sync adds nothing');
+  assert.deepEqual(second, { events: 0, templates: 0, templatesUpdated: 0 }, 'a second sync adds nothing');
 
   const after = JSON.parse(await fs.readFile(file, 'utf8')) as Db;
   const gitex = after.events.find((e) => e.id === 'ev-gitex-2026');
   assert.equal(gitex?.hidden, true, 'a hidden event stays hidden');
   assert.equal(gitex?.status, 'skipped', "the user's own status is untouched");
+});
+
+test('sync-seed corrects an unedited starter template but leaves an edited one', async () => {
+  const seed = (await import('../data/db.json')) as unknown as Db;
+  const current = seed.templates.find((t) => t.id === 't2')!;
+  const outdated = current.body.replace("and I'm registered with Nafis.", 'and Nafis support (salary top-up and employer pension contribution) applies.');
+  assert.notEqual(outdated, current.body);
+
+  for (const [body, expected] of [
+    [outdated, current.body],
+    ['My own words.', 'My own words.'],
+  ]) {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'tpl-sync-'));
+    const file = path.join(dir, 'db.json');
+    await fs.writeFile(
+      file,
+      JSON.stringify({
+        profile: { name: '', headline: '', phone: '', linkedinUrl: '' },
+        companies: [], contacts: [], applications: [], outreach: [], jobSources: [], runs: [], events: seed.events,
+        templates: seed.templates.map((t) => (t.id === 't2' ? { ...t, body } : t)),
+      })
+    );
+    process.env.DB_PATH = file;
+    const { POST } = await import('../app/api/sync-seed/route');
+    await POST();
+    const after = JSON.parse(await fs.readFile(file, 'utf8')) as Db;
+    assert.equal(after.templates.find((t) => t.id === 't2')!.body, expected);
+  }
 });
