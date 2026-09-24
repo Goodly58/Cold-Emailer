@@ -43,6 +43,7 @@ const found = (over: Partial<FoundEvent>): FoundEvent => ({
   matchesId: '',
   name: 'Some Fair 2026',
   kind: 'career-fair',
+  interests: [],
   startDate: '',
   endDate: '',
   dateNote: '',
@@ -74,6 +75,15 @@ test('announced dates fill in an undated event and keep everything you set', () 
   assert.equal(nce.notes, 'Bring 20 CVs');
   assert.deepEqual(nce.exhibitors, ['ADNOC', 'Etisalat by e&'], 'exhibitors are added, never removed or duplicated');
   assert.deepEqual(r.updated[0].fields.sort(), ['dateNote', 'endDate', 'exhibitors', 'startDate', 'url'], 'a missing website is filled too');
+});
+
+test('field tags from a discovered event are added to a known one, never removed', () => {
+  const events = known();
+  events[1].interests = ['finance'];
+  mergeDiscovered(events, [found({ matchesId: 'ev-ruya-2026', name: "Ru'ya Careers UAE 2026", interests: ['ai', 'cyber'] })], TODAY, NOW);
+  assert.deepEqual(events[1].interests, ['finance', 'cyber', 'ai']);
+  const r = mergeDiscovered([], [found({ name: 'GISEC Global 2027', startDate: '2027-05-04', interests: ['cyber'] })], TODAY, NOW);
+  assert.deepEqual(r.added[0].interests, ['cyber']);
 });
 
 test('a hidden event stays hidden even when updated', () => {

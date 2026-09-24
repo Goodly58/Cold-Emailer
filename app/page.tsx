@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { api, list } from '@/lib/client';
 import { eventTiming, formatEventDates, sortEvents, todayLocal } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
+import { INTERESTS } from '@/lib/interests';
 import { nextActions } from '@/lib/next-actions';
+import { roleInterestTags } from '@/lib/scoring';
 import { followUpsDue } from '@/lib/outreach';
 import { opportunity } from '@/lib/pay';
 import { formatMonthly } from '@/lib/salary';
@@ -110,6 +112,15 @@ export default function Overview() {
         .sort((x, y) => y.opp.score - x.opp.score)
         .slice(0, 6)
     : [];
+
+  // New roles in each of your fields over the last week.
+  const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const fieldCounts = (profile?.interests || []).map((id) => ({
+    id,
+    n: apps.filter(
+      (a) => !a.dismissed && !a.closed && a.createdAt >= weekAgo && roleInterestTags(a).tags.includes(id)
+    ).length,
+  }));
 
   const actions = profile
     ? nextActions({
@@ -261,6 +272,16 @@ export default function Overview() {
 
       <h2>Best opportunities right now</h2>
       <div className="card">
+        {fieldCounts.length > 0 && (
+          <div className="flex mb" style={{ fontSize: 13 }}>
+            <span className="muted">New this week in your fields:</span>
+            {fieldCounts.map(({ id, n }) => (
+              <Link key={id} className="btn small" href={`/pipeline?fields=${id}`}>
+                {INTERESTS[id].short} {n}
+              </Link>
+            ))}
+          </div>
+        )}
         {best.length === 0 ? (
           <p className="muted">
             No open roles yet. Add job boards on <Link href="/sources">Sources</Link> and the

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
 import { divisionsForSector, researchLinks } from '@/lib/email-finder';
+import { INTERESTS, INTEREST_IDS, companyInterests, matchRoleInterests, type InterestId } from '@/lib/interests';
 import {
   CONTACT_KINDS,
   CONTACT_KIND_LABELS,
@@ -37,6 +38,7 @@ export default function Contacts() {
   const [form, setForm] = useState(EMPTY);
   const [open, setOpen] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
+  const [fieldFilter, setFieldFilter] = useState<InterestId[]>([]);
 
   useEffect(() => {
     list<Contact>('contacts').then(setContacts);
@@ -73,8 +75,16 @@ export default function Contacts() {
     setContacts((prev) => prev.filter((c) => c.id !== id));
   }
 
+  /** A contact is in a field if their company is, or their own role is (a bank's head of cyber). */
+  const fieldsOf = (c: Contact): InterestId[] => {
+    const co = companyFor(c.companyName);
+    const own = matchRoleInterests({ title: c.role || '', division: c.division }).filter((m) => m.via === 'title').map((m) => m.id);
+    return [...new Set([...(co ? companyInterests(co) : []), ...own])];
+  };
+
   const shown = contacts.filter((c) => {
     const q = filter.toLowerCase();
+    if (fieldFilter.length && !fieldFilter.some((f) => fieldsOf(c).includes(f))) return false;
     return (
       !q ||
       c.name.toLowerCase().includes(q) ||
@@ -157,6 +167,22 @@ export default function Contacts() {
         <span className="fixed muted" style={{ alignSelf: 'center' }}>
           {shown.length} of {contacts.length}
         </span>
+      </div>
+      <div className="flex mb" style={{ fontSize: 13, marginTop: -6 }}>
+        <span className="muted">Fields:</span>
+        {INTEREST_IDS.map((id) => {
+          const on = fieldFilter.includes(id);
+          return (
+            <button
+              key={id}
+              className={on ? 'small primary' : 'small'}
+              title={INTERESTS[id].description}
+              onClick={() => setFieldFilter(on ? fieldFilter.filter((f) => f !== id) : [...fieldFilter, id])}
+            >
+              {INTERESTS[id].label}
+            </button>
+          );
+        })}
       </div>
 
       {shown.length === 0 && (

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { aiResearch, type AiUsage } from './ai';
 import { eventTiming } from './events';
+import { INTERESTS, INTEREST_IDS, isInterestId, type InterestId } from './interests';
 import { getBlob, putBlob, readDb, updateDb } from './store';
 import type { CareerEvent, EventKind } from './types';
 
@@ -15,6 +16,9 @@ const FoundEvent = z.object({
   matchesId: z.string().describe('The id of the known event this is the SAME edition of, or "" if it is new or a new edition'),
   name: z.string().describe('Official name including the year, e.g. "Ru\'ya Careers UAE 2027"'),
   kind: z.enum(['emirati-fair', 'career-fair', 'industry-expo']).describe('emirati-fair ONLY if the source says it is for UAE nationals'),
+  interests: z
+    .array(z.enum(['investing', 'finance', 'cyber', 'ai']))
+    .describe('Fields it is especially relevant to: investing, finance (banking/fintech/insurance), cyber, ai. Empty for general fairs'),
   startDate: z.string().describe('YYYY-MM-DD, or "" if not announced'),
   endDate: z.string().describe('YYYY-MM-DD, or "" if not announced'),
   dateNote: z.string().describe('When dates are not announced: what is known, e.g. "Usually held in February". Else ""'),
@@ -31,7 +35,7 @@ export const Discovery = z.object({ events: z.array(FoundEvent) });
 export type FoundEvent = z.infer<typeof FoundEvent>;
 
 const SYSTEM = `You keep a list of UAE career events up to date for an Emirati job seeker.
-Find: career fairs for UAE nationals (Ru'ya, Tawdheef, the National Career Exhibition, university and sector fairs such as aviation, industry, banking or health), general career fairs in the UAE, and the largest industry expos where hiring managers staff stands (ADIPEC, GITEX, Arab Health / WHX, Dubai Airshow and similar).
+Find: career fairs for UAE nationals (Ru'ya, Tawdheef, the National Career Exhibition, university and sector fairs such as aviation, industry, banking or health), general career fairs in the UAE, and the largest industry expos where hiring managers staff stands (ADIPEC, GITEX, Arab Health / WHX, Dubai Airshow and similar). When the job seeker has named fields of interest, also look hard for conferences, expos and recruitment events in those fields.
 Only record what a source you found states. Never guess a date: if the organiser hasn't announced dates, leave them empty and say what's known in dateNote. Prefer the organiser's own site; WAM, The National, Khaleej Times and Gulf News are good second sources.
 A new year's edition of a known event is a NEW event (leave matchesId empty); matchesId is only for the same edition, e.g. dates now announced for an event that had none.`;
 
@@ -101,6 +105,11 @@ export function mergeDiscovered(existing: CareerEvent[], found: FoundEvent[], to
       set('url', url(f.url), !target.url);
       set('registerUrl', url(f.registerUrl), !target.registerUrl);
       set('description', f.description, !target.description);
+      const newTags = (f.interests || []).filter((id) => isInterestId(id) && !(target.interests || []).includes(id));
+      if (newTags.length) {
+        target.interests = INTEREST_IDS.filter((id) => newTags.includes(id) || (target.interests || []).includes(id));
+        fields.push('interests');
+      }
       const have = new Set((target.exhibitors || []).map((x) => x.toLowerCase()));
       const extra = f.exhibitors.map((x) => x.trim()).filter((x) => x && !have.has(x.toLowerCase()));
       if (extra.length) {
@@ -126,6 +135,7 @@ export function mergeDiscovered(existing: CareerEvent[], found: FoundEvent[], to
       id,
       name: f.name.trim(),
       kind: f.kind as EventKind,
+      interests: (f.interests || []).filter(isInterestId),
       startDate: start,
       endDate: end,
       dateNote: start ? undefined : f.dateNote || undefined,
@@ -174,8 +184,12 @@ export async function discoverEvents(): Promise<MergeResult & { usage: AiUsage; 
     .map((e) => `- id=${e.id} | ${e.name} | ${e.startDate ? `${e.startDate} to ${e.endDate ?? e.startDate}` : e.dateNote || 'dates not announced'}`)
     .join('\n');
 
+  const wanted: InterestId[] = db.profile.interests || [];
+  const focus = wanted.length
+    ? `\nThe job seeker's fields: ${wanted.map((id) => `${INTERESTS[id].label} (${INTERESTS[id].description})`).join('; ')}. Find the UAE conferences, expos and recruitment events for these fields too, e.g. cybersecurity (GISEC), AI (Dubai AI Week), finance and investing (Abu Dhabi Finance Week, Dubai FinTech Summit), and tag each event's fields.\n`
+    : '';
   const prompt = `Today is ${today}. Find UAE career events and major hiring-relevant expos from now until about 12 months ahead.
-
+${focus}
 Events already on the list (check whether dates were announced for the undated ones, and whether the next edition of the ended ones is announced):
 ${known || '(none)'}
 

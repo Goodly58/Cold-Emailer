@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readDb, updateDb } from '@/lib/store';
 import { ValidationError, sanitize } from '@/lib/validate';
+import { isInterestId } from '@/lib/interests';
+import { RANKING_FIELDS, rescoreAll } from '@/lib/rescore';
 
 export const runtime = 'nodejs';
 
@@ -21,9 +23,15 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
   for (const key of CV_BOOKKEEPING) delete patch[key];
+  if ('interests' in patch) {
+    patch.interests = Array.isArray(patch.interests) ? [...new Set(patch.interests.filter(isInterestId))] : [];
+  }
 
   const profile = await updateDb((db) => {
+    const before = JSON.stringify(RANKING_FIELDS.map((k) => db.profile[k] ?? null));
     Object.assign(db.profile, patch);
+    // Changing what you're looking for re-ranks what's already in the pipeline.
+    if (JSON.stringify(RANKING_FIELDS.map((k) => db.profile[k] ?? null)) !== before) rescoreAll(db);
     return db.profile;
   });
   return NextResponse.json(profile);

@@ -20,10 +20,11 @@ Open http://localhost:3000.
 | Page | What it does |
 |---|---|
 | **Overview** | Next best actions, what's due today (follow-ups, event thank-yous, registrations), the best open roles right now, upcoming events, and an AI weekly review of your numbers |
-| **Pipeline** | Every role **ranked** by an opportunity score (fit, pay with your Nafis top-up, freshness, employer), sortable by pay, pay + Nafis, newest, fit or employer, and filterable by minimum pay, posting age, remote/hybrid and stated pay. Each role opens to its full description, and with AI: a fit check against your CV, tailored CV bullets, a cover letter and an interview prep kit. A kanban board view too |
-| **Sources** | Job boards polled daily; auto-discovery of which ATS a company uses; aggregator search |
+| **Fields** (every page) | Pick the fields you want on your Profile: **Investing & markets**, **Banking & finance**, **Cybersecurity**, **AI & machine learning**. Roles, companies, contacts and events are tagged by field, every list below can be filtered to them, and roles in your fields rank higher |
+| **Pipeline** | Every role **ranked** by an opportunity score (fit, pay with your Nafis top-up, freshness, employer), sortable by pay, pay + Nafis, newest, fit or employer, and filterable by field, minimum pay, posting age, remote/hybrid and stated pay. Each role opens to its full description, and with AI: a fit check against your CV, tailored CV bullets, a cover letter and an interview prep kit. A kanban board view too |
+| **Sources** | Job boards polled daily; auto-discovery of which ATS a company uses (optionally only for companies in your fields); aggregator search with field presets |
 | **Health** | Scraper run history (added, merged, descriptions saved, failures), broken-source alerts, backup/restore |
-| **Companies** | 1,265 UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes |
+| **Companies** | UAE employers with tiers, fields, email domains/patterns, divisions, Emiratisation notes; filter by field |
 | **Contacts** | Decision-makers with email finding, research links, and hook capture |
 | **Events** | UAE career fairs and expos with countdowns and prep checklists; a weekly web search adds new events and fills in announced dates; log the people you meet and get reminded to thank them |
 | **Outreach** | Composer with contact and role linking, pre-send checks, AI drafting (and Arabic versions), web research for a personal hook, pre-filled Gmail, a daily send cap, and two follow-ups scheduled on the UAE Monday–Friday week |

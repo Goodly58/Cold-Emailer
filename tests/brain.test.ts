@@ -28,7 +28,7 @@ const role = (over: Partial<Application>): Application => ({
 
 test('foundations come first when missing', () => {
   const ids = nextActions(base({ hasCv: false, jobSources: [], profile: { ...profile, targetTitles: '' } })).map((a) => a.id);
-  assert.deepEqual(ids.slice(0, 3), ['cv', 'targets', 'sources']);
+  assert.deepEqual(ids.slice(0, 4), ['cv', 'targets', 'fields', 'sources']);
 });
 
 test('a fresh strong role and an interview get surfaced', () => {

@@ -4,7 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
 import { PLATFORM_DEFS, getPlatform } from '@/lib/ats';
-import type { Company, JobSource } from '@/lib/types';
+import { INTERESTS, INTEREST_IDS, isInterestId, type InterestId } from '@/lib/interests';
+import type { Company, JobSource, Profile } from '@/lib/types';
+
+/** Aggregator searches that find roles in each field, in the words UAE postings use. */
+const FIELD_QUERIES: Record<InterestId, string[]> = {
+  investing: ['investment analyst', 'portfolio manager', 'private equity', 'asset management', 'equity research'],
+  finance: ['credit analyst', 'treasury', 'financial analyst', 'risk analyst', 'compliance officer'],
+  cyber: ['cyber security', 'soc analyst', 'information security', 'penetration tester', 'grc'],
+  ai: ['machine learning', 'data scientist', 'ai engineer', 'generative ai', 'nlp'],
+};
 
 interface Discovered {
   platform: string;
@@ -60,6 +69,7 @@ export default function Sources() {
   const [aggBusy, setAggBusy] = useState(false);
   const [aggMsg, setAggMsg] = useState('');
 
+  const [sweepFields, setSweepFields] = useState<InterestId[]>([]);
   const [sweeping, setSweeping] = useState(false);
   const [sweepLog, setSweepLog] = useState<string[]>([]);
   // A ref, not state: the sweep loop closes over its variables once, so a
@@ -69,6 +79,10 @@ export default function Sources() {
   const [needsSetup, setNeedsSetup] = useState<string[]>([]);
 
   useEffect(() => {
+    // ?fields=cyber,ai (from the Companies page) preselects which companies to sweep.
+    const pre = (new URLSearchParams(window.location.search).get('fields') || '').split(',').filter(isInterestId);
+    if (pre.length) setSweepFields(pre);
+    else api<Profile>('/api/profile').then((p) => setSweepFields(p.interests || [])).catch(() => undefined);
     list<JobSource>('jobSources').then(setSources);
     list<Company>('companies').then(setCompanies);
     api<{ aggregators: typeof aggregators }>('/api/aggregators')
@@ -153,7 +167,7 @@ export default function Sources() {
           found: Array<{ company: string; platform: string; slug: string; jobCount: number }>;
           nextOffset: number;
           remaining: number;
-        }>('/api/discover/bulk', { method: 'POST', body: JSON.stringify({ offset, limit: 8 }) });
+        }>('/api/discover/bulk', { method: 'POST', body: JSON.stringify({ offset, limit: 8, fields: sweepFields }) });
 
         totalScanned += res.scanned;
         totalFound += res.found.length;
@@ -255,6 +269,23 @@ export default function Sources() {
           platforms for each one, and registers every board it finds. Companies already tracked are
           skipped. Runs in batches — leave the page open while it works.
         </p>
+        <div className="flex mb" style={{ fontSize: 13 }}>
+          <span className="muted">Only companies in:</span>
+          {INTEREST_IDS.map((id) => {
+            const on = sweepFields.includes(id);
+            return (
+              <button
+                key={id}
+                className={on ? 'small primary' : 'small'}
+                disabled={sweeping}
+                onClick={() => setSweepFields(on ? sweepFields.filter((f) => f !== id) : [...sweepFields, id])}
+              >
+                {INTERESTS[id].label}
+              </button>
+            );
+          })}
+          <span className="muted">{sweepFields.length ? '' : '(none chosen: every company)'}</span>
+        </div>
         <div className="flex">
           <button
             className="primary"
@@ -362,6 +393,16 @@ export default function Sources() {
           >
             {aggBusy ? 'Searching…' : 'Search & import'}
           </button>
+        </div>
+        <div className="flex" style={{ fontSize: 12, marginTop: 4 }}>
+          <span className="muted">Quick searches:</span>
+          {(sweepFields.length ? sweepFields : INTEREST_IDS).flatMap((id) =>
+            FIELD_QUERIES[id].slice(0, 3).map((q) => (
+              <button key={q} className="small" onClick={() => setAggQuery(q)} title={INTERESTS[id].label}>
+                {q}
+              </button>
+            ))
+          )}
         </div>
         {aggMsg && <p className="success">{aggMsg}</p>}
         {aggregators.some((a) => !a.configured) && (

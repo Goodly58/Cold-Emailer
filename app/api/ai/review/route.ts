@@ -5,6 +5,8 @@ import { findByName, indexByName } from '@/lib/names';
 import { statsByTemplate } from '@/lib/outreach';
 import { opportunity } from '@/lib/pay';
 import { getBlob, putBlob, readDb } from '@/lib/store';
+import { INTERESTS } from '@/lib/interests';
+import { roleInterestTags } from '@/lib/scoring';
 import { STAGES } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -59,6 +61,7 @@ export async function POST() {
     today,
     profile: {
       targets: db.profile.targetTitles || '(not set)',
+      fields: (db.profile.interests || []).map((id) => INTERESTS[id].label),
       hasCv: Boolean(db.profile.cvWords),
       minMonthlyPay: db.profile.minMonthlySalary ?? null,
     },
@@ -68,6 +71,19 @@ export async function POST() {
       appliedLast30Days: apps.filter((a) => a.appliedAt && daysAgo(a.appliedAt) <= 30).length,
       newRolesLast7Days: apps.filter((a) => daysAgo(a.createdAt) <= 7).length,
       topOpenRoles: topOpen,
+      byField: Object.fromEntries(
+        (db.profile.interests || []).map((id) => {
+          const inField = apps.filter((a) => roleInterestTags(a).tags.includes(id));
+          return [
+            INTERESTS[id].label,
+            {
+              open: inField.filter((a) => a.stage === 'found' && !a.closed).length,
+              applied: inField.filter((a) => !['found', 'tailored'].includes(a.stage)).length,
+              interviews: inField.filter((a) => a.stage === 'interview' || a.stage === 'offer').length,
+            },
+          ];
+        })
+      ),
     },
     outreach: {
       sentTotal: sent.length,

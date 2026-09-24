@@ -13,6 +13,7 @@ import {
   todayLocal,
 } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
+import { INTERESTS, INTEREST_IDS, type InterestId } from '@/lib/interests';
 import {
   CONTACT_KINDS,
   CONTACT_KIND_LABELS,
@@ -56,6 +57,7 @@ export default function Events() {
   const [discovery, setDiscovery] = useState<DiscoveryStatus | null>(null);
   const [discovering, setDiscovering] = useState(false);
   const [discoveryMsg, setDiscoveryMsg] = useState('');
+  const [fieldFilter, setFieldFilter] = useState<InterestId[]>([]);
   const today = todayLocal();
 
   async function load() {
@@ -140,7 +142,12 @@ export default function Events() {
     setForm(EMPTY_FORM);
   }
 
-  const visible = events.filter((e) => showHidden || !e.hidden);
+  const visible = events.filter(
+    (e) =>
+      (showHidden || !e.hidden) &&
+      // Fields narrow to events tagged with them; career fairs for nationals stay, since every sector recruits there.
+      (!fieldFilter.length || e.kind === 'emirati-fair' || fieldFilter.some((f) => (e.interests || []).includes(f)))
+  );
   const withTiming = visible.map((e) => ({ event: e, timing: eventTiming(e, today) }));
   const current = sortEvents(
     withTiming.filter((x) => x.timing.state === 'upcoming' || x.timing.state === 'live').map((x) => x.event)
@@ -195,6 +202,25 @@ export default function Events() {
             Set up AI
           </Link>
         )}
+      </div>
+
+      <div className="flex mb" style={{ fontSize: 13 }}>
+        <span className="muted">Fields:</span>
+        {INTEREST_IDS.map((id) => {
+          const on = fieldFilter.includes(id);
+          const n = events.filter((e) => !e.hidden && (e.interests || []).includes(id)).length;
+          return (
+            <button
+              key={id}
+              className={on ? 'small primary' : 'small'}
+              title={INTERESTS[id].description}
+              onClick={() => setFieldFilter(on ? fieldFilter.filter((f) => f !== id) : [...fieldFilter, id])}
+            >
+              {INTERESTS[id].label} <span style={{ opacity: 0.7 }}>{n}</span>
+            </button>
+          );
+        })}
+        {fieldFilter.length > 0 && <span className="muted">Emirati career fairs always show: every sector recruits there.</span>}
       </div>
 
       {/* One shared list for every card's "add exhibitor" box — a copy per
@@ -358,6 +384,11 @@ function EventCard({
             </span>
             <span className={`badge ${timingBadge}`}>{timing.label}</span>
             {event.hidden && <span className="badge badge-backup">hidden</span>}
+            {(event.interests || []).map((id) => (
+              <span key={id} className="badge badge-target" title={INTERESTS[id].label}>
+                {INTERESTS[id].short}
+              </span>
+            ))}
             {event.discovered && (
               <span className="badge badge-status" title="Found by the weekly web search. Check the source before relying on it.">
                 found online

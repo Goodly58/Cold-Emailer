@@ -6,6 +6,8 @@ import { api, create, list, patch, remove } from '@/lib/client';
 import { todayLocal } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
 import type { Fit, Prep } from '@/lib/ai-role';
+import { INTERESTS, INTEREST_IDS, companyInterests, isInterestId, type InterestId } from '@/lib/interests';
+import { roleInterestTags } from '@/lib/scoring';
 import { opportunity, type Opportunity } from '@/lib/pay';
 import { formatMonthly } from '@/lib/salary';
 import { scoreBand } from '@/lib/scoring';
@@ -51,7 +53,14 @@ interface Row {
   app: Application;
   company?: Company;
   opp: Opportunity;
+  /** Fields by the role's title, by its description or department only, and by its employer. */
+  tags: InterestId[];
+  mentions: InterestId[];
+  companyTags: InterestId[];
 }
+
+/** How strictly a role must belong to the chosen fields. */
+type FieldMode = 'title' | 'mentions' | 'employer';
 
 const TIER_RANK = { dream: 3, target: 2, backup: 1 } as const;
 
@@ -98,6 +107,8 @@ export default function Pipeline() {
   const [workplace, setWorkplace] = useState<'' | Workplace>('');
   const [statedPayOnly, setStatedPayOnly] = useState(false);
   const [hideInternships, setHideInternships] = useState(false);
+  const [fields, setFields] = useState<InterestId[]>([]);
+  const [fieldMode, setFieldMode] = useState<FieldMode>('mentions');
 
   const [shown, setShown] = useState<Record<string, number>>({});
   const [rankedShown, setRankedShown] = useState(RANKED_PAGE);
@@ -128,6 +139,13 @@ export default function Pipeline() {
       setProfile(p);
       setAiOn(ai.configured);
       if (p.minMonthlySalary) setMinPay(String(p.minMonthlySalary));
+      // Your fields are the default view once you've chosen them; the choice here is remembered.
+      const linked = new URLSearchParams(window.location.search).get('fields');
+      const saved = remember<string>('pipeline.fields', '__unset__');
+      if (linked !== null) setFields(linked.split(',').filter(isInterestId));
+      else if (saved !== '__unset__') setFields(saved.split(',').filter(isInterestId));
+      else if (p.interests?.length) setFields(p.interests);
+      setFieldMode(remember<FieldMode>('pipeline.fieldMode', 'mentions'));
       setLoaded(true);
     })();
   }, []);
@@ -141,15 +159,34 @@ export default function Pipeline() {
       .filter((a) => !a.dismissed)
       .map((app) => {
         const company = findByName(companyIndex, app.companyName);
-        return { app, company, opp: opportunity(app, profile, company, today) };
+        const { tags, mentions } = roleInterestTags({ ...app, roleTitle: app.roleTitle, companyName: app.companyName });
+        return {
+          app,
+          company,
+          opp: opportunity(app, profile, company, today),
+          tags,
+          mentions,
+          companyTags: company ? companyInterests(company) : [],
+        };
       });
   }, [apps, companyIndex, profile, today]);
+
+  const rowById = useMemo(() => new Map(rows.map((r) => [r.app.id, r])), [rows]);
+
+  function chooseFields(next: InterestId[]) {
+    setFields(next);
+    store('pipeline.fields', next.join(','));
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const floor = Number(minPay) || 0;
     const within = Number(postedWithin) || 0;
-    return rows.filter(({ app: a, opp }) => {
+    return rows.filter(({ app: a, opp, tags, mentions, companyTags }) => {
+      if (fields.length) {
+        const pool = fieldMode === 'title' ? tags : fieldMode === 'mentions' ? [...tags, ...mentions] : [...tags, ...mentions, ...companyTags];
+        if (!fields.some((f) => pool.includes(f))) return false;
+      }
       if (onlyNew && !a.isNew) return false;
       if (onlyUae && !a.emiratiAngle) return false;
       if (hideClosed && a.closed) return false;
@@ -170,7 +207,7 @@ export default function Pipeline() {
         (a.location || '').toLowerCase().includes(q)
       );
     });
-  }, [rows, query, onlyNew, onlyUae, hideClosed, workplace, statedPayOnly, hideInternships, postedWithin, minPay]);
+  }, [rows, query, onlyNew, onlyUae, hideClosed, workplace, statedPayOnly, hideInternships, postedWithin, minPay, fields, fieldMode]);
 
   const ranked = useMemo(() => {
     const open = openOnly ? filtered.filter((r) => r.app.stage === 'found' || r.app.stage === 'tailored') : filtered;
@@ -259,6 +296,52 @@ export default function Pipeline() {
                 </option>
               ))}
             </select>
+          )}
+        </div>
+        <div className="flex" style={{ fontSize: 13, marginBottom: 8 }}>
+          <span className="muted">Fields:</span>
+          {INTEREST_IDS.map((id) => {
+            const on = fields.includes(id);
+            const n = rows.filter((r) => r.tags.includes(id) || r.mentions.includes(id)).length;
+            return (
+              <button
+                key={id}
+                className={on ? 'small primary' : 'small'}
+                title={INTERESTS[id].description}
+                onClick={() => chooseFields(on ? fields.filter((f) => f !== id) : INTEREST_IDS.filter((f) => f === id || fields.includes(f)))}
+              >
+                {INTERESTS[id].label} <span style={{ opacity: 0.7 }}>{n}</span>
+              </button>
+            );
+          })}
+          {profile?.interests?.length ? (
+            <button className="small" onClick={() => chooseFields(profile.interests!)} title="The fields on your Profile">
+              My fields
+            </button>
+          ) : (
+            <Link href="/profile" style={{ fontSize: 12 }}>
+              Save your fields on Profile
+            </Link>
+          )}
+          {fields.length > 0 && (
+            <>
+              <button className="small" onClick={() => chooseFields([])}>
+                All fields
+              </button>
+              <select
+                value={fieldMode}
+                onChange={(e) => {
+                  setFieldMode(e.target.value as FieldMode);
+                  store('pipeline.fieldMode', e.target.value);
+                }}
+                style={{ width: 'auto' }}
+                title="How strictly a role must be in the field"
+              >
+                <option value="title">Job title is in the field</option>
+                <option value="mentions">…or its description is</option>
+                <option value="employer">…or the employer works in it</option>
+              </select>
+            </>
           )}
         </div>
         <div className="flex" style={{ fontSize: 13 }}>
@@ -394,6 +477,7 @@ export default function Pipeline() {
                       {a.location ? ` · ${a.location}` : ''}
                     </div>
                     <PayLine opp={opp} />
+                    <FieldBadges row={rowById.get(a.id)} />
                     {a.isNew && <span className="badge badge-dream">NEW</span>}
                     {a.closed && (
                       <span className="badge badge-backup" title="No longer on the company's board">
@@ -508,6 +592,7 @@ function RankedRow({
             {a.location ? ` · ${a.location}` : ''}
           </div>
           <div className="chips" style={{ marginTop: 4 }}>
+            <FieldBadges row={row} />
             {a.isNew && <span className="badge badge-dream">NEW</span>}
             {a.closed && <span className="badge badge-backup">closed</span>}
             {a.workplace && a.workplace !== 'onsite' && <span className="badge badge-target">{WORKPLACE_LABELS[a.workplace]}</span>}
@@ -1015,5 +1100,32 @@ function RoleAi({ app, aiOn, onUpdate }: { app: Application; aiOn: boolean; onUp
         </details>
       )}
     </div>
+  );
+}
+
+/** Field tags: solid when the job title is in the field, outlined when only its description or department is. */
+function FieldBadges({ row }: { row: Row | undefined }) {
+  if (!row) return null;
+  const title = row.tags;
+  const mention = row.mentions.filter((id) => !title.includes(id));
+  if (!title.length && !mention.length) return null;
+  return (
+    <>
+      {title.map((id) => (
+        <span key={id} className="badge badge-target" title={`${INTERESTS[id].label}: the job title is in this field`}>
+          {INTERESTS[id].short}
+        </span>
+      ))}
+      {mention.map((id) => (
+        <span
+          key={id}
+          className="badge badge-status"
+          style={{ cursor: 'default' }}
+          title={`${INTERESTS[id].label}: mentioned in the description or department`}
+        >
+          {INTERESTS[id].short}?
+        </span>
+      ))}
+    </>
   );
 }

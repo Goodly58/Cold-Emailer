@@ -7,6 +7,7 @@ import { eventTiming, todayLocal } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
 import { PATTERN_ORDER, divisionsForSector, generateCandidates } from '@/lib/email-finder';
 import { SECTOR_GROUPS, sectorGroup } from '@/lib/sectors';
+import { INTERESTS, INTEREST_IDS, companyInterests, type InterestId } from '@/lib/interests';
 import type { CareerEvent, Company, Tier } from '@/lib/types';
 
 const TIERS: Tier[] = ['dream', 'target', 'backup'];
@@ -33,6 +34,7 @@ export default function Companies() {
   const [filter, setFilter] = useState('');
   const [tierFilter, setTierFilter] = useState('');
   const [groupFilter, setGroupFilter] = useState('');
+  const [fieldFilter, setFieldFilter] = useState<InterestId[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -119,7 +121,8 @@ export default function Companies() {
     return (
       matchesText &&
       (!tierFilter || c.tier === tierFilter) &&
-      (!groupFilter || sectorGroup(c.sector) === groupFilter)
+      (!groupFilter || sectorGroup(c.sector) === groupFilter) &&
+      (!fieldFilter.length || fieldFilter.some((f) => companyInterests(c).includes(f)))
     );
   });
 
@@ -204,6 +207,34 @@ export default function Companies() {
         </div>
       </details>
 
+      <div className="flex mb" style={{ fontSize: 13 }}>
+        <span className="muted">Fields:</span>
+        {INTEREST_IDS.map((id) => {
+          const on = fieldFilter.includes(id);
+          const n = companies.filter((c) => companyInterests(c).includes(id)).length;
+          return (
+            <button
+              key={id}
+              className={on ? 'small primary' : 'small'}
+              title={INTERESTS[id].description}
+              onClick={() => setFieldFilter(on ? fieldFilter.filter((f) => f !== id) : [...fieldFilter, id])}
+            >
+              {INTERESTS[id].label} <span style={{ opacity: 0.7 }}>{n}</span>
+            </button>
+          );
+        })}
+        {fieldFilter.length > 0 && (
+          <>
+            <button className="small" onClick={() => setFieldFilter([])}>
+              All fields
+            </button>
+            <Link href={`/sources?fields=${fieldFilter.join(',')}`} style={{ fontSize: 12 }}>
+              Find these companies&apos; job boards →
+            </Link>
+          </>
+        )}
+      </div>
+
       <div className="form-row mb">
         <input
           placeholder="Filter by name, sector or location…"
@@ -280,7 +311,18 @@ export default function Companies() {
                     </a>
                   </div>
                 </td>
-                <td className="muted">{c.sector}</td>
+                <td className="muted">
+                  {c.sector}
+                  {companyInterests(c).length > 0 && (
+                    <div className="chips" style={{ marginTop: 4 }}>
+                      {companyInterests(c).map((id) => (
+                        <span key={id} className="badge badge-target" title={INTERESTS[id].label}>
+                          {INTERESTS[id].short}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </td>
                 <td className="muted">{c.location}</td>
                 <td>
                   <span
@@ -349,6 +391,7 @@ function CompanySetup({
   const [saved, setSaved] = useState(false);
 
   const suggestions = divisionsForSector(company.sector).filter((d) => !divisions.includes(d));
+  const fields = companyInterests(company);
   const preview = domain ? generateCandidates('Sara Al Mansoori', domain, pattern)[0] : '';
 
   async function persist(next?: Partial<Company>) {
@@ -392,6 +435,25 @@ function CompanySetup({
           <label>Preview</label>
           <input readOnly value={preview || '—'} className="muted" />
         </div>
+      </div>
+
+      <h3 style={{ fontSize: 13, textTransform: 'uppercase', color: 'var(--muted)', margin: '18px 0 8px' }}>
+        Fields it hires in
+      </h3>
+      <div className="chips">
+        {INTEREST_IDS.map((id) => {
+          const on = fields.includes(id);
+          return (
+            <button
+              key={id}
+              className={on ? 'small primary' : 'small'}
+              title={company.interests ? 'Click to change' : 'Guessed from the sector — click to set it yourself'}
+              onClick={() => onSave({ interests: on ? fields.filter((f) => f !== id) : INTEREST_IDS.filter((f) => f === id || fields.includes(f)) })}
+            >
+              {INTERESTS[id].label}
+            </button>
+          );
+        })}
       </div>
 
       <h3 style={{ fontSize: 13, textTransform: 'uppercase', color: 'var(--muted)', margin: '18px 0 8px' }}>

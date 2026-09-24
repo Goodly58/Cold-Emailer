@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/client';
 import { EDUCATION_LABELS, EDUCATION_LEVELS } from '@/lib/cv-shared';
+import { INTERESTS, INTEREST_IDS, type InterestId } from '@/lib/interests';
 import type { Profile } from '@/lib/types';
 
 interface AiStatus {
@@ -327,7 +328,41 @@ export default function ProfilePage() {
           <h2 style={{ marginTop: 0 }}>What you&apos;re looking for</h2>
           <p className="muted mb" style={{ fontSize: 13 }}>
             Every scraped role is scored against this, so the best matches rise to the top of your{' '}
-            <Link href="/pipeline">pipeline</Link> instead of drowning in volume.
+            <Link href="/pipeline">pipeline</Link> instead of drowning in volume. Saving re-ranks
+            the roles already there.
+          </p>
+          <label>Fields you want to work in</label>
+          <div className="chips mb">
+            {INTEREST_IDS.map((id: InterestId) => {
+              const on = (profile.interests || []).includes(id);
+              return (
+                <label
+                  key={id}
+                  className="chip"
+                  style={{ cursor: 'pointer', borderColor: on ? 'var(--accent)' : undefined, margin: 0 }}
+                  title={INTERESTS[id].description}
+                >
+                  <input
+                    type="checkbox"
+                    style={{ width: 'auto' }}
+                    checked={on}
+                    onChange={() =>
+                      set(
+                        'interests',
+                        on
+                          ? (profile.interests || []).filter((x) => x !== id)
+                          : INTEREST_IDS.filter((x) => x === id || (profile.interests || []).includes(x))
+                      )
+                    }
+                  />
+                  {INTERESTS[id].label}
+                </label>
+              );
+            })}
+          </div>
+          <p className="muted mb" style={{ fontSize: 12, marginTop: -8 }}>
+            Roles in these fields count as on-target even without a matching title, and every list
+            can be filtered to them. Hover a field for what it covers.
           </p>
           <div className="form-row">
             <div>

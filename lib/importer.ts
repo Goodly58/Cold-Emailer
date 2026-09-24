@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { AtsJob } from './ats-registry';
 import { normalizeUrl } from './http';
+import { matchRoleInterests } from './interests';
 import { canonical, findByName, indexByName } from './names';
 import { scoreRole } from './scoring';
 import { putBlobs, updateDb } from './store';
@@ -113,6 +114,21 @@ export function applyJobDetails(app: Application, job: AtsJob): boolean {
   };
 
   if (job.postedAt && (!app.postedAt || job.postedAt < app.postedAt)) set('postedAt', job.postedAt);
+
+  // Field tags: from the title, and from the description when the board sent one.
+  const matches = matchRoleInterests({ title: job.title || app.roleTitle, division: job.department || app.division, description: job.description });
+  const tags = matches.filter((m) => m.via === 'title').map((m) => m.id);
+  const mentions = matches.filter((m) => m.via === 'mention').map((m) => m.id);
+  const same = (a: string[] | undefined, b: string[]) => (a ?? []).join() === b.join();
+  // Without a description this run, keep mentions found from an earlier one.
+  if (!same(app.interests, tags) && (tags.length || app.interests)) {
+    app.interests = tags;
+    changed = true;
+  }
+  if (job.description !== undefined && !same(app.interestMentions, mentions) && (mentions.length || app.interestMentions)) {
+    app.interestMentions = mentions;
+    changed = true;
+  }
   set('employmentType', job.employmentType);
   set('workplace', job.workplace);
   if (!app.division && job.department) set('division', job.department);
@@ -137,8 +153,11 @@ export interface NewRoleMeta {
 
 export function newApplication(job: AtsJob, meta: NewRoleMeta, db: Db, index: PipelineIndex): Application {
   const company = index.company(meta.companyName);
+  const matches = matchRoleInterests({ title: job.title, division: job.department, description: job.description });
+  const interests = matches.filter((m) => m.via === 'title').map((m) => m.id);
+  const interestMentions = matches.filter((m) => m.via === 'mention').map((m) => m.id);
   const { score, reasons } = scoreRole(
-    { roleTitle: job.title, companyName: meta.companyName, location: job.location, division: job.department },
+    { roleTitle: job.title, companyName: meta.companyName, location: job.location, division: job.department, interests, interestMentions },
     db.profile,
     company
   );

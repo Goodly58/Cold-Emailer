@@ -12,8 +12,9 @@ export const runtime = 'nodejs';
  *
  * The store only seeds a database that's completely empty, so without this a
  * deployment that has been running for a while would never see them.
- * Matches on id and only ever adds; nothing the user has edited is touched,
- * and hidden events still exist, so they stay hidden.
+ * Events and templates match on id and are only ever added; field tags are
+ * filled in only where a row has none. Nothing the user has edited is
+ * touched, and hidden events still exist, so they stay hidden.
  */
 /**
  * Starter template bodies that have since been corrected. A template still
@@ -34,6 +35,23 @@ export async function POST() {
     db.events.push(...events);
     db.templates.push(...templates);
 
+    // Field tags added to starter events and companies since this database was
+    // seeded — only where there are none yet, so tags you've set are kept.
+    for (const e of db.events) {
+      const seedEvent = seed.events.find((x) => x.id === e.id);
+      if (seedEvent?.interests?.length && !e.interests) e.interests = seedEvent.interests;
+    }
+    const seedByName = new Map(seed.companies.map((c) => [c.name.trim().toLowerCase(), c]));
+    let companiesTagged = 0;
+    for (const c of db.companies) {
+      if (c.interests) continue;
+      const tags = seedByName.get(c.name.trim().toLowerCase())?.interests;
+      if (tags) {
+        c.interests = tags;
+        companiesTagged += 1;
+      }
+    }
+
     let updated = 0;
     for (const t of db.templates) {
       const current = seed.templates.find((x) => x.id === t.id);
@@ -42,7 +60,7 @@ export async function POST() {
         updated += 1;
       }
     }
-    return { events: events.length, templates: templates.length, templatesUpdated: updated };
+    return { events: events.length, templates: templates.length, templatesUpdated: updated, companiesTagged };
   });
 
   return NextResponse.json(result);

@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { readDb, updateDb } from '@/lib/store';
 import { discoverBoards } from '@/lib/ats';
 import { mapWithConcurrency } from '@/lib/http';
+import { companyInterests, isInterestId, type InterestId } from '@/lib/interests';
 import type { JobSource } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -20,12 +21,18 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const offset = Math.max(0, Number(body.offset) || 0);
   const limit = Math.min(Math.max(1, Number(body.limit) || 8), 15);
+  // Optionally only companies in some fields, e.g. ["cyber", "ai"].
+  const fields: InterestId[] = Array.isArray(body.fields) ? body.fields.filter(isInterestId) : [];
 
   const db = await readDb();
   const tracked = new Set(db.jobSources.map((s) => s.companyName.trim().toLowerCase()));
 
   // Skip companies that already have a source; work through the rest in order.
-  const queue = db.companies.filter((c) => !tracked.has(c.name.trim().toLowerCase()));
+  const queue = db.companies.filter(
+    (c) =>
+      !tracked.has(c.name.trim().toLowerCase()) &&
+      (!fields.length || fields.some((f) => companyInterests(c).includes(f)))
+  );
   const batch = queue.slice(offset, offset + limit);
 
   const found = await mapWithConcurrency(batch, 3, async (company) => {

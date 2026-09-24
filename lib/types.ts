@@ -1,3 +1,5 @@
+import type { InterestId } from './interests';
+
 export type Stage =
   | 'found'
   | 'tailored'
@@ -65,6 +67,8 @@ export interface Company {
   /** Known ATS platform and board slug, when research identified one. */
   ats?: string;
   atsSlug?: string;
+  /** Fields it hires in, from your interests (curated for the starter list). */
+  interests?: InterestId[];
   createdAt: string;
 }
 
@@ -165,6 +169,9 @@ export interface Application {
   hasDescription?: boolean;
   /** The same role found at other links — another board or an aggregator. */
   altUrls?: string[];
+  /** Fields the role is in, by its title (strong) or only its description/department (mentions). */
+  interests?: InterestId[];
+  interestMentions?: InterestId[];
   /** AI fit analysis against your CV (0-100), when you've run it. */
   aiFit?: number;
   aiVerdict?: 'strong' | 'good' | 'stretch' | 'long-shot';
@@ -297,6 +304,8 @@ export interface CareerEvent {
   notes?: string;
   /** Seeded events are hidden rather than deleted, so a re-sync can't bring them back. */
   hidden?: boolean;
+  /** Fields the event is relevant to. */
+  interests?: InterestId[];
   /** Found by the weekly web search rather than seeded or added by you. */
   discovered?: boolean;
   /** Where the discovered details came from. */
@@ -330,6 +339,8 @@ export interface Profile {
   minMonthlySalary?: number;
   skills?: string[];
   languages?: string[];
+  /** The fields you want to work in: they tag and filter every list and lift matching roles. */
+  interests?: InterestId[];
   /** Emails to send per day before the Outreach page suggests stopping. */
   dailySendCap?: number;
   /** CV bookkeeping; the text itself lives in the blob store. */

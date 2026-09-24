@@ -1,4 +1,5 @@
 import { CV_BLOB_KEY } from './cv';
+import { INTERESTS } from './interests';
 import { jdKey } from './importer';
 import { findByName, indexByName } from './names';
 import { getBlob, getBlobs } from './store';
@@ -30,6 +31,7 @@ export function candidateBlock(profile: Profile, cv: string | null): string {
     ['Skills', profile.skills],
     ['Languages', profile.languages],
     ['Looking for', profile.targetTitles],
+    ['Fields of interest', (profile.interests || []).map((id) => INTERESTS[id].label)],
     ['LinkedIn', profile.linkedinUrl],
     ['Phone', profile.phone],
   ]);

@@ -275,7 +275,7 @@ test('sync-seed brings new events into an existing database exactly once', async
   const seed = (await import('../data/db.json')) as unknown as Db;
   assert.equal(first.events, seed.events.length - 1, 'every seeded event except the one already present');
   assert.ok(first.templates >= 2, 'the event templates arrive too');
-  assert.deepEqual(second, { events: 0, templates: 0, templatesUpdated: 0 }, 'a second sync adds nothing');
+  assert.deepEqual(second, { events: 0, templates: 0, templatesUpdated: 0, companiesTagged: 0 }, 'a second sync adds nothing');
 
   const after = JSON.parse(await fs.readFile(file, 'utf8')) as Db;
   const gitex = after.events.find((e) => e.id === 'ev-gitex-2026');

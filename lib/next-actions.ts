@@ -59,6 +59,16 @@ export function nextActions(s: ActionState): NextAction[] {
       cta: 'Set targets',
     });
   }
+  if (!s.profile.interests?.length) {
+    out.push({
+      id: 'fields',
+      weight: 92,
+      title: 'Pick your fields: investing, banking & finance, cybersecurity, AI',
+      detail: 'Roles in them rank higher, and every list can be filtered to them.',
+      href: '/profile',
+      cta: 'Pick',
+    });
+  }
   if (!s.profile.educationLevel) {
     out.push({
       id: 'education',

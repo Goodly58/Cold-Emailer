@@ -142,8 +142,8 @@ its error and a consecutive-failure counter; three strikes and the Health page f
 `lib/scoring.ts` ranks every imported role 0–100 against your job preferences. Once the scraper is
 pulling hundreds of postings a week, an unranked list is noise.
 
-Signals: title match (strongest), bonus keywords, UAE location, company tier, Emiratisation
-liability, seniority fit. Two guards matter:
+Signals: title match (strongest), your fields, bonus keywords, UAE location, company tier,
+Emiratisation liability, seniority fit. Two guards matter:
 
 - An **excluded keyword zeroes** a role outright.
 - A role with **no title or keyword relevance is capped at 25**, however prestigious the employer.
@@ -166,6 +166,21 @@ a diploma, 4,000 with secondary school).
 The Pipeline's opportunity score combines fit (45 points: keyword relevance, or your AI fit check
 once you've run it), pay against your minimum (25), freshness (15) and employer tier and
 Emiratisation (15). Each part is shown on hover.
+
+## Fields
+
+`lib/interests.ts` tags roles, companies and events with the fields you choose on your Profile:
+investing & markets, banking & finance, cybersecurity, and AI & machine learning. A role's title
+decides (whole-word phrases such as "portfolio manager", "soc analyst", "machine learning"), with
+vetoes for the usual traps (a physical "Security Officer", a real-estate "Broker", a "Project
+Portfolio Manager", "Dubai" containing "ai"). Its department, or enough field phrases in its
+description, add a weaker "mentions" tag. Tags are stored at import, when the description is at
+hand. Companies in the starter list carry curated tags; companies you add are tagged from their
+sector label until you set them.
+
+With fields chosen, a role in one of them scores like a target-title match, a description mention
+and an employer in your field add a little, and a role outside all of them is capped like any
+irrelevant role. Saving your Profile re-ranks the roles already in the pipeline.
 
 ## Storage
 

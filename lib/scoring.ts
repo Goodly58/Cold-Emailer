@@ -1,3 +1,4 @@
+import { INTERESTS, companyInterests, matchRoleInterests, type InterestId } from './interests';
 import type { Company, Profile } from './types';
 
 /**
@@ -11,7 +12,25 @@ export interface ScoreInput {
   companyName: string;
   location?: string;
   division?: string;
+  /** Interest tags already worked out, e.g. with the job description at import.
+   *  When absent they're derived from the title and division. */
+  interests?: InterestId[];
+  interestMentions?: InterestId[];
 }
+
+/** Title tags and weaker mentions for a role, using stored tags when it has them. */
+export function roleInterestTags(job: ScoreInput): { tags: InterestId[]; mentions: InterestId[] } {
+  if (job.interests || job.interestMentions) {
+    return { tags: job.interests ?? [], mentions: job.interestMentions ?? [] };
+  }
+  const matches = matchRoleInterests({ title: job.roleTitle, division: job.division });
+  return {
+    tags: matches.filter((m) => m.via === 'title').map((m) => m.id),
+    mentions: matches.filter((m) => m.via === 'mention').map((m) => m.id),
+  };
+}
+
+const short = (ids: InterestId[]) => ids.map((id) => INTERESTS[id].short).join(', ');
 
 export interface ScoreResult {
   score: number;
@@ -61,6 +80,13 @@ export function scoreRole(job: ScoreInput, profile: Profile, company?: Company):
   const keywords = splitList(profile.targetKeywords);
   const excludes = splitList(profile.excludeKeywords);
 
+  // Your fields of interest count like target titles: a portfolio analyst is
+  // relevant to someone interested in investing whatever titles they typed.
+  const wanted = profile.interests ?? [];
+  const { tags, mentions } = roleInterestTags(job);
+  const interestHits = wanted.filter((id) => tags.includes(id));
+  const mentionHits = wanted.filter((id) => !tags.includes(id) && mentions.includes(id));
+
   // Hard exclusions win outright — a wrong-discipline role is never relevant.
   const hit = excludes.find((x) => haystack.includes(x));
   if (hit) {
@@ -74,6 +100,9 @@ export function scoreRole(job: ScoreInput, profile: Profile, company?: Company):
   if (titleHits.length) {
     score += 40;
     reasons.push(`title matches ${titleHits.map((t) => `"${t}"`).join(', ')}`);
+  } else if (interestHits.length) {
+    score += 35;
+    reasons.push(`in your fields: ${short(interestHits)}`);
   } else if (targets.length) {
     // Partial credit when individual words of a target title appear.
     const words = targets.flatMap((t) => t.split(/\s+/)).filter((w) => w.length > 3);
@@ -84,8 +113,15 @@ export function scoreRole(job: ScoreInput, profile: Profile, company?: Company):
     } else {
       titleRelevant = false;
     }
+  } else if (wanted.length) {
+    titleRelevant = false; // fields chosen, and this role isn't in one
   } else {
     score += 20; // no preferences set — don't punish everything
+  }
+
+  if (mentionHits.length) {
+    score += 10;
+    reasons.push(`description mentions ${short(mentionHits)}`);
   }
 
   const keywordHits = keywords.filter((k) => haystack.includes(k));
@@ -116,6 +152,11 @@ export function scoreRole(job: ScoreInput, profile: Profile, company?: Company):
       score += 7;
       reasons.push('Emiratisation-liable employer');
     }
+    const companyHits = wanted.filter((id) => companyInterests(company).includes(id));
+    if (companyHits.length) {
+      score += 6;
+      reasons.push(`${short(companyHits)} employer`);
+    }
   }
 
   // Seniority fit.
@@ -136,7 +177,7 @@ export function scoreRole(job: ScoreInput, profile: Profile, company?: Company):
   // nothing to do with what you do. Without this, prestige alone floats
   // irrelevant roles into the "worth a look" band.
   let final = Math.max(0, Math.min(100, Math.round(score)));
-  if (!titleRelevant && keywordHits.length === 0) {
+  if (!titleRelevant && keywordHits.length === 0 && mentionHits.length === 0) {
     final = Math.min(final, 25);
     reasons.push('no title/keyword relevance');
   }

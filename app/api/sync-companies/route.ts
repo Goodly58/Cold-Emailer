@@ -36,6 +36,11 @@ export async function POST() {
         live.emiratisationNotes = seed.emiratisationNotes;
         touched = true;
       }
+      // Field tags: only where you haven't set them yourself.
+      if (!live.interests && seed.interests) {
+        live.interests = seed.interests;
+        touched = true;
+      }
       if (touched) enriched += 1;
     }
 
