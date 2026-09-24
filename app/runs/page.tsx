@@ -172,6 +172,8 @@ export default function Runs() {
               <th>Checked</th>
               <th>Added</th>
               <th>Updated</th>
+              <th title="Already in the pipeline from another source, so linked instead of added twice">Merged</th>
+              <th title="Full job descriptions saved">Descriptions</th>
               <th>Closed</th>
               <th>Failed</th>
               <th>Duration</th>
@@ -181,7 +183,7 @@ export default function Runs() {
           <tbody>
             {runs.length === 0 && (
               <tr>
-                <td colSpan={9} className="muted">
+                <td colSpan={11} className="muted">
                   No runs yet. Add sources on the <Link href="/sources">Sources</Link> page and hit
                   &ldquo;Refresh all now&rdquo;.
                 </td>
@@ -198,6 +200,8 @@ export default function Runs() {
                   {r.added > 0 ? <strong className="success">+{r.added}</strong> : <span className="muted">0</span>}
                 </td>
                 <td className="muted">{r.updated}</td>
+                <td className="muted">{r.merged ?? 0}</td>
+                <td className="muted">{r.descriptions ?? 0}</td>
                 <td className="muted">{r.closed}</td>
                 <td className={r.failed ? 'error' : 'muted'}>{r.failed}</td>
                 <td className="muted">{r.durationMs ? `${(r.durationMs / 1000).toFixed(1)}s` : '—'}</td>

@@ -16,6 +16,8 @@ interface GhJob {
   location: { name: string };
   absolute_url: string;
   departments?: Array<{ name: string }>;
+  content?: string;
+  first_published?: string;
 }
 
 const realFetch = globalThis.fetch;
@@ -66,8 +68,8 @@ async function freshDb(): Promise<string> {
  */
 async function load() {
   const { refreshAllSources } = await import('../lib/refresh');
-  const { readDb } = await import('../lib/store');
-  return { refreshAllSources, readDb };
+  const { readDb, getBlob } = await import('../lib/store');
+  return { refreshAllSources, readDb, getBlob };
 }
 
 /** Find a record that must exist, failing the test clearly if it doesn't. */
@@ -279,4 +281,131 @@ test('checks the stalest source first when the budget is tight', async () => {
   const after = await readDb();
   const beta = must(after.jobSources.find((s) => s.id === 's2'), 'source s2');
   assert.notEqual(beta.lastCheckedAt, '2026-01-01T00:00:00Z', 'the overdue source should have run');
+});
+
+/* -------------------------------------------------- descriptions and pay */
+
+const JD =
+  '&lt;p&gt;We are hiring a data analyst to join our Dubai team.&lt;/p&gt;' +
+  '&lt;ul&gt;&lt;li&gt;SQL and Python&lt;/li&gt;&lt;li&gt;Stakeholder reporting&lt;/li&gt;&lt;/ul&gt;' +
+  '&lt;p&gt;Salary: AED 18,000 - 22,000 per month, plus housing allowance. ' +
+  'You will work with product, finance and operations to build dashboards and models.&lt;/p&gt;';
+
+test('saves the description outside the main database and reads pay from it', async () => {
+  board[0].content = JD;
+  board[0].first_published = '2026-09-01T08:00:00Z';
+  const { refreshAllSources, readDb, getBlob } = await load();
+  const report = await refreshAllSources();
+  assert.equal(report.descriptions, 1);
+
+  const db = await readDb();
+  const app = byUrl(db.applications, 'https://x.co/1');
+  assert.equal(app.hasDescription, true);
+  assert.equal(app.postedAt, '2026-09-01');
+  assert.deepEqual([app.salaryMin, app.salaryMax, app.salarySource], [18000, 22000, 'text']);
+
+  const jd = await getBlob(`jd:${app.id}`);
+  assert.ok(jd?.includes('• SQL and Python'), 'description stored as readable text');
+  const main = await fs.readFile(process.env.DB_PATH!, 'utf8');
+  assert.ok(!main.includes('Stakeholder reporting'), 'descriptions must not bloat every database read');
+});
+
+test('backfills descriptions for roles imported before they were collected', async () => {
+  const { refreshAllSources, readDb, getBlob } = await load();
+  await refreshAllSources();
+  let db = await readDb();
+  assert.equal(byUrl(db.applications, 'https://x.co/1').hasDescription, undefined);
+
+  board[0].content = JD;
+  const second = await refreshAllSources();
+  assert.equal(second.added, 0);
+  assert.equal(second.descriptions, 1);
+  db = await readDb();
+  const app = byUrl(db.applications, 'https://x.co/1');
+  assert.equal(app.hasDescription, true);
+  assert.ok(await getBlob(`jd:${app.id}`));
+
+  // Once saved it isn't rewritten on every run.
+  const third = await refreshAllSources();
+  assert.equal(third.descriptions, 0);
+});
+
+test('a role found through an aggregator adopts the company board when it appears there', async () => {
+  const file = process.env.DB_PATH!;
+  const db = JSON.parse(await fs.readFile(file, 'utf8'));
+  db.applications.push({
+    id: 'agg1',
+    companyName: 'Acme',
+    roleTitle: 'Data Analyst',
+    jobUrl: 'https://jooble.org/desc/123',
+    location: 'Dubai, United Arab Emirates',
+    source: 'jooble',
+    stage: 'found',
+    createdAt: '2026-09-01T00:00:00Z',
+  });
+  await fs.writeFile(file, JSON.stringify(db));
+
+  const { refreshAllSources, readDb } = await load();
+  const report = await refreshAllSources();
+  assert.equal(report.merged, 1);
+  assert.equal(report.added, 1, 'only the London role is new');
+
+  const after = await readDb();
+  const analysts = after.applications.filter((a) => a.roleTitle === 'Data Analyst');
+  assert.equal(analysts.length, 1, 'the same opening must not appear twice');
+  assert.equal(analysts[0].id, 'agg1', 'your existing record is kept');
+  assert.equal(analysts[0].jobUrl, 'https://x.co/1', 'the direct apply link wins');
+  assert.equal(analysts[0].sourceId, 's1', 'and closures are now tracked');
+  assert.deepEqual(analysts[0].altUrls, ['https://jooble.org/desc/123']);
+
+  // And a second run is quiet.
+  const again = await refreshAllSources();
+  assert.equal(again.merged + again.added, 0);
+});
+
+test('two different roles with similar titles are not merged', async () => {
+  board.push({ title: 'Data Analyst', location: { name: 'Abu Dhabi' }, absolute_url: 'https://x.co/3' });
+  board.push({ title: 'Senior Data Analyst', location: { name: 'Dubai' }, absolute_url: 'https://x.co/4' });
+  const { refreshAllSources } = await load();
+  const report = await refreshAllSources();
+  assert.equal(report.added, 4);
+  assert.equal(report.merged, 0);
+});
+
+test('a role you dismissed is not imported again', async () => {
+  const { refreshAllSources, readDb } = await load();
+  await refreshAllSources();
+  const file = process.env.DB_PATH!;
+  const db = JSON.parse(await fs.readFile(file, 'utf8'));
+  byUrl(db.applications as Array<{ jobUrl?: string; dismissed?: boolean }>, 'https://x.co/2').dismissed = true;
+  await fs.writeFile(file, JSON.stringify(db));
+
+  const again = await refreshAllSources();
+  assert.equal(again.added, 0);
+  const after = await readDb();
+  assert.equal(after.applications.length, 2);
+});
+
+test('pruning a long-closed role removes its description too', async () => {
+  board[1] = { ...board[1], content: JD.replace('data analyst', 'risk manager') };
+  const { refreshAllSources, readDb, getBlob } = await load();
+  await refreshAllSources();
+  let db = await readDb();
+  const risk = byUrl(db.applications, 'https://x.co/2');
+  assert.ok(await getBlob(`jd:${risk.id}`));
+
+  // Closed, and last seen long ago.
+  const file = process.env.DB_PATH!;
+  const raw = JSON.parse(await fs.readFile(file, 'utf8'));
+  const r = byUrl(raw.applications as Array<{ jobUrl?: string; closed?: boolean; lastSeenAt?: string }>, 'https://x.co/2');
+  r.closed = true;
+  r.lastSeenAt = '2026-01-01';
+  await fs.writeFile(file, JSON.stringify(raw));
+  board = [board[0]];
+
+  const report = await refreshAllSources();
+  assert.equal(report.pruned, 1);
+  db = await readDb();
+  assert.equal(db.applications.some((a) => a.jobUrl === 'https://x.co/2'), false);
+  assert.equal(await getBlob(`jd:${risk.id}`), null);
 });

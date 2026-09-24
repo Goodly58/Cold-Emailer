@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 import { updateDb } from '@/lib/store';
 import { availableAggregators, getAggregator } from '@/lib/aggregators';
-import { normalizeUrl } from '@/lib/http';
-import { scoreRole } from '@/lib/scoring';
-import type { Application } from '@/lib/types';
+import type { AtsJob } from '@/lib/ats-registry';
+import { PipelineIndex, addAltUrl, newApplication, saveDescriptions, takeDescription } from '@/lib/importer';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -21,14 +19,6 @@ export async function GET() {
       freeTier: a.freeTier,
     })),
   });
-}
-
-interface AggregatorJob {
-  title: string;
-  location: string;
-  url: string;
-  department?: string;
-  company?: string;
 }
 
 /** Search an aggregator and import the results into the pipeline. */
@@ -50,9 +40,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let jobs: AggregatorJob[];
+  let jobs: AtsJob[];
   try {
-    jobs = (await def.fetch(query, location)) as AggregatorJob[];
+    jobs = await def.fetch(query, location);
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'search failed' },
@@ -60,52 +50,39 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const nowIso = new Date().toISOString();
+  const descriptions: Array<[string, string]> = [];
 
   const result = await updateDb((db) => {
-    const byUrl = new Set(
-      db.applications.filter((a) => a.jobUrl).map((a) => normalizeUrl(a.jobUrl!))
-    );
-    const companyByName = new Map(db.companies.map((c) => [c.name.trim().toLowerCase(), c]));
-
+    const index = new PipelineIndex(db);
     let added = 0;
+    let merged = 0;
+
     for (const job of jobs) {
-      if (!job.title || !job.url) continue;
-      const key = normalizeUrl(job.url);
-      if (byUrl.has(key)) continue;
-      byUrl.add(key);
+      if (!job.title || !job.url || index.findByUrl(job.url)) continue;
 
-      const companyName = job.company || 'Unknown (via ' + def.label + ')';
-      const company = companyByName.get(companyName.trim().toLowerCase());
-      const { score, reasons } = scoreRole(
-        { roleTitle: job.title, companyName, location: job.location, division: job.department },
-        db.profile,
-        company
-      );
+      const companyName = job.company || `Unknown (via ${def.label})`;
+      // Already in the pipeline from a company board: keep that (it has the
+      // direct apply link) and just remember this listing.
+      const twin = job.company ? index.findRole(companyName, job.title, job.location) : undefined;
+      if (twin) {
+        addAltUrl(twin, job.url);
+        index.addUrl(twin, job.url);
+        merged += 1;
+        continue;
+      }
 
-      const app: Application = {
-        id: randomUUID(),
-        companyName,
-        roleTitle: job.title,
-        jobUrl: job.url,
-        location: job.location,
-        division: job.department || undefined,
-        source: def.id,
-        stage: 'found',
-        score,
-        scoreReasons: reasons,
-        emiratiAngle: /uae|u\.a\.e|dubai|abu dhabi|sharjah|ajman|fujairah|ras al|umm al|emirat/i.test(
-          job.location || ''
-        ),
-        isNew: true,
-        lastSeenAt: today,
-        createdAt: new Date().toISOString(),
-      };
+      const app = newApplication(job, { companyName, source: def.id, nowIso }, db, index);
+      const write = takeDescription(app, job);
+      if (write) descriptions.push(write);
       db.applications.unshift(app);
+      index.add(app);
       added += 1;
     }
-    return { added, found: jobs.length };
+    return { added, merged, found: jobs.length };
   });
+
+  await saveDescriptions(descriptions);
 
   return NextResponse.json(result);
 }

@@ -8,24 +8,28 @@ import { mapWithConcurrency } from './http';
 import {
   PLATFORM_DEFS,
   PLATFORMS,
+  enrichJob,
   fetchJobsFor,
   getPlatform,
   isPlatform,
   validSlug,
   type AtsJob,
+  type EmploymentType,
   type Platform,
   type PlatformDef,
+  type Workplace,
 } from './ats-registry';
 
 export {
   PLATFORM_DEFS,
   PLATFORMS,
+  enrichJob,
   fetchJobsFor,
   getPlatform,
   isPlatform,
   validSlug,
 };
-export type { AtsJob, Platform, PlatformDef };
+export type { AtsJob, EmploymentType, Platform, PlatformDef, Workplace };
 
 /** Fetch a board identified by a single slug (the common case). */
 export async function fetchJobs(
@@ -101,7 +105,7 @@ export async function discoverBoards(
 
   const results = await mapWithConcurrency(attempts, concurrency, async ({ platform, slug }) => {
     try {
-      const jobs = await fetchJobsFor(platform, { slug }, { retries: 0, timeoutMs: 8000 });
+      const jobs = await fetchJobsFor(platform, { slug }, { retries: 0, timeoutMs: 8000, lite: true });
       return jobs.length > 0 ? { platform, slug, jobCount: jobs.length } : null;
     } catch {
       return null;

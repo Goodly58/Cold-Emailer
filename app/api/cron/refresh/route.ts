@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { refreshAllSources } from '@/lib/refresh';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// The daily run polls boards for up to four minutes; see CRON_BUDGET_MS.
+export const maxDuration = 300;
 
 /**
  * Scheduled refresh. Vercel Cron calls this with

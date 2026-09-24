@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBlob, putBlob, readDb, writeDb } from '@/lib/store';
+import { getBlob, getBlobs, putBlob, putBlobs, readDb, writeDb } from '@/lib/store';
 import { CV_BLOB_KEY } from '@/lib/cv';
+import { jdKey } from '@/lib/importer';
 import { COLLECTIONS, type Db } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -8,11 +9,15 @@ export const runtime = 'nodejs';
 /** Download the whole database as JSON. */
 export async function GET() {
   const db = await readDb();
-  // The CV lives outside the main database; include it so a restore is whole.
-  // Job descriptions are left out: they can be fetched again from the boards.
+  // The CV and job descriptions live outside the main database. The CV is
+  // included, and so are descriptions for roles you've acted on or added by
+  // hand; the rest can be fetched again from the boards.
   const cvText = await getBlob(CV_BLOB_KEY);
+  const keep = db.applications.filter((a) => a.hasDescription && (!a.sourceId || a.stage !== 'found'));
+  const jds = await getBlobs(keep.map((a) => jdKey(a.id)));
+  const descriptions = Object.fromEntries(keep.filter((a) => jds.has(jdKey(a.id))).map((a) => [a.id, jds.get(jdKey(a.id))]));
   const stamp = new Date().toISOString().slice(0, 10);
-  return new NextResponse(JSON.stringify({ ...db, cvText: cvText ?? undefined }, null, 2), {
+  return new NextResponse(JSON.stringify({ ...db, cvText: cvText ?? undefined, descriptions }, null, 2), {
     headers: {
       'content-type': 'application/json',
       'content-disposition': `attachment; filename="job-search-backup-${stamp}.json"`,
@@ -53,10 +58,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { cvText } = incoming as { cvText?: unknown };
+  const { cvText, descriptions } = incoming as { cvText?: unknown; descriptions?: unknown };
   delete (restored as unknown as Record<string, unknown>).cvText;
+  delete (restored as unknown as Record<string, unknown>).descriptions;
+
+  // Descriptions that came with the backup are restored; any other role is
+  // un-flagged so the next refresh fetches its description again.
+  const jdWrites: Array<[string, string]> = [];
+  const jdMap = descriptions && typeof descriptions === 'object' ? (descriptions as Record<string, unknown>) : {};
+  for (const app of restored.applications) {
+    const text = jdMap[app.id];
+    if (typeof text === 'string' && text.trim()) jdWrites.push([jdKey(app.id), text.slice(0, 20_000)]);
+    else if (app.hasDescription) app.hasDescription = false;
+  }
+
   await writeDb(restored);
   if (typeof cvText === 'string' && cvText.trim()) await putBlob(CV_BLOB_KEY, cvText);
+  await putBlobs(jdWrites);
 
   return NextResponse.json({
     ok: true,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateDb } from '@/lib/store';
+import { deleteBlobs, updateDb } from '@/lib/store';
+import { applicationBlobKeys } from '@/lib/importer';
 import { COLLECTIONS, type CollectionName } from '@/lib/types';
 import { ValidationError, sanitize, stripProtected } from '@/lib/validate';
 
@@ -56,5 +57,7 @@ export async function DELETE(
     return true;
   });
   if (!removed) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  // A role's description and AI work live outside the main database.
+  if (resource === 'applications') await deleteBlobs(applicationBlobKeys(id)).catch(() => undefined);
   return NextResponse.json({ ok: true });
 }

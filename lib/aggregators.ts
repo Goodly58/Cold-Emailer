@@ -1,5 +1,7 @@
 import { fetchJson } from './http';
-import type { AtsJob } from './ats-registry';
+import { enrichJob, isoDate, normEmployment, type AtsJob } from './ats-registry';
+import { parseSalaryText } from './salary';
+import { htmlToText } from './text';
 
 /**
  * Job aggregators covering the whole UAE market, rather than one company's
@@ -9,6 +11,10 @@ import type { AtsJob } from './ats-registry';
  * These complement the ATS pollers — aggregators find roles at companies you
  * haven't thought to track, which is exactly the gap company-by-company
  * polling leaves.
+ *
+ * Adzuna was dropped: its API serves a fixed list of countries, and the UAE
+ * ("ae") doesn't appear to be one of them, so a UAE search could only return
+ * an error or nothing. Worth re-adding if that changes.
  */
 
 export interface AggregatorDef {
@@ -29,36 +35,6 @@ function str(v: unknown): string {
 
 export const AGGREGATORS: AggregatorDef[] = [
   {
-    id: 'adzuna',
-    label: 'Adzuna',
-    envKeys: ['ADZUNA_APP_ID', 'ADZUNA_APP_KEY'],
-    signupUrl: 'https://developer.adzuna.com/signup',
-    freeTier: '250 calls/day',
-    async fetch(query, location) {
-      const id = process.env.ADZUNA_APP_ID;
-      const key = process.env.ADZUNA_APP_KEY;
-      if (!id || !key) throw new Error('Adzuna keys not configured');
-
-      const params = new URLSearchParams({
-        app_id: id,
-        app_key: key,
-        results_per_page: '50',
-        'content-type': 'application/json',
-      });
-      if (query) params.set('what', query);
-      if (location) params.set('where', location);
-
-      const data = await fetchJson<any>(`https://api.adzuna.com/v1/api/jobs/ae/search/1?${params}`);
-      return (data?.results || []).map((j: Record<string, any>) => ({
-        title: str(j.title).replace(/<\/?[^>]+>/g, ''),
-        location: str(j.location?.display_name),
-        url: str(j.redirect_url),
-        department: str(j.category?.label),
-        company: str(j.company?.display_name),
-      }));
-    },
-  },
-  {
     id: 'jooble',
     label: 'Jooble',
     envKeys: ['JOOBLE_API_KEY'],
@@ -73,13 +49,20 @@ export const AGGREGATORS: AggregatorDef[] = [
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ keywords: query || 'analyst', location: location || 'United Arab Emirates' }),
       });
-      return (data?.jobs || []).map((j: Record<string, any>) => ({
-        title: str(j.title),
-        location: str(j.location),
-        url: str(j.link),
-        department: '',
-        company: str(j.company),
-      }));
+      return (data?.jobs || []).map((j: Record<string, any>) =>
+        enrichJob({
+          title: str(j.title),
+          location: str(j.location),
+          url: str(j.link),
+          department: '',
+          company: str(j.company),
+          postedAt: isoDate(j.updated),
+          employmentType: normEmployment(j.type),
+          // Jooble's salary is free text ("AED 10,000 - 15,000 per month").
+          salary: parseSalaryText(str(j.salary), { labelled: true }),
+          description: j.snippet ? htmlToText(str(j.snippet)) : undefined,
+        })
+      );
     },
   },
   {
@@ -94,13 +77,17 @@ export const AGGREGATORS: AggregatorDef[] = [
       const data = await fetchJson<any>(`https://www.themuse.com/api/public/jobs?${params}`);
       const q = query.trim().toLowerCase();
       return (data?.results || [])
-        .map((j: Record<string, any>) => ({
-          title: str(j.name),
-          location: (j.locations || []).map((l: any) => str(l.name)).join(', '),
-          url: str(j.refs?.landing_page),
-          department: str(j.categories?.[0]?.name),
-          company: str(j.company?.name),
-        }))
+        .map((j: Record<string, any>) =>
+          enrichJob({
+            title: str(j.name),
+            location: (j.locations || []).map((l: any) => str(l.name)).join(', '),
+            url: str(j.refs?.landing_page),
+            department: str(j.categories?.[0]?.name),
+            company: str(j.company?.name),
+            postedAt: isoDate(j.publication_date),
+            description: j.contents ? htmlToText(str(j.contents)) : undefined,
+          })
+        )
         .filter((j: AtsJob) => !q || j.title.toLowerCase().includes(q));
     },
   },

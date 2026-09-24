@@ -29,6 +29,23 @@ export const STAGE_LABELS: Record<Stage, string> = {
 
 export type Tier = 'dream' | 'target' | 'backup';
 
+export type Workplace = 'remote' | 'hybrid' | 'onsite';
+export type EmploymentType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary';
+
+export const WORKPLACE_LABELS: Record<Workplace, string> = {
+  remote: 'Remote',
+  hybrid: 'Hybrid',
+  onsite: 'On-site',
+};
+
+export const EMPLOYMENT_LABELS: Record<EmploymentType, string> = {
+  'full-time': 'Full-time',
+  'part-time': 'Part-time',
+  contract: 'Contract',
+  internship: 'Internship',
+  temporary: 'Temporary',
+};
+
 export interface Company {
   id: string;
   name: string;
@@ -129,6 +146,23 @@ export interface Application {
   scoreReasons?: string[];
   /** Posting disappeared from the board — likely filled or pulled. */
   closed?: boolean;
+  /** Removed by you. Kept (hidden) so the next refresh doesn't re-import it. */
+  dismissed?: boolean;
+  /** YYYY-MM-DD the board says it was published. */
+  postedAt?: string;
+  employmentType?: EmploymentType;
+  workplace?: Workplace;
+  /** Pay in AED per month, total package, when the posting states it. */
+  salaryMin?: number;
+  salaryMax?: number;
+  /** posted = a board salary field; text = found in the description; manual = you entered it. */
+  salarySource?: 'posted' | 'text' | 'manual';
+  /** The posting's own wording, e.g. "AED 18,000 - 22,000". */
+  salaryText?: string;
+  /** Whether the full job description is saved (in the blob store, key jd:<id>). */
+  hasDescription?: boolean;
+  /** The same role found at other links — another board or an aggregator. */
+  altUrls?: string[];
   createdAt: string;
 }
 
@@ -190,6 +224,10 @@ export interface RefreshRun {
   failed: number;
   /** Left for the next run because the time budget ran out. */
   skipped?: number;
+  /** Already in the pipeline from another source, so linked rather than added. */
+  merged?: number;
+  /** Job descriptions saved. */
+  descriptions?: number;
   errors?: Array<{ company: string; error: string }>;
 }
 

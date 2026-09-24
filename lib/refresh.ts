@@ -1,9 +1,17 @@
 import { randomUUID } from 'crypto';
-import { readDb, updateDb } from './store';
+import { deleteBlobs, readDb, updateDb } from './store';
 import { fetchJobs, isPlatform, matchesKeywords, type AtsJob } from './ats';
 import { mapWithConcurrency, normalizeUrl } from './http';
-import { scoreRole } from './scoring';
-import type { Application, JobSource, RefreshRun } from './types';
+import {
+  PipelineIndex,
+  addAltUrl,
+  applicationBlobKeys,
+  applyJobDetails,
+  newApplication,
+  saveDescriptions,
+  takeDescription,
+} from './importer';
+import type { JobSource, RefreshRun } from './types';
 
 /** How many boards to poll at once. Keeps us polite and within socket limits. */
 const CONCURRENCY = 6;
@@ -13,6 +21,13 @@ const MAX_RUNS = 50;
 
 /** Closed postings are deleted after this long — keeps the pipeline readable. */
 const PRUNE_CLOSED_AFTER_DAYS = 30;
+
+/**
+ * Job descriptions saved per run. New roles always get theirs; roles found
+ * before descriptions were collected are backfilled this many at a time, so
+ * the first run after an upgrade can't blow the time budget on writes.
+ */
+const MAX_DESCRIPTION_WRITES = 400;
 
 export interface RefreshReport {
   runId: string;
@@ -24,6 +39,10 @@ export interface RefreshReport {
   closed: number;
   pruned: number;
   failed: number;
+  /** Same role already in the pipeline from another source — linked, not re-added. */
+  merged: number;
+  /** Job descriptions saved this run. */
+  descriptions: number;
   durationMs: number;
   details: Array<{ company: string; added: number; total: number; error?: string }>;
   ranAt: string;
@@ -38,11 +57,14 @@ interface FetchOutcome {
 }
 
 /**
- * Wall-clock budget for one invocation. Vercel's Hobby tier caps serverless
- * functions at 60s, so we stop fetching in time to still write results
- * instead of being killed mid-run with nothing saved.
+ * Wall-clock budget for one invocation, leaving time to write results before
+ * the platform kills the function. The daily cron gets most of Vercel's
+ * 300-second limit (fluid compute, the default for new projects) so one run
+ * can cover hundreds of boards; a click on "Refresh now" gets less, because
+ * someone is waiting on it.
  */
-const DEFAULT_BUDGET_MS = 45_000;
+export const CRON_BUDGET_MS = 240_000;
+export const MANUAL_BUDGET_MS = 50_000;
 
 function daysBetween(a: string, b: string): number {
   return Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 86_400_000;
@@ -58,7 +80,8 @@ function daysBetween(a: string, b: string): number {
 export async function refreshAllSources(
   opts: { onlyId?: string; trigger?: 'cron' | 'manual'; budgetMs?: number } = {}
 ): Promise<RefreshReport> {
-  const { onlyId, trigger = 'manual', budgetMs = DEFAULT_BUDGET_MS } = opts;
+  const { onlyId, trigger = 'manual' } = opts;
+  const budgetMs = opts.budgetMs ?? (trigger === 'cron' ? CRON_BUDGET_MS : MANUAL_BUDGET_MS);
   const startedAt = new Date().toISOString();
   const startMs = Date.now();
   const deadline = startMs + budgetMs;
@@ -94,7 +117,10 @@ export async function refreshAllSources(
     }
   });
 
-  return updateDb((db) => {
+  const descriptionWrites: Array<[string, string]> = [];
+  const prunedIds: string[] = [];
+
+  const report = await updateDb((db) => {
     const report: RefreshReport = {
       runId: randomUUID(),
       checked: fetched.length - skipped,
@@ -104,20 +130,25 @@ export async function refreshAllSources(
       closed: 0,
       pruned: 0,
       failed: 0,
+      merged: 0,
+      descriptions: 0,
       durationMs: 0,
       details: [],
       ranAt: startedAt,
     };
     const errors: Array<{ company: string; error: string }> = [];
 
-    // Index by normalized URL so the same posting reached via a different
-    // query string doesn't get imported twice.
-    const byUrl = new Map<string, Application>();
-    for (const app of db.applications) {
-      if (app.jobUrl) byUrl.set(normalizeUrl(app.jobUrl), app);
-    }
-
-    const companyByName = new Map(db.companies.map((c) => [c.name.trim().toLowerCase(), c]));
+    // Links are normalised so the same posting reached via a different query
+    // string isn't imported twice; role identity catches the same opening
+    // reached through two different sources.
+    const index = new PipelineIndex(db);
+    // Only takes (and flags) a description while there's room this run, so a
+    // role left over for the backfill isn't wrongly marked as having one.
+    const queueDescription = (take: () => [string, string] | undefined) => {
+      if (descriptionWrites.length >= MAX_DESCRIPTION_WRITES) return;
+      const write = take();
+      if (write) descriptionWrites.push(write);
+    };
 
     for (const { source, jobs, error, skipped: wasSkipped } of fetched) {
       const live = db.jobSources.find((s) => s.id === source.id);
@@ -146,7 +177,7 @@ export async function refreshAllSources(
         const key = normalizeUrl(job.url);
         seen.add(key);
 
-        const existing = byUrl.get(key);
+        const existing = index.findByUrl(job.url);
         if (existing) {
           existing.lastSeenAt = today;
           if (existing.closed) {
@@ -161,42 +192,47 @@ export async function refreshAllSources(
           if (job.location && existing.location !== job.location) {
             existing.location = job.location;
           }
+          applyJobDetails(existing, job);
+          // Only the source that owns a role stores its description, and
+          // only while it's still worth reading.
+          if (existing.sourceId === source.id && !existing.dismissed) {
+            queueDescription(() => takeDescription(existing, job));
+          }
           continue;
         }
 
-        const company = companyByName.get(source.companyName.trim().toLowerCase());
-        const { score, reasons } = scoreRole(
-          {
-            roleTitle: job.title,
-            companyName: source.companyName,
-            location: job.location,
-            division: job.department,
-          },
-          db.profile,
-          company
-        );
+        // Not this link — but maybe this role, found earlier through an
+        // aggregator, a manual add or another of the company's boards.
+        const twin = index.findRole(source.companyName, job.title, job.location);
+        if (twin && twin.sourceId !== source.id) {
+          if (!twin.sourceId && !twin.dismissed) {
+            // A role with no board behind it adopts this one: a direct apply
+            // link, and closure tracking from now on.
+            const previous = twin.jobUrl;
+            twin.jobUrl = job.url;
+            if (previous) addAltUrl(twin, previous);
+            twin.sourceId = source.id;
+            twin.source = source.platform;
+            twin.lastSeenAt = today;
+            applyJobDetails(twin, job);
+            queueDescription(() => takeDescription(twin, job));
+          } else {
+            addAltUrl(twin, job.url);
+          }
+          index.addUrl(twin, job.url);
+          report.merged += 1;
+          continue;
+        }
 
-        const app: Application = {
-          id: randomUUID(),
-          companyName: source.companyName,
-          roleTitle: job.title,
-          jobUrl: job.url,
-          location: job.location,
-          division: job.department || undefined,
-          source: source.platform,
-          sourceId: source.id,
-          stage: 'found',
-          score,
-          scoreReasons: reasons,
-          emiratiAngle: /uae|u\.a\.e|dubai|abu dhabi|sharjah|ajman|fujairah|ras al|umm al|emirat/i.test(
-            job.location || ''
-          ),
-          isNew: true,
-          lastSeenAt: today,
-          createdAt: startedAt,
-        };
+        const app = newApplication(
+          job,
+          { companyName: source.companyName, source: source.platform, sourceId: source.id, nowIso: startedAt },
+          db,
+          index
+        );
+        queueDescription(() => takeDescription(app, job));
         db.applications.unshift(app);
-        byUrl.set(key, app);
+        index.add(app);
         added += 1;
       }
 
@@ -232,9 +268,12 @@ export async function refreshAllSources(
     db.applications = db.applications.filter((a) => {
       if (!a.closed || a.stage !== 'found') return true;
       const last = a.lastSeenAt || a.createdAt;
-      return daysBetween(last, startedAt) < PRUNE_CLOSED_AFTER_DAYS;
+      if (daysBetween(last, startedAt) < PRUNE_CLOSED_AFTER_DAYS) return true;
+      prunedIds.push(a.id);
+      return false;
     });
     report.pruned = before - db.applications.length;
+    report.descriptions = descriptionWrites.length;
 
     report.durationMs = Date.now() - startMs;
 
@@ -250,6 +289,8 @@ export async function refreshAllSources(
       closed: report.closed,
       failed: report.failed,
       skipped: report.skipped || undefined,
+      merged: report.merged || undefined,
+      descriptions: report.descriptions || undefined,
       errors: errors.length ? errors : undefined,
     };
     db.runs.unshift(run);
@@ -257,6 +298,13 @@ export async function refreshAllSources(
 
     return report;
   });
+
+  report.descriptions = await saveDescriptions(descriptionWrites);
+  await deleteBlobs(prunedIds.flatMap(applicationBlobKeys)).catch((e) =>
+    console.error('removing pruned descriptions failed', e)
+  );
+
+  return report;
 }
 
 /** Sources not checked in over a day (or ever). */

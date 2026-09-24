@@ -303,9 +303,22 @@ export async function putBlobs(entries: Array<[string, string]>): Promise<void> 
       sql: 'INSERT INTO blobs (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
       args: [key, value, now],
     }));
-    for (let i = 0; i < statements.length; i += 200) {
-      await c.batch(statements.slice(i, i + 200), 'write');
+    // Batches are capped by size as well as count: job descriptions run to
+    // 20 KB each, and one enormous request is slower and likelier to fail
+    // than a few moderate ones.
+    let batch: typeof statements = [];
+    let bytes = 0;
+    for (const st of statements) {
+      const size = String(st.args[1]).length;
+      if (batch.length && (batch.length >= 200 || bytes + size > 1_000_000)) {
+        await c.batch(batch, 'write');
+        batch = [];
+        bytes = 0;
+      }
+      batch.push(st);
+      bytes += size;
     }
+    if (batch.length) await c.batch(batch, 'write');
     return;
   }
   await mutateBlobFile((blobs) => {
