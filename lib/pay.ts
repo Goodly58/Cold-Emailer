@@ -333,8 +333,10 @@ export function opportunity(app: Application, profile: Profile, company: Company
   const totalMid = pay ? pay.mid + (nafis.eligible && nafis.amount ? nafis.amount : 0) : undefined;
   const parts: Opportunity['parts'] = [];
 
-  const relevance = Math.round(((app.score ?? 30) / 100) * 45);
-  parts.push({ label: 'Fit with your targets', points: relevance });
+  // Once you've run the AI fit check against your CV, it outweighs keyword matching.
+  const fit = app.aiFit !== undefined ? (app.score ?? 30) * 0.4 + app.aiFit * 0.6 : app.score ?? 30;
+  const relevance = Math.round((fit / 100) * 45);
+  parts.push({ label: app.aiFit !== undefined ? 'Fit (checked against your CV)' : 'Fit with your targets', points: relevance });
 
   // Pay: against your minimum if you've set one, otherwise on an absolute
   // scale from the minimum wage to AED 40k. Posted pay below your minimum is

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, list } from '@/lib/client';
 import { eventTiming, formatEventDates, sortEvents, todayLocal } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
+import { nextActions } from '@/lib/next-actions';
 import { followUpsDue } from '@/lib/outreach';
 import { opportunity } from '@/lib/pay';
 import { formatMonthly } from '@/lib/salary';
@@ -14,9 +15,19 @@ import {
   type CareerEvent,
   type Company,
   type Contact,
+  type JobSource,
   type Outreach,
   type Profile,
 } from '@/lib/types';
+
+interface Review {
+  headline: string;
+  working: string[];
+  notWorking: string[];
+  thisWeek: Array<{ action: string; why: string }>;
+  generatedAt: string;
+  usage?: { costUsd: number };
+}
 
 export default function Overview() {
   const [apps, setApps] = useState<Application[]>([]);
@@ -25,6 +36,11 @@ export default function Overview() {
   const [outreach, setOutreach] = useState<Outreach[]>([]);
   const [events, setEvents] = useState<CareerEvent[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [sources, setSources] = useState<JobSource[]>([]);
+  const [aiOn, setAiOn] = useState(false);
+  const [review, setReview] = useState<Review | null>(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewError, setReviewError] = useState('');
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -32,15 +48,22 @@ export default function Overview() {
       // New starter events reach an existing database here too, so the
       // countdown shows even if the Events page has never been opened.
       await api('/api/sync-seed', { method: 'POST' }).catch(() => undefined);
-      const [a, co, ct, o, ev, p] = await Promise.all([
+      const [a, co, ct, o, ev, p, js, ai] = await Promise.all([
         list<Application>('applications'),
         list<Company>('companies'),
         list<Contact>('contacts'),
         list<Outreach>('outreach'),
         list<CareerEvent>('events'),
         api<Profile>('/api/profile'),
+        list<JobSource>('jobSources'),
+        api<{ configured: boolean }>('/api/ai/status').catch(() => ({ configured: false })),
       ]);
       setProfile(p);
+      setSources(js);
+      setAiOn(ai.configured);
+      if (ai.configured) {
+        api<{ review: Review | null }>('/api/ai/review').then((r) => setReview(r.review)).catch(() => undefined);
+      }
       setApps(a);
       setCompanies(co);
       setContacts(ct);
@@ -88,6 +111,32 @@ export default function Overview() {
         .slice(0, 6)
     : [];
 
+  const actions = profile
+    ? nextActions({
+        profile,
+        hasCv: Boolean(profile.cvWords),
+        applications: apps,
+        companies,
+        contacts,
+        outreach,
+        jobSources: sources,
+        events,
+        today,
+      }).slice(0, 6)
+    : [];
+
+  async function runReview() {
+    setReviewing(true);
+    setReviewError('');
+    try {
+      setReview((await api<{ review: Review }>('/api/ai/review', { method: 'POST' })).review);
+    } catch (e) {
+      setReviewError(e instanceof Error ? e.message : 'Review failed');
+    } finally {
+      setReviewing(false);
+    }
+  }
+
   if (!loaded) return <p className="muted">Loading…</p>;
 
   return (
@@ -125,6 +174,31 @@ export default function Overview() {
           <div className="stat-label">Decision-makers</div>
         </div>
       </div>
+
+      {actions.length > 0 && (
+        <>
+          <h2>Next best actions</h2>
+          <div className="card">
+            <table>
+              <tbody>
+                {actions.map((x) => (
+                  <tr key={x.id}>
+                    <td>
+                      <strong>{x.title}</strong>
+                      {x.detail && <div className="muted" style={{ fontSize: 12 }}>{x.detail}</div>}
+                    </td>
+                    <td style={{ width: 110, textAlign: 'right' }}>
+                      <Link className="btn small" href={x.href}>
+                        {x.cta} →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <h2>Due today</h2>
       <div className="card">
@@ -242,6 +316,60 @@ export default function Overview() {
           <Link href="/pipeline">All roles, ranked by pay, fit and freshness →</Link>
         </p>
       </div>
+
+      {aiOn && (
+        <>
+          <h2>Weekly review</h2>
+          <div className="card">
+            {review ? (
+              <div style={{ fontSize: 14 }}>
+                <p>
+                  <strong>{review.headline}</strong>{' '}
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    ({review.generatedAt.slice(0, 10)})
+                  </span>
+                </p>
+                <div className="split mt">
+                  <div>
+                    <strong className="success">Working</strong>
+                    <ul style={{ paddingLeft: 18 }}>
+                      {review.working.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                    <strong className="error">Not working</strong>
+                    <ul style={{ paddingLeft: 18 }}>
+                      {review.notWorking.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>This week</strong>
+                    <ol style={{ paddingLeft: 18 }}>
+                      {review.thisWeek.map((t) => (
+                        <li key={t.action}>
+                          {t.action} <span className="muted">— {t.why}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="muted">
+                A coach&apos;s read of your numbers: reply rates by template, applications per week,
+                where the funnel leaks, and what to change this week. Uses totals only, not your
+                emails.
+              </p>
+            )}
+            <button className="small mt" disabled={reviewing} onClick={runReview}>
+              {reviewing ? 'Reviewing…' : review ? '↻ Refresh review' : '✨ Review my search'}
+            </button>
+            {reviewError && <p className="error">{reviewError}</p>}
+          </div>
+        </>
+      )}
 
       <h2>Upcoming events</h2>
       <div className="card">

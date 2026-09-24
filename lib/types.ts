@@ -165,6 +165,9 @@ export interface Application {
   hasDescription?: boolean;
   /** The same role found at other links — another board or an aggregator. */
   altUrls?: string[];
+  /** AI fit analysis against your CV (0-100), when you've run it. */
+  aiFit?: number;
+  aiVerdict?: 'strong' | 'good' | 'stretch' | 'long-shot';
   createdAt: string;
 }
 

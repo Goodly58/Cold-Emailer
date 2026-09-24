@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
 import { todayLocal } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
+import type { Fit, Prep } from '@/lib/ai-role';
 import { opportunity, type Opportunity } from '@/lib/pay';
 import { formatMonthly } from '@/lib/salary';
 import { scoreBand } from '@/lib/scoring';
@@ -101,20 +102,31 @@ export default function Pipeline() {
   const [shown, setShown] = useState<Record<string, number>>({});
   const [rankedShown, setRankedShown] = useState(RANKED_PAGE);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [aiOn, setAiOn] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setView(remember<View>('pipeline.view', 'ranked'));
     setSort(remember<SortKey>('pipeline.sort', 'opportunity'));
+    // ?open=<id> (from Overview's next actions) pins and expands one role.
+    const open = new URLSearchParams(window.location.search).get('open');
+    if (open) {
+      setFocusId(open);
+      setExpanded(open);
+      setView('ranked');
+    }
     (async () => {
-      const [a, c, p] = await Promise.all([
+      const [a, c, p, ai] = await Promise.all([
         list<Application>('applications'),
         list<Company>('companies'),
         api<Profile>('/api/profile'),
+        api<{ configured: boolean }>('/api/ai/status').catch(() => ({ configured: false })),
       ]);
       setApps(a);
       setCompanies(c);
       setProfile(p);
+      setAiOn(ai.configured);
       if (p.minMonthlySalary) setMinPay(String(p.minMonthlySalary));
       setLoaded(true);
     })();
@@ -178,8 +190,10 @@ export default function Pipeline() {
           return r.opp.score;
       }
     };
-    return [...open].sort((a, b) => key(b) - key(a) || b.opp.score - a.opp.score);
-  }, [filtered, sort, openOnly]);
+    const sorted = [...open].sort((a, b) => key(b) - key(a) || b.opp.score - a.opp.score);
+    const pinned = focusId ? rows.find((r) => r.app.id === focusId) : undefined;
+    return pinned ? [pinned, ...sorted.filter((r) => r.app.id !== focusId)] : sorted;
+  }, [filtered, sort, openOnly, focusId, rows]);
 
   const newCount = apps.filter((a) => a.isNew && !a.dismissed).length;
 
@@ -336,6 +350,7 @@ export default function Pipeline() {
                   onStage={(s) => setStage(row.app, s)}
                   onDismiss={() => dismiss(row.app)}
                   onUpdate={replace}
+                  aiOn={aiOn}
                 />
               ))}
             </tbody>
@@ -459,6 +474,7 @@ function RankedRow({
   onStage,
   onDismiss,
   onUpdate,
+  aiOn,
 }: {
   row: Row;
   open: boolean;
@@ -466,6 +482,7 @@ function RankedRow({
   onStage: (s: Stage) => void;
   onDismiss: () => void;
   onUpdate: (a: Application) => void;
+  aiOn: boolean;
 }) {
   const { app: a, company, opp } = row;
   const stated = opp.pay && opp.pay.basis !== 'estimate';
@@ -498,6 +515,11 @@ function RankedRow({
               <span className="badge badge-soon">{EMPLOYMENT_LABELS[a.employmentType]}</span>
             )}
             {opp.belowMinimum && <span className="badge badge-backup">below your minimum</span>}
+            {a.aiFit !== undefined && (
+              <span className={`badge ${a.aiFit >= 70 ? 'badge-uae' : a.aiFit >= 50 ? 'badge-target' : 'badge-backup'}`} title="AI fit against your CV">
+                CV fit {a.aiFit}
+              </span>
+            )}
           </div>
         </td>
         <td style={{ whiteSpace: 'nowrap' }} title={opp.pay?.notes.join('\n')}>
@@ -548,6 +570,7 @@ function RankedRow({
         <tr>
           <td colSpan={7} style={{ background: 'var(--panel-2)' }}>
             <RoleDetails row={row} onUpdate={onUpdate} />
+            <RoleAi app={row.app} aiOn={aiOn} onUpdate={onUpdate} />
           </td>
         </tr>
       )}
@@ -808,5 +831,189 @@ function AddRoles({ onAdded }: { onAdded: (apps: Application[]) => void }) {
         </div>
       )}
     </details>
+  );
+}
+
+/* ------------------------------------------------------------- AI panel */
+
+type Saved<T> = T & { generatedAt: string; usage?: { costUsd: number }; usedCv?: boolean; usedJd?: boolean; searches?: number };
+
+function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      className="small"
+      onClick={async () => {
+        await navigator.clipboard.writeText(text);
+        setDone(true);
+        setTimeout(() => setDone(false), 1500);
+      }}
+    >
+      {done ? 'Copied ✓' : label}
+    </button>
+  );
+}
+
+function RoleAi({ app, aiOn, onUpdate }: { app: Application; aiOn: boolean; onUpdate: (a: Application) => void }) {
+  const [fit, setFit] = useState<Saved<Fit> | null>(null);
+  const [prep, setPrep] = useState<Saved<Prep> | null>(null);
+  const [busy, setBusy] = useState<'' | 'fit' | 'prep'>('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api<{ result: Saved<Fit> | null }>(`/api/ai/role?applicationId=${app.id}&kind=fit`).then((r) => setFit(r.result)).catch(() => undefined);
+    api<{ result: Saved<Prep> | null }>(`/api/ai/role?applicationId=${app.id}&kind=prep`).then((r) => setPrep(r.result)).catch(() => undefined);
+  }, [app.id]);
+
+  async function run(kind: 'fit' | 'prep') {
+    setBusy(kind);
+    setError('');
+    try {
+      const r = await api<{ result: Saved<Fit> & Saved<Prep>; application?: Application }>('/api/ai/role', {
+        method: 'POST',
+        body: JSON.stringify({ applicationId: app.id, kind }),
+      });
+      if (kind === 'fit') setFit(r.result);
+      else setPrep(r.result);
+      if (r.application) onUpdate(r.application);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'AI request failed');
+    } finally {
+      setBusy('');
+    }
+  }
+
+  const meta = (r: Saved<unknown>) =>
+    `${r.generatedAt.slice(0, 10)}${r.usage ? ` · ~$${r.usage.costUsd.toFixed(3)}` : ''}${r.usedJd === false ? ' · no job description, so rough' : ''}${r.usedCv === false ? ' · no CV on file' : ''}`;
+
+  return (
+    <div className="mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+      <div className="flex">
+        <strong>AI help for this role</strong>
+        {aiOn ? (
+          <>
+            <button className="small" disabled={Boolean(busy)} onClick={() => run('fit')}>
+              {busy === 'fit' ? 'Analysing… (up to a minute)' : fit ? '↻ Re-check fit' : '✨ Check fit & tailor CV'}
+            </button>
+            <button className="small" disabled={Boolean(busy)} onClick={() => run('prep')}>
+              {busy === 'prep' ? 'Preparing… (1–2 minutes)' : prep ? '↻ Rebuild prep kit' : '✨ Interview prep kit'}
+            </button>
+          </>
+        ) : (
+          <span className="muted" style={{ fontSize: 12 }}>
+            Off. <Link href="/profile">Add an Anthropic API key</Link> to get fit analysis, tailored bullets, a cover letter and interview prep.
+          </span>
+        )}
+      </div>
+      {error && <p className="error">{error}</p>}
+
+      {fit && (
+        <div className="mt" style={{ fontSize: 13 }}>
+          <div className="flex">
+            <span className={`badge ${fit.fitScore >= 70 ? 'badge-uae' : fit.fitScore >= 50 ? 'badge-target' : 'badge-backup'}`}>
+              Fit {fit.fitScore} · {fit.verdict}
+            </span>
+            <span className="muted" style={{ fontSize: 11 }}>{meta(fit)}</span>
+          </div>
+          <p className="mt">{fit.summary}</p>
+          <p><strong>How to apply:</strong> {fit.applyAdvice}</p>
+          <div className="split mt">
+            <div>
+              <strong>Where you match</strong>
+              <ul style={{ paddingLeft: 18 }}>
+                {fit.matches.map((m) => (
+                  <li key={m.requirement}>
+                    {m.requirement} <span className="muted">— {m.evidence}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <strong>Gaps, and how to handle them</strong>
+              <ul style={{ paddingLeft: 18 }}>
+                {fit.gaps.map((g) => (
+                  <li key={g.requirement}>
+                    {g.requirement} <span className="muted">— {g.howToAddress}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="flex mt">
+            <strong>CV bullets tailored to this role</strong>
+            <CopyButton text={fit.tailoredBullets.map((b) => `• ${b}`).join('\n')} />
+          </div>
+          <ul style={{ paddingLeft: 18 }}>
+            {fit.tailoredBullets.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+          </ul>
+          <p className="muted" style={{ fontSize: 12 }}>
+            Rewritten from your CV only. Fill any [placeholders] with real numbers, and drop a bullet
+            rather than claim something you didn&apos;t do.
+          </p>
+          <strong>Keywords the screening software will look for</strong>
+          <div className="chips">
+            {fit.keywords.map((k) => (
+              <span className="chip" key={k}>
+                {k}
+              </span>
+            ))}
+          </div>
+          <details className="mt">
+            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Cover letter</summary>
+            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', marginTop: 8 }}>{fit.coverLetter}</pre>
+            <CopyButton text={fit.coverLetter} />
+          </details>
+        </div>
+      )}
+
+      {prep && (
+        <details className="mt" open={app.stage === 'interview'} style={{ fontSize: 13 }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 600 }}>
+            Interview prep kit <span className="muted" style={{ fontWeight: 400, fontSize: 11 }}>{meta(prep)}</span>
+          </summary>
+          <p className="mt">{prep.companyBrief}</p>
+          {prep.recentNews.length > 0 && (
+            <ul style={{ paddingLeft: 18 }}>
+              {prep.recentNews.map((n) => (
+                <li key={n.url + n.fact}>
+                  {n.fact}{' '}
+                  <a href={n.url} target="_blank" rel="noreferrer">
+                    source
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          <strong>Questions to expect</strong>
+          {prep.likelyQuestions.map((q) => (
+            <details key={q.question} style={{ margin: '6px 0' }}>
+              <summary style={{ cursor: 'pointer' }}>{q.question}</summary>
+              <p className="muted" style={{ margin: '4px 0' }}>Testing: {q.why}</p>
+              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0 }}>{q.answerOutline}</pre>
+            </details>
+          ))}
+          <strong>Questions to ask them</strong>
+          <ul style={{ paddingLeft: 18 }}>
+            {prep.questionsToAsk.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+          <p>
+            <strong>Being a UAE National:</strong> {prep.emiratisationAngle}
+          </p>
+          <p>
+            <strong>Salary:</strong> {prep.salaryTalk}
+          </p>
+          <strong>The day before</strong>
+          <ul className="checklist">
+            {prep.checklist.map((c) => (
+              <li key={c}>☐ {c}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
   );
 }
