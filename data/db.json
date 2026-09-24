@@ -14825,7 +14825,7 @@
       "name": "Emiratisation angle — HR / TA lead",
       "category": "emiratisation",
       "subject": "Emirati candidate — {{role}} ({{company}})",
-      "body": "Dear {{firstName}},\n\nI'm an Emirati professional ({{headline}}) exploring {{role}} opportunities at {{company}}.\n\nBeyond the fit for the role itself, I understand hiring UAE Nationals is a priority — my hire counts toward your MoHRE Emiratisation targets, and Nafis support (salary top-up and employer pension contribution) applies.\n\n{{hook}}\n\nWould you be open to a short call this week, or could you point me to the right hiring manager?\n\nWith thanks,\n{{myName}}\n{{linkedin}} | {{phone}}"
+      "body": "Dear {{firstName}},\n\nI'm an Emirati professional ({{headline}}) exploring {{role}} opportunities at {{company}}.\n\nBeyond the fit for the role itself, I understand hiring UAE Nationals is a priority — my hire counts toward your MoHRE Emiratisation targets, and I'm registered with Nafis.\n\n{{hook}}\n\nWould you be open to a short call this week, or could you point me to the right hiring manager?\n\nWith thanks,\n{{myName}}\n{{linkedin}} | {{phone}}"
     },
     {
       "id": "t3",

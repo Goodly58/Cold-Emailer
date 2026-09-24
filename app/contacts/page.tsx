@@ -298,7 +298,7 @@ function ContactRow({
         <div className="flex">
           <Link
             className="btn small primary"
-            href={`/outreach?to=${encodeURIComponent(contact.name)}&email=${encodeURIComponent(
+            href={`/outreach?contactId=${encodeURIComponent(contact.id)}&to=${encodeURIComponent(contact.name)}&email=${encodeURIComponent(
               contact.email || ''
             )}&company=${encodeURIComponent(contact.companyName)}&hook=${encodeURIComponent(
               contact.hook || ''

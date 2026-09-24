@@ -186,6 +186,19 @@ export interface Outreach {
   status: OutreachStatus;
   sentAt?: string;
   followUps: number;
+  /** Who it went to and what it's about, so replies update the contact and the role. */
+  contactId?: string;
+  applicationId?: string;
+  role?: string;
+  /** The template it started from, for reply rates per template. */
+  templateId?: string;
+  /** YYYY-MM-DD the next follow-up is due; cleared when the sequence ends or they reply. */
+  nextFollowUpAt?: string;
+  lastFollowUpAt?: string;
+  repliedAt?: string;
+  language?: 'en' | 'ar';
+  /** Written or rewritten with AI. */
+  aiAssisted?: boolean;
   createdAt: string;
 }
 

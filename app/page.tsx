@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, list } from '@/lib/client';
 import { eventTiming, formatEventDates, sortEvents, todayLocal } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
+import { followUpsDue } from '@/lib/outreach';
 import { opportunity } from '@/lib/pay';
 import { formatMonthly } from '@/lib/salary';
 import {
@@ -59,6 +60,7 @@ export default function Overview() {
   const today = todayLocal();
   const due = apps.filter((a) => a.nextActionAt && a.nextActionAt <= today && !['offer', 'rejected'].includes(a.stage));
   const queuedEmails = outreach.filter((o) => ['draft', 'ready'].includes(o.status));
+  const followUps = followUpsDue(outreach, today);
 
   const liveEvents = sortEvents(events.filter((e) => !e.hidden && e.status !== 'skipped'))
     .map((e) => ({ event: e, timing: eventTiming(e, today) }))
@@ -121,7 +123,7 @@ export default function Overview() {
 
       <h2>Due today</h2>
       <div className="card">
-        {due.length === 0 && queuedEmails.length === 0 && unregistered.length === 0 ? (
+        {due.length === 0 && queuedEmails.length === 0 && unregistered.length === 0 && followUps.length === 0 ? (
           <p className="muted">
             Nothing due. Add roles in the <Link href="/pipeline">Pipeline</Link> or queue emails in{' '}
             <Link href="/outreach">Outreach</Link>.
@@ -145,6 +147,12 @@ export default function Overview() {
               <li key={a.id}>
                 <strong>{a.roleTitle}</strong> at {a.companyName} — {STAGE_LABELS[a.stage]}, next action{' '}
                 {a.nextActionAt}
+              </li>
+            ))}
+            {followUps.map((o) => (
+              <li key={`fu-${o.id}`}>
+                Follow up with <strong>{o.toName}</strong> ({o.companyName}) —{' '}
+                <Link href="/outreach">write it</Link>
               </li>
             ))}
             {queuedEmails.map((o) => (
