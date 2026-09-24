@@ -30,6 +30,12 @@ export interface InterestDef {
   context: string[];
   /** Distinct description phrases needed before a role "mentions" the field. */
   mentionThreshold: number;
+  /**
+   * Title words too generic to count in a description: "tax-free salary,
+   * medical insurance, paid by bank transfer" is benefits boilerplate, not a
+   * finance job, and "an AI-powered company" says nothing about the role.
+   */
+  descriptionStop: string[];
   /** Fallback for companies without curated tags: matched against the sector label. */
   sector: string[];
   /** Sector phrases that veto the fallback, e.g. "money exchange" isn't investing. */
@@ -80,6 +86,7 @@ export const INTERESTS: Record<InterestId, InterestDef> = {
       'capital raising', 'secondaries', 'bloomberg terminal', 'pitch books', 'pitchbook',
     ],
     mentionThreshold: 2,
+    descriptionStop: ['investment', 'investments', 'investing', 'portfolio', 'wealth', 'venture', 'vc', 'fund', 'funds', 'trading', 'trader', 'dealing', 'equities', 'securities', 'valuation', 'valuations', 'quant', 'quantitative', 'sovereign', 'alternatives', 'acquisitions', 'mergers', 'brokerage'],
     sector: [
       'sovereign', 'investment', 'investments', 'asset management', 'wealth', 'private equity', 'venture', 'hedge fund',
       'family office', 'brokerage', 'securities', 'stock exchange', 'capital markets', 'digital asset exchange',
@@ -127,6 +134,7 @@ export const INTERESTS: Record<InterestId, InterestDef> = {
       'dfsa', 'fsra', 'erp finance', 'sap fico', 'month end close', 'underwriting', 'acca', 'cpa', 'cma',
     ],
     mentionThreshold: 3,
+    descriptionStop: ['finance', 'financial', 'bank', 'banking', 'banker', 'credit', 'lending', 'loan', 'loans', 'mortgage', 'mortgages', 'payment', 'payments', 'insurance', 'claims', 'tax', 'taxation', 'vat', 'audit', 'auditor', 'accounting', 'accountant', 'budget', 'budgeting', 'costing', 'collections', 'cards', 'credit card', 'fraud', 'sanctions', 'economist', 'remittance', 'cfo', 'teller', 'ifrs'],
     sector: [
       'bank', 'banking', 'banks', 'fintech', 'payment', 'payments', 'insurance', 'takaful', 'reinsurance',
       'finance', 'financial', 'financing', 'credit', 'lending', 'money exchange', 'remittance', 'central bank',
@@ -176,6 +184,7 @@ export const INTERESTS: Record<InterestId, InterestDef> = {
       'nesa', 'owasp', 'identity and access management', 'security operations', 'grc',
     ],
     mentionThreshold: 2,
+    descriptionStop: ['cyber', 'cybersecurity', 'cyber security', 'information security', 'it security', 'data protection officer', 'security awareness', 'firewall', 'vulnerability'],
     sector: [
       'cyber', 'cybersecurity', 'cyber security', 'information security', 'infosec', 'managed security', 'mssp',
       'security software',
@@ -208,6 +217,7 @@ export const INTERESTS: Record<InterestId, InterestDef> = {
       'vector database', 'langchain', 'openai', 'ai agents', 'predictive models', 'data science',
     ],
     mentionThreshold: 2,
+    descriptionStop: ['ai', 'artificial intelligence', 'ml', 'chatbot', 'neural', 'agentic', 'genai', 'gen ai', 'generative ai'],
     sector: [
       'ai', 'artificial intelligence', 'machine learning', 'data science', 'generative', 'genai', 'ai infrastructure',
       'ai research', 'computer vision', 'conversational ai',
@@ -220,7 +230,17 @@ export const INTERESTS: Record<InterestId, InterestDef> = {
 
 /** Lowercase, punctuation to spaces (keeping & + #), padded for whole-word search. */
 export function normalizeForMatch(text: string | undefined | null): string {
-  return ` ${(text || '').toLowerCase().replace(/[^a-z0-9&+#]+/g, ' ').replace(/\s+/g, ' ').trim()} `;
+  const t = (text || '')
+    .toLowerCase()
+    .replace(/\ba\.i\.?(?![a-z])/g, 'ai')
+    // "Finance&Admin", "Data&AI", "Cyber+Cloud" are two words; "m&a", "fp&a", "c++" are one.
+    .replace(/([a-z0-9]{2,})([&+])(?=[a-z0-9]{2,})/g, '$1 $2 ')
+    .replace(/[^a-z0-9&+#]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    // "M & A", "FP & A" written with spaces.
+    .replace(/(^| )([a-z]{1,2}) & ([a-z])(?= |$)/g, '$1$2&$3');
+  return ` ${t} `;
 }
 
 export function hasPhrase(normalized: string, phrase: string): boolean {
@@ -229,6 +249,17 @@ export function hasPhrase(normalized: string, phrase: string): boolean {
 
 function hits(normalized: string, phrases: string[]): string[] {
   return phrases.filter((p) => hasPhrase(normalized, p));
+}
+
+function withoutPhrases(normalized: string, phrases: string[]): string {
+  let out = normalized;
+  for (const p of phrases) out = out.split(` ${p} `).join(' | ');
+  return out;
+}
+
+/** "generative ai" and "ai" from one mention are one hit, not two. */
+function withoutSubPhrases(found: string[]): string[] {
+  return found.filter((p) => !found.some((q) => q !== p && ` ${q} `.includes(` ${p} `)));
 }
 
 export interface InterestMatch {
@@ -259,9 +290,12 @@ export function matchRoleInterests(role: { title: string; division?: string; des
       continue;
     }
     if (vetoed) continue;
-    const inDept = hits(dept, def.title);
-    const inDesc = desc ? hits(desc, [...def.title, ...def.context]) : [];
-    const distinct = [...new Set([...inDept, ...inDesc])];
+    // Excluded phrases are blanked out first, so "a wealth of experience" or
+    // "general trading company" in an ad can't count towards the field.
+    const inDept = hits(withoutPhrases(dept, def.exclude), def.title);
+    const descPhrases = [...def.title.filter((p) => !def.descriptionStop.includes(p)), ...def.context];
+    const inDesc = desc ? hits(withoutPhrases(desc, def.exclude), descPhrases) : [];
+    const distinct = withoutSubPhrases([...new Set([...inDept, ...inDesc])]);
     if (inDept.length || distinct.length >= def.mentionThreshold) {
       out.push({ id: def.id, via: 'mention', terms: distinct.slice(0, 6) });
     }
@@ -280,6 +314,17 @@ export function companyInterests(company: Pick<Company, 'sector'> & { interests?
     const def = INTERESTS[id];
     return hits(sector, def.sector).length > 0 && hits(sector, def.sectorExclude).length === 0;
   });
+}
+
+/**
+ * An event's fields: the ones set on it, otherwise whatever its name and
+ * description say ("Dubai FinTech Summit" is finance), so events you add
+ * yourself show up under a field without extra work.
+ */
+export function eventInterests(event: { name: string; description?: string; interests?: InterestId[] }): InterestId[] {
+  if (event.interests) return event.interests;
+  const found = matchRoleInterests({ title: event.name, description: event.description }).map((m) => m.id);
+  return INTEREST_IDS.filter((id) => found.includes(id));
 }
 
 export function isInterestId(v: unknown): v is InterestId {

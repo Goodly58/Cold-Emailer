@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { aiResearch, type AiUsage } from './ai';
-import { eventTiming } from './events';
+import { eventNameKey, eventTiming } from './events';
 import { INTERESTS, INTEREST_IDS, isInterestId, type InterestId } from './interests';
 import { getBlob, putBlob, readDb, updateDb } from './store';
 import type { CareerEvent, EventKind } from './types';
@@ -46,10 +46,7 @@ function slug(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
 }
 
-/** Name without the year and punctuation, for spotting the same event twice. */
-function nameKey(name: string): string {
-  return name.toLowerCase().replace(/\b(19|20)\d{2}\b/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
-}
+const nameKey = eventNameKey;
 
 export interface MergeResult {
   added: CareerEvent[];

@@ -443,6 +443,37 @@ test('seed company names are unique', async () => {
   assert.equal(new Set(names).size, names.length, 'duplicate company names');
 });
 
+test('no two seed companies share a name key', async () => {
+  // Seed sync matches companies by name variant, so a shared key would make
+  // one starter company silently skip another.
+  const { nameKeys } = await import('../lib/names');
+  const db = await import('../data/db.json');
+  const companies = (db as unknown as { companies: Array<{ name: string }> }).companies;
+  const seen = new Map<string, string>();
+  const clashes: string[] = [];
+  for (const c of companies) {
+    for (const k of nameKeys(c.name)) {
+      const prior = seen.get(k);
+      if (prior && prior !== c.name) clashes.push(`${k}: ${prior} / ${c.name}`);
+      else seen.set(k, c.name);
+    }
+  }
+  assert.deepEqual(clashes, []);
+});
+
+test('seed field tags and event tags use known field ids', async () => {
+  const { isInterestId } = await import('../lib/interests');
+  const db = (await import('../data/db.json')) as unknown as {
+    companies: Array<{ name: string; interests?: string[] }>;
+    events: Array<{ id: string; interests?: string[]; startDate?: string; endDate?: string }>;
+  };
+  for (const c of db.companies) for (const i of c.interests ?? []) assert.ok(isInterestId(i), `${c.name}: ${i}`);
+  for (const e of db.events) {
+    for (const i of e.interests ?? []) assert.ok(isInterestId(i), `${e.id}: ${i}`);
+    if (e.startDate && e.endDate) assert.ok(e.endDate >= e.startDate, `${e.id} ends before it starts`);
+  }
+});
+
 /* ------------------------------------------------------------ pagination */
 
 test('a paginated board is walked to the end', async (t) => {

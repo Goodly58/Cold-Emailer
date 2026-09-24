@@ -180,3 +180,72 @@ test('regression titles from the stress test', async () => {
   }
   assert.deepEqual(failures, []);
 });
+
+/* ------------------------------------------------ review regressions */
+
+test('benefits boilerplate and generic words in a description are not a field', () => {
+  const none = (title: string, description: string) =>
+    assert.deepEqual(matchRoleInterests({ title, description }), [], `${title}: ${description}`);
+  none('Primary Teacher', 'Benefits: tax free salary, medical insurance, annual flights. Salary paid monthly by bank transfer.');
+  none('Sales Manager', 'You bring a wealth of experience managing a portfolio of key accounts.');
+  none('Marketing Executive', 'Join a general trading company with a joint venture in Jebel Ali.');
+  // Overlapping phrases are one mention, not two.
+  none('Account Executive', 'Sell to a fast-growing generative AI startup.');
+  none('Receptionist', 'Complete the annual cyber security training.');
+  none('Office Manager', 'We are venture capital backed and growing.');
+});
+
+test('glued and dotted spellings still match', () => {
+  assert.deepEqual(titleTags('Finance&Admin Manager'), ['finance']);
+  assert.deepEqual(titleTags('Data&AI Lead'), ['ai']);
+  assert.deepEqual(titleTags('Cyber+Cloud Engineer'), ['cyber']);
+  assert.deepEqual(titleTags('M & A Associate'), ['investing']);
+  assert.deepEqual(titleTags('A.I. Engineer'), ['ai']);
+  assert.deepEqual(titleTags('FP&A Analyst'), ['finance']);
+  assert.equal(normalizeForMatch('R&D Engineer'), ' r&d engineer ');
+});
+
+test('a real field description still produces a mention', () => {
+  const r = matchRoleInterests({
+    title: 'Operations Analyst',
+    description: 'Own month end close, bank reconciliations and IFRS financial statements.',
+  });
+  assert.deepEqual(r.map((m) => [m.id, m.via]), [['finance', 'mention']]);
+});
+
+test('a department mention survives a refresh from a board that sends no description', async () => {
+  const { newApplication, applyJobDetails, PipelineIndex } = await import('../lib/importer');
+  const { roleInterestTags } = await import('../lib/scoring');
+  const db = {
+    profile: { ...base, interests: ['finance' as const] },
+    companies: [], contacts: [], outreach: [], templates: [], jobSources: [], runs: [], events: [], applications: [],
+  };
+  const job = { title: 'Data Scientist', department: 'Treasury', location: 'Abu Dhabi', url: 'https://x.co/1' };
+  const app = newApplication(job, { companyName: 'X', source: 'workday', nowIso: '2026-09-24T00:00:00Z' }, db, new PipelineIndex(db));
+  assert.deepEqual(app.interests, ['ai']);
+  assert.deepEqual(app.interestMentions, ['finance'], 'the Treasury department is a finance mention');
+  applyJobDetails(app, job);
+  assert.deepEqual(roleInterestTags(app).mentions, ['finance'], 'still there after the next refresh');
+});
+
+test('the seed sync skips a starter event already added under another id, and matches company name variants', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'sync-variants-'));
+  const file = path.join(dir, 'db.json');
+  await fs.writeFile(
+    file,
+    JSON.stringify({
+      profile: base,
+      companies: [{ id: 'mine', name: 'Darktrace', sector: 'Cyber', location: 'Dubai', tier: 'dream', emiratisation: false, createdAt: '' }],
+      contacts: [], applications: [], outreach: [], templates: [], jobSources: [], runs: [],
+      events: [{ id: 'ev-ai-gisec-global-2027', name: 'GISEC Global 2027', kind: 'industry-expo', venue: '', city: 'Dubai', status: 'registered', createdAt: '' }],
+    })
+  );
+  process.env.DB_PATH = file;
+  const seedSync = await import('../app/api/sync-seed/route');
+  await seedSync.POST();
+  const companySync = await import('../app/api/sync-companies/route');
+  await companySync.POST();
+  const after = JSON.parse(await fs.readFile(file, 'utf8'));
+  assert.equal(after.events.filter((e: { name: string }) => /gisec/i.test(e.name)).length, 1, 'GISEC once');
+  assert.equal(after.companies.filter((c: { name: string }) => /darktrace/i.test(c.name)).length, 1, 'Darktrace once');
+});

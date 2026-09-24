@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { updateDb } from '@/lib/store';
 import seedJson from '@/data/db.json';
+import { findByName, indexByName, nameKeys } from '@/lib/names';
 import type { Company, Db } from '@/lib/types';
 
 // Merges the repo's starter company list into the live database, adding only
@@ -11,13 +12,15 @@ export async function POST() {
   const seedCompanies = (seedJson as unknown as Db).companies;
 
   const result = await updateDb((db) => {
-    const byName = new Map(db.companies.map((c) => [c.name.trim().toLowerCase(), c]));
+    // Name variants count as the same company: "Darktrace" you added yourself
+    // and the starter list's "Darktrace (Dubai)" aren't two employers.
+    const index = indexByName(db.companies);
 
     // Backfill fields added to the starter list since this database was seeded,
     // without touching anything the user has already filled in themselves.
     let enriched = 0;
     for (const seed of seedCompanies) {
-      const live = byName.get(seed.name.trim().toLowerCase());
+      const live = findByName(index, seed.name);
       if (!live) continue;
       let touched = false;
       if (!live.domain && seed.domain) {
@@ -44,8 +47,13 @@ export async function POST() {
       if (touched) enriched += 1;
     }
 
-    const missing = seedCompanies.filter((c) => !byName.has(c.name.trim().toLowerCase()));
-    const fresh: Company[] = missing.map((c) => ({ ...c, id: randomUUID() }));
+    const fresh: Company[] = [];
+    for (const seed of seedCompanies) {
+      if (findByName(index, seed.name)) continue;
+      const row = { ...seed, id: randomUUID() };
+      fresh.push(row);
+      for (const key of nameKeys(row.name)) if (!index.has(key)) index.set(key, row);
+    }
     db.companies.push(...fresh);
     return { added: fresh.length, enriched };
   });

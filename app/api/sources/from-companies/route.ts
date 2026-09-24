@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { updateDb } from '@/lib/store';
 import { getPlatform, validSlug } from '@/lib/ats';
+import { companyInterests, isInterestId, type InterestId } from '@/lib/interests';
 import type { JobSource } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -11,7 +12,11 @@ export const runtime = 'nodejs';
  * seeded data — no network probing needed. Run this before the discovery
  * sweep so the sweep only has to work on the unknowns.
  */
-export async function POST() {
+export async function POST(req: NextRequest) {
+  // Optionally only companies in some fields, matching the Sources page's field chips.
+  const body = await req.json().catch(() => ({}));
+  const fields: InterestId[] = Array.isArray(body?.fields) ? body.fields.filter(isInterestId) : [];
+
   const result = await updateDb((db) => {
     const taken = new Set(
       db.jobSources.map((s) => `${s.platform}:${s.slug}`.toLowerCase())
@@ -23,6 +28,7 @@ export async function POST() {
 
     for (const company of db.companies) {
       if (!company.ats || !company.atsSlug) continue;
+      if (fields.length && !fields.some((f) => companyInterests(company).includes(f))) continue;
       if (byCompany.has(company.name.trim().toLowerCase())) continue;
 
       const platform = company.ats.toLowerCase();

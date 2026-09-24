@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
 import { divisionsForSector, researchLinks } from '@/lib/email-finder';
 import { INTERESTS, INTEREST_IDS, companyInterests, matchRoleInterests, type InterestId } from '@/lib/interests';
+import { findByName, indexByName } from '@/lib/names';
 import {
   CONTACT_KINDS,
   CONTACT_KIND_LABELS,
@@ -76,8 +77,10 @@ export default function Contacts() {
   }
 
   /** A contact is in a field if their company is, or their own role is (a bank's head of cyber). */
+  // Name variants ("FAB", "First Abu Dhabi Bank (FAB)") resolve to one company.
+  const companyIndex = useMemo(() => indexByName(companies), [companies]);
   const fieldsOf = (c: Contact): InterestId[] => {
-    const co = companyFor(c.companyName);
+    const co = findByName(companyIndex, c.companyName);
     const own = matchRoleInterests({ title: c.role || '', division: c.division }).filter((m) => m.via === 'title').map((m) => m.id);
     return [...new Set([...(co ? companyInterests(co) : []), ...own])];
   };

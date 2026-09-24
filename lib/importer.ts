@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { AtsJob } from './ats-registry';
 import { normalizeUrl } from './http';
-import { matchRoleInterests } from './interests';
+import { INTEREST_IDS, matchRoleInterests } from './interests';
 import { canonical, findByName, indexByName } from './names';
 import { scoreRole } from './scoring';
 import { putBlobs, updateDb } from './store';
@@ -120,13 +120,19 @@ export function applyJobDetails(app: Application, job: AtsJob): boolean {
   const tags = matches.filter((m) => m.via === 'title').map((m) => m.id);
   const mentions = matches.filter((m) => m.via === 'mention').map((m) => m.id);
   const same = (a: string[] | undefined, b: string[]) => (a ?? []).join() === b.join();
-  // Without a description this run, keep mentions found from an earlier one.
   if (!same(app.interests, tags) && (tags.length || app.interests)) {
     app.interests = tags;
     changed = true;
   }
-  if (job.description !== undefined && !same(app.interestMentions, mentions) && (mentions.length || app.interestMentions)) {
-    app.interestMentions = mentions;
+  // With a description, mentions are worked out afresh. Without one (some
+  // boards never send it), department mentions are added to any found earlier
+  // from a description, never dropped.
+  const nextMentions =
+    job.description !== undefined
+      ? mentions
+      : INTEREST_IDS.filter((id) => mentions.includes(id) || (app.interestMentions ?? []).includes(id));
+  if (!same(app.interestMentions, nextMentions) && (nextMentions.length || app.interestMentions)) {
+    app.interestMentions = nextMentions;
     changed = true;
   }
   set('employmentType', job.employmentType);

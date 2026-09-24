@@ -11,6 +11,7 @@ import {
   wordCount,
   type CvFields,
 } from '@/lib/cv';
+import { rescoreAll } from '@/lib/rescore';
 import type { Profile } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -129,6 +130,8 @@ export async function POST(req: NextRequest) {
     db.profile.cvWords = wordCount(text);
     db.profile.cvSource = pdf ? 'pdf' : 'text';
     const filled = fields ? applyFields(db.profile, fields) : [];
+    // Target titles from the CV change how roles rank, like a profile edit does.
+    if (filled.includes('target titles')) rescoreAll(db);
     return { profile: db.profile, filled };
   });
 

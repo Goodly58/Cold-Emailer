@@ -295,7 +295,7 @@ export default function Sources() {
               try {
                 const r = await api<{ added: number; unsupported: string[] }>(
                   '/api/sources/from-companies',
-                  { method: 'POST' }
+                  { method: 'POST', body: JSON.stringify({ fields: sweepFields }) }
                 );
                 setNeedsSetup(r.unsupported);
                 setSweepLog([`✓ Registered ${r.added} sources from known ATS data`]);

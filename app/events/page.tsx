@@ -13,7 +13,7 @@ import {
   todayLocal,
 } from '@/lib/events';
 import { findByName, indexByName } from '@/lib/names';
-import { INTERESTS, INTEREST_IDS, type InterestId } from '@/lib/interests';
+import { INTERESTS, INTEREST_IDS, eventInterests, type InterestId } from '@/lib/interests';
 import {
   CONTACT_KINDS,
   CONTACT_KIND_LABELS,
@@ -146,7 +146,7 @@ export default function Events() {
     (e) =>
       (showHidden || !e.hidden) &&
       // Fields narrow to events tagged with them; career fairs for nationals stay, since every sector recruits there.
-      (!fieldFilter.length || e.kind === 'emirati-fair' || fieldFilter.some((f) => (e.interests || []).includes(f)))
+      (!fieldFilter.length || e.kind === 'emirati-fair' || fieldFilter.some((f) => eventInterests(e).includes(f)))
   );
   const withTiming = visible.map((e) => ({ event: e, timing: eventTiming(e, today) }));
   const current = sortEvents(
@@ -208,7 +208,7 @@ export default function Events() {
         <span className="muted">Fields:</span>
         {INTEREST_IDS.map((id) => {
           const on = fieldFilter.includes(id);
-          const n = events.filter((e) => !e.hidden && (e.interests || []).includes(id)).length;
+          const n = events.filter((e) => !e.hidden && eventInterests(e).includes(id)).length;
           return (
             <button
               key={id}
@@ -384,7 +384,7 @@ function EventCard({
             </span>
             <span className={`badge ${timingBadge}`}>{timing.label}</span>
             {event.hidden && <span className="badge badge-backup">hidden</span>}
-            {(event.interests || []).map((id) => (
+            {eventInterests(event).map((id) => (
               <span key={id} className="badge badge-target" title={INTERESTS[id].label}>
                 {INTERESTS[id].short}
               </span>
@@ -582,6 +582,26 @@ function EventCard({
       {(timing.state === 'live' || event.status === 'attending' || event.status === 'attended') && (
         <MetPeople event={event} met={met} onAdd={onAddContact} />
       )}
+
+      <div className="flex mt" style={{ fontSize: 12, gap: 6 }}>
+        <span className="muted">Fields:</span>
+        {INTEREST_IDS.map((id) => {
+          const current = eventInterests(event);
+          const on = current.includes(id);
+          return (
+            <button
+              key={id}
+              className={on ? 'small primary' : 'small'}
+              title={event.interests ? 'Click to change' : 'Guessed from the name — click to set it yourself'}
+              onClick={() =>
+                onSave({ interests: on ? current.filter((f) => f !== id) : INTEREST_IDS.filter((f) => f === id || current.includes(f)) })
+              }
+            >
+              {INTERESTS[id].short}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="mt">
         <label>Notes: who you met, what they said, what to follow up</label>

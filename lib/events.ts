@@ -153,6 +153,11 @@ export function sortEvents(events: CareerEvent[]): CareerEvent[] {
   });
 }
 
+/** An event's name without the year and punctuation, for spotting the same event under two ids. */
+export function eventNameKey(name: string): string {
+  return name.toLowerCase().replace(/\b(19|20)\d{2}\b/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
 /**
  * Seed rows missing from the live list, matched on id. Rows the user has
  * hidden still exist, so they're never re-added; that's why seeded events

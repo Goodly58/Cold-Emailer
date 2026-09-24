@@ -391,7 +391,14 @@ function CompanySetup({
   const [saved, setSaved] = useState(false);
 
   const suggestions = divisionsForSector(company.sector).filter((d) => !divisions.includes(d));
-  const fields = companyInterests(company);
+  // Local copy, so a second click before the first save returns builds on it.
+  const [fields, setFieldsLocal] = useState<InterestId[]>(companyInterests(company));
+  useEffect(() => setFieldsLocal(companyInterests(company)), [company.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  function toggleField(id: InterestId) {
+    const next = fields.includes(id) ? fields.filter((f) => f !== id) : INTEREST_IDS.filter((f) => f === id || fields.includes(f));
+    setFieldsLocal(next);
+    onSave({ interests: next });
+  }
   const preview = domain ? generateCandidates('Sara Al Mansoori', domain, pattern)[0] : '';
 
   async function persist(next?: Partial<Company>) {
@@ -448,7 +455,7 @@ function CompanySetup({
               key={id}
               className={on ? 'small primary' : 'small'}
               title={company.interests ? 'Click to change' : 'Guessed from the sector — click to set it yourself'}
-              onClick={() => onSave({ interests: on ? fields.filter((f) => f !== id) : INTEREST_IDS.filter((f) => f === id || fields.includes(f)) })}
+              onClick={() => toggleField(id)}
             >
               {INTERESTS[id].label}
             </button>

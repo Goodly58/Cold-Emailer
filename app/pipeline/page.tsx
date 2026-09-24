@@ -175,7 +175,8 @@ export default function Pipeline() {
 
   function chooseFields(next: InterestId[]) {
     setFields(next);
-    store('pipeline.fields', next.join(','));
+    // 'none' rather than '', which reads back as "never chosen".
+    store('pipeline.fields', next.length ? next.join(',') : 'none');
   }
 
   const filtered = useMemo(() => {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { updateDb } from '@/lib/store';
-import { missingById } from '@/lib/events';
+import { eventNameKey, missingById } from '@/lib/events';
 import seedJson from '@/data/db.json';
 import type { CareerEvent, Db, Template } from '@/lib/types';
 
@@ -30,7 +30,12 @@ export async function POST() {
   const seed = seedJson as unknown as Db;
 
   const result = await updateDb((db) => {
-    const events = missingById<CareerEvent>(db.events, seed.events || []);
+    // A starter event the weekly web search already added under its own id
+    // (same name, apart from the year) isn't added a second time.
+    const liveNames = new Set(db.events.map((e) => eventNameKey(e.name)));
+    const events = missingById<CareerEvent>(db.events, seed.events || []).filter(
+      (e) => !liveNames.has(eventNameKey(e.name))
+    );
     const templates = missingById<Template>(db.templates, seed.templates || []);
     db.events.push(...events);
     db.templates.push(...templates);

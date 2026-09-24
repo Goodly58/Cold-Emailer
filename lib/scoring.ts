@@ -20,10 +20,15 @@ export interface ScoreInput {
 
 /** Title tags and weaker mentions for a role, using stored tags when it has them. */
 export function roleInterestTags(job: ScoreInput): { tags: InterestId[]; mentions: InterestId[] } {
-  if (job.interests || job.interestMentions) {
-    return { tags: job.interests ?? [], mentions: job.interestMentions ?? [] };
-  }
   const matches = matchRoleInterests({ title: job.roleTitle, division: job.division });
+  if (job.interests || job.interestMentions) {
+    // Stored tags came with the description; a department mention is still
+    // worked out here in case it was never stored.
+    return {
+      tags: job.interests ?? matches.filter((m) => m.via === 'title').map((m) => m.id),
+      mentions: job.interestMentions ?? matches.filter((m) => m.via === 'mention').map((m) => m.id),
+    };
+  }
   return {
     tags: matches.filter((m) => m.via === 'title').map((m) => m.id),
     mentions: matches.filter((m) => m.via === 'mention').map((m) => m.id),
