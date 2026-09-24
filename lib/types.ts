@@ -263,6 +263,19 @@ export interface Profile {
   excludeKeywords?: string;
   /** 0 intern, 1 junior, 2 mid, 3 senior, 4 leadership. */
   targetSeniority?: number;
+  /** Highest completed qualification — also sets the Nafis salary top-up. */
+  educationLevel?: 'high-school' | 'diploma' | 'bachelor' | 'master' | 'doctorate';
+  yearsExperience?: number;
+  /** AED per month, total package. Roles clearly below it rank lower. */
+  minMonthlySalary?: number;
+  skills?: string[];
+  languages?: string[];
+  /** Emails to send per day before the Outreach page suggests stopping. */
+  dailySendCap?: number;
+  /** CV bookkeeping; the text itself lives in the blob store. */
+  cvUpdatedAt?: string;
+  cvWords?: number;
+  cvSource?: 'pdf' | 'text';
 }
 
 export interface Db {

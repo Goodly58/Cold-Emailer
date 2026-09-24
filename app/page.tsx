@@ -179,10 +179,10 @@ export default function Overview() {
       <div className="card playbook">
         <ol style={{ paddingLeft: 20 }}>
           <li>
-            <strong>Set your profile and job preferences</strong> on the{' '}
-            <Link href="/templates">Templates</Link> page. The profile fills merge fields in every
-            email; the preferences (target titles, keywords, exclusions) are what the scraper scores
-            incoming roles against.
+            <strong>Add your CV and job preferences</strong> on the{' '}
+            <Link href="/profile">Profile</Link> page. Your details fill merge fields in every
+            email, your preferences (titles, keywords, minimum pay) rank incoming roles, and your
+            CV is what the AI tailors from.
           </li>
           <li>
             <strong>Sync the company list</strong> on the <Link href="/companies">Companies</Link>{' '}

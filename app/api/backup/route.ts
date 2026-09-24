@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/store';
+import { getBlob, putBlob, readDb, writeDb } from '@/lib/store';
+import { CV_BLOB_KEY } from '@/lib/cv';
 import { COLLECTIONS, type Db } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -7,8 +8,11 @@ export const runtime = 'nodejs';
 /** Download the whole database as JSON. */
 export async function GET() {
   const db = await readDb();
+  // The CV lives outside the main database; include it so a restore is whole.
+  // Job descriptions are left out: they can be fetched again from the boards.
+  const cvText = await getBlob(CV_BLOB_KEY);
   const stamp = new Date().toISOString().slice(0, 10);
-  return new NextResponse(JSON.stringify(db, null, 2), {
+  return new NextResponse(JSON.stringify({ ...db, cvText: cvText ?? undefined }, null, 2), {
     headers: {
       'content-type': 'application/json',
       'content-disposition': `attachment; filename="job-search-backup-${stamp}.json"`,
@@ -49,7 +53,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const { cvText } = incoming as { cvText?: unknown };
+  delete (restored as unknown as Record<string, unknown>).cvText;
   await writeDb(restored);
+  if (typeof cvText === 'string' && cvText.trim()) await putBlob(CV_BLOB_KEY, cvText);
 
   return NextResponse.json({
     ok: true,

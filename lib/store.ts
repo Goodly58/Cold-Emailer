@@ -44,6 +44,7 @@ async function ensureSchema(c: Client): Promise<void> {
        )`,
       `CREATE INDEX IF NOT EXISTS docs_collection ON docs(collection)`,
       `CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
+      `CREATE TABLE IF NOT EXISTS blobs (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`,
     ],
     'write'
   );
@@ -221,4 +222,113 @@ export async function updateDb<T>(fn: (db: Db) => T | Promise<T>): Promise<T> {
   const result = await fn(db);
   await writeDb(db);
   return result;
+}
+
+/* -------------------------------------------------------------------------
+ * Blobs: large text kept out of the main read path.
+ *
+ * readDb() loads every record on every request, which is fine for rows of a
+ * few hundred bytes and ruinous for job descriptions and a CV. Blobs live in
+ * their own table (or a sibling file locally) and are only fetched by key,
+ * when a feature actually needs the text.
+ * ---------------------------------------------------------------------- */
+
+function blobPath(): string {
+  return dbPath().replace(/\.json$/, '') + '.blobs.json';
+}
+
+async function readBlobFile(): Promise<Record<string, string>> {
+  try {
+    return JSON.parse(await fs.readFile(blobPath(), 'utf8')) as Record<string, string>;
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return {};
+    throw e;
+  }
+}
+
+let blobQueue: Promise<unknown> = Promise.resolve();
+
+async function mutateBlobFile(fn: (blobs: Record<string, string>) => void): Promise<void> {
+  blobQueue = blobQueue.then(async () => {
+    const blobs = await readBlobFile();
+    fn(blobs);
+    const file = blobPath();
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.writeFile(`${file}.tmp`, JSON.stringify(blobs), 'utf8');
+    await fs.rename(`${file}.tmp`, file);
+  });
+  await blobQueue;
+}
+
+export async function getBlob(key: string): Promise<string | null> {
+  const c = turso();
+  if (c) {
+    await ensureSchema(c);
+    const r = await c.execute({ sql: 'SELECT value FROM blobs WHERE key = ?', args: [key] });
+    return r.rows.length ? String(r.rows[0].value) : null;
+  }
+  const blobs = await readBlobFile();
+  return key in blobs ? blobs[key] : null;
+}
+
+/** Several blobs in one round trip; missing keys are simply absent. */
+export async function getBlobs(keys: string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (keys.length === 0) return out;
+  const c = turso();
+  if (c) {
+    await ensureSchema(c);
+    for (let i = 0; i < keys.length; i += 100) {
+      const chunk = keys.slice(i, i + 100);
+      const r = await c.execute({
+        sql: `SELECT key, value FROM blobs WHERE key IN (${chunk.map(() => '?').join(',')})`,
+        args: chunk,
+      });
+      for (const row of r.rows) out.set(String(row.key), String(row.value));
+    }
+    return out;
+  }
+  const blobs = await readBlobFile();
+  for (const k of keys) if (k in blobs) out.set(k, blobs[k]);
+  return out;
+}
+
+export async function putBlobs(entries: Array<[string, string]>): Promise<void> {
+  if (entries.length === 0) return;
+  const c = turso();
+  if (c) {
+    await ensureSchema(c);
+    const now = new Date().toISOString();
+    const statements = entries.map(([key, value]) => ({
+      sql: 'INSERT INTO blobs (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
+      args: [key, value, now],
+    }));
+    for (let i = 0; i < statements.length; i += 200) {
+      await c.batch(statements.slice(i, i + 200), 'write');
+    }
+    return;
+  }
+  await mutateBlobFile((blobs) => {
+    for (const [k, v] of entries) blobs[k] = v;
+  });
+}
+
+export async function putBlob(key: string, value: string): Promise<void> {
+  await putBlobs([[key, value]]);
+}
+
+export async function deleteBlobs(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  const c = turso();
+  if (c) {
+    await ensureSchema(c);
+    for (let i = 0; i < keys.length; i += 100) {
+      const chunk = keys.slice(i, i + 100);
+      await c.execute({ sql: `DELETE FROM blobs WHERE key IN (${chunk.map(() => '?').join(',')})`, args: chunk });
+    }
+    return;
+  }
+  await mutateBlobFile((blobs) => {
+    for (const k of keys) delete blobs[k];
+  });
 }
