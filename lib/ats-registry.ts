@@ -164,6 +164,7 @@ export const PLATFORM_DEFS: PlatformDef[] = [
     fields: SLUG_ONLY,
     hint: '<slug>.jobs.personio.com',
     discoverable: false,
+    unverified: true,
     build: ({ slug }) => ({ url: `https://${slug}.jobs.personio.com/search.json?language=en` }),
     parse: (d) =>
       (Array.isArray(d) ? d : d?.jobs || []).map((j: Record<string, any>) => ({
@@ -179,6 +180,7 @@ export const PLATFORM_DEFS: PlatformDef[] = [
     fields: SLUG_ONLY,
     hint: '<slug>.breezy.hr',
     discoverable: false,
+    unverified: true,
     build: ({ slug }) => ({ url: `https://${slug}.breezy.hr/json` }),
     parse: (d) =>
       (Array.isArray(d) ? d : []).map((j: Record<string, any>) => ({
@@ -194,6 +196,7 @@ export const PLATFORM_DEFS: PlatformDef[] = [
     fields: SLUG_ONLY,
     hint: '<slug>.pinpointhq.com',
     discoverable: false,
+    unverified: true,
     build: ({ slug }) => ({ url: `https://${slug}.pinpointhq.com/postings.json` }),
     parse: (d) =>
       (d?.data || []).map((j: Record<string, any>) => ({
@@ -209,6 +212,7 @@ export const PLATFORM_DEFS: PlatformDef[] = [
     fields: SLUG_ONLY,
     hint: '<slug>.teamtailor.com',
     discoverable: false,
+    unverified: true,
     build: ({ slug }) => ({ url: `https://${slug}.teamtailor.com/jobs.json` }),
     parse: (d) =>
       (d?.jobs || (Array.isArray(d) ? d : [])).map((j: Record<string, any>) => ({

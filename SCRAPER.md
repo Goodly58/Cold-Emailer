@@ -13,23 +13,29 @@ time to lose your LinkedIn.
 request, how to parse the response, which identifiers it needs, and whether a board can be found by
 guessing a slug:
 
-| Platform | Identifiers | Discoverable | Confirmed live |
+| Platform | Identifiers | Discoverable | Status |
 |---|---|---|---|
-| Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee | slug | yes | yes |
-| Personio, Breezy, Pinpoint, Teamtailor | slug | no | yes |
-| Workday | tenant + data centre + site | no | **no** |
-| Oracle Cloud Recruiting | host + site number | no | **no** |
+| Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee | slug | yes | vendor-documented public API |
+| Personio, Breezy, Pinpoint, Teamtailor | slug | no | **unverified** |
+| Workday | tenant + data centre + site | no | **unverified** |
+| Oracle Cloud Recruiting | host + site number | no | **unverified** |
+
+**Nothing has been tested against a live board yet.** The environment this was built in blocks
+outbound requests to every job-board host, so every platform — including the vendor-documented ones
+— has only been exercised against stubbed responses in the test suite. The first real test is your
+deployed app: run "Refresh all now" once and check the Health page.
+
+"Vendor-documented" means the vendor publishes the endpoint for exactly this use, so confidence is
+high. "Unverified" means the endpoint comes from research into how the vendor's own careers pages
+work, with no official documentation — plausible, but a first failure there is expected rather than
+surprising. Those platforms carry an "(unverified)" label in the UI for that reason.
 
 "Discoverable" means a company name can plausibly be turned into the identifier. Workday needs a
 data-centre number that no amount of guessing will produce, so discovery skips it rather than
 burning requests.
 
-**On the two unverified platforms.** Workday and Oracle were built from research that could not
-complete a live request — every outbound host was blocked in the environment where they were
-investigated. The request shape is strongly corroborated (independent implementations across many
-codebases agree on every field name), but nobody has seen either return job data. They are labelled
-"unverified" in the UI so an empty result reads as *untested*, not as *no open roles*. Two known
-risks if they fail in production:
+**On Workday and Oracle specifically.** Research found strong corroboration of the request shape
+(independent implementations across many codebases agree on every field name), and two risks:
 
 - Workday fronts these hosts with bot protection that rejects non-browser user agents. This tool
   sends an honest identifying user agent rather than impersonating a browser, so a 403 here is the
