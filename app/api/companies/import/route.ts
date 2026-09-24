@@ -2,25 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { updateDb } from '@/lib/store';
 import { COLLECTION_LIMITS } from '@/lib/validate';
+import { canonical } from '@/lib/names';
 import type { Company, Tier } from '@/lib/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const TIERS = new Set<Tier>(['dream', 'target', 'backup']);
-
-/** Same canonicalisation the seed merge uses, so imports dedupe consistently. */
-const NOISE =
-  /\b(the|group|holding|holdings|company|co|corporation|corp|llc|plc|pjsc|psc|limited|ltd|inc|uae)\b/gi;
-
-function canonical(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\(.*?\)/g, ' ')
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(NOISE, ' ')
-    .replace(/\s+/g, '');
-}
 
 function cleanDomain(raw: unknown): string | undefined {
   if (typeof raw !== 'string') return undefined;

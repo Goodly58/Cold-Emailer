@@ -193,6 +193,57 @@ export interface RefreshRun {
   errors?: Array<{ company: string; error: string }>;
 }
 
+/** Emirati-only fairs are where every employer is there to hire nationals;
+ *  industry expos are for networking with hiring managers at their stands. */
+export type EventKind = 'emirati-fair' | 'career-fair' | 'industry-expo';
+
+export const EVENT_KIND_LABELS: Record<EventKind, string> = {
+  'emirati-fair': 'Emirati-only career fair',
+  'career-fair': 'Career fair',
+  'industry-expo': 'Industry expo',
+};
+
+export type EventStatus = 'interested' | 'registered' | 'attending' | 'attended' | 'skipped';
+
+export const EVENT_STATUSES: EventStatus[] = [
+  'interested',
+  'registered',
+  'attending',
+  'attended',
+  'skipped',
+];
+
+/** Named CareerEvent rather than Event, which is a DOM global. */
+export interface CareerEvent {
+  id: string;
+  name: string;
+  /** Compact label for badges, e.g. "Ru'ya". */
+  shortName?: string;
+  kind: EventKind;
+  /** YYYY-MM-DD. Absent while the organiser hasn't announced dates. */
+  startDate?: string;
+  endDate?: string;
+  /** Shown instead of dates when they're not announced, e.g. "Usually February". */
+  dateNote?: string;
+  hours?: string;
+  venue: string;
+  city: string;
+  url?: string;
+  registerUrl?: string;
+  description?: string;
+  status: EventStatus;
+  /** Company names expected to exhibit — matched against the Companies list. */
+  exhibitors?: string[];
+  /** Where the exhibitor list came from, and how current it is. */
+  exhibitorsNote?: string;
+  /** Prep checklist, keyed by item id. */
+  checklist?: Record<string, boolean>;
+  notes?: string;
+  /** Seeded events are hidden rather than deleted, so a re-sync can't bring them back. */
+  hidden?: boolean;
+  createdAt: string;
+}
+
 export interface Template {
   id: string;
   name: string;
@@ -223,6 +274,7 @@ export interface Db {
   templates: Template[];
   jobSources: JobSource[];
   runs: RefreshRun[];
+  events: CareerEvent[];
 }
 
 export type CollectionName =
@@ -232,7 +284,8 @@ export type CollectionName =
   | 'outreach'
   | 'templates'
   | 'jobSources'
-  | 'runs';
+  | 'runs'
+  | 'events';
 
 export const COLLECTIONS: CollectionName[] = [
   'companies',
@@ -242,4 +295,5 @@ export const COLLECTIONS: CollectionName[] = [
   'templates',
   'jobSources',
   'runs',
+  'events',
 ];

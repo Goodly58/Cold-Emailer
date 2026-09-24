@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function UaePlaybook() {
   return (
     <div className="playbook" style={{ maxWidth: 860 }}>
@@ -117,24 +119,16 @@ export default function UaePlaybook() {
       <h2>4. Where to hunt</h2>
       <div className="callout">
         <strong>Emirati-only career fairs — the highest-density opportunity of the year.</strong>
-        <ul style={{ marginTop: 8, marginBottom: 0 }}>
-          <li>
-            <a href="https://www.ruyacareers.ae" target="_blank" rel="noreferrer">
-              Ru&apos;ya Careers ↗
-            </a>{' '}
-            — Dubai, <strong>28–30 September 2026</strong>.
-          </li>
-          <li>
-            <a href="https://informaconnect.com/tawdheef/" target="_blank" rel="noreferrer">
-              Tawdheef × Zaheb ↗
-            </a>{' '}
-            — ADNEC Abu Dhabi, <strong>17–19 November 2026</strong>. 100+ companies, 1,000+ jobs.
-          </li>
-        </ul>
         <p style={{ marginTop: 8, marginBottom: 0 }}>
-          Every employer in the room is there specifically to hire Emiratis, and hiring managers
-          attend in person. Register early, and grab the exhibitor list when it&apos;s published —
-          it doubles as a target-company list.
+          Ru&apos;ya in Dubai and Tawdheef in Abu Dhabi are the big two, plus regional and
+          sector fairs through the year. Every employer in the room is there specifically to hire
+          Emiratis, and hiring managers attend in person. Register early, email recruiters at the
+          exhibiting companies before you go, and follow up within 48 hours.
+        </p>
+        <p style={{ marginTop: 8, marginBottom: 0 }}>
+          <Link href="/events">
+            <strong>See Events for dates, countdowns, prep checklists and likely exhibitors →</strong>
+          </Link>
         </p>
       </div>
       <ul>

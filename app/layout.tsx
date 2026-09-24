@@ -14,6 +14,7 @@ const NAV = [
   { href: '/runs', label: 'Health' },
   { href: '/companies', label: 'Companies' },
   { href: '/contacts', label: 'Contacts' },
+  { href: '/events', label: 'Events' },
   { href: '/outreach', label: 'Outreach' },
   { href: '/templates', label: 'Templates' },
   { href: '/uae', label: 'UAE Playbook' },

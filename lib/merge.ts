@@ -5,6 +5,7 @@ export interface MergeFields {
   company?: string;
   role?: string;
   hook?: string;
+  event?: string;
 }
 
 export function mergeTemplate(text: string, fields: MergeFields, profile: Profile): string {
@@ -13,6 +14,7 @@ export function mergeTemplate(text: string, fields: MergeFields, profile: Profil
     company: fields.company || '[company]',
     role: fields.role || '[role]',
     hook: fields.hook || '[1-2 sentence personalized hook: why THIS company, why you]',
+    event: fields.event || '[event name]',
     myName: profile.name,
     headline: profile.headline,
     phone: profile.phone,

@@ -16,6 +16,7 @@ export const COLLECTION_LIMITS: Record<CollectionName, number> = {
   templates: 500,
   jobSources: 2_000,
   runs: 200,
+  events: 500,
 };
 
 export class ValidationError extends Error {}

@@ -33,4 +33,4 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
 
       - name: Check the seed database is valid JSON
-        run: node -e "const d=require('./data/db.json'); const need=['profile','companies','contacts','applications','outreach','templates','jobSources','runs']; for (const k of need) if (!(k in d)) { console.error('missing key:', k); process.exit(1) } console.log('seed ok:', d.companies.length, 'companies')"
+        run: node -e "const d=require('./data/db.json'); const need=['profile','companies','contacts','applications','outreach','templates','jobSources','runs','events']; for (const k of need) if (!(k in d)) { console.error('missing key:', k); process.exit(1) } console.log('seed ok:', d.companies.length, 'companies')"

@@ -2,29 +2,44 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { list } from '@/lib/client';
-import { STAGE_LABELS, type Application, type Company, type Contact, type Outreach } from '@/lib/types';
+import { api, list } from '@/lib/client';
+import { eventTiming, formatEventDates, sortEvents, todayLocal } from '@/lib/events';
+import {
+  STAGE_LABELS,
+  type Application,
+  type CareerEvent,
+  type Company,
+  type Contact,
+  type Outreach,
+} from '@/lib/types';
 
 export default function Overview() {
   const [apps, setApps] = useState<Application[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [outreach, setOutreach] = useState<Outreach[]>([]);
+  const [events, setEvents] = useState<CareerEvent[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      list<Application>('applications'),
-      list<Company>('companies'),
-      list<Contact>('contacts'),
-      list<Outreach>('outreach'),
-    ]).then(([a, co, ct, o]) => {
+    (async () => {
+      // New starter events reach an existing database here too, so the
+      // countdown shows even if the Events page has never been opened.
+      await api('/api/sync-seed', { method: 'POST' }).catch(() => undefined);
+      const [a, co, ct, o, ev] = await Promise.all([
+        list<Application>('applications'),
+        list<Company>('companies'),
+        list<Contact>('contacts'),
+        list<Outreach>('outreach'),
+        list<CareerEvent>('events'),
+      ]);
       setApps(a);
       setCompanies(co);
       setContacts(ct);
       setOutreach(o);
+      setEvents(ev);
       setLoaded(true);
-    });
+    })();
   }, []);
 
   const applied = apps.filter((a) => !['found', 'tailored'].includes(a.stage)).length;
@@ -33,9 +48,18 @@ export default function Overview() {
   const replied = outreach.filter((o) => o.status === 'replied').length;
   const replyRate = sent ? Math.round((replied / sent) * 100) : 0;
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Local date, not UTC: in the UAE the UTC date is still yesterday until 4am.
+  const today = todayLocal();
   const due = apps.filter((a) => a.nextActionAt && a.nextActionAt <= today && !['offer', 'rejected'].includes(a.stage));
   const queuedEmails = outreach.filter((o) => ['draft', 'ready'].includes(o.status));
+
+  const liveEvents = sortEvents(events.filter((e) => !e.hidden && e.status !== 'skipped'))
+    .map((e) => ({ event: e, timing: eventTiming(e, today) }))
+    .filter((x) => x.timing.state === 'upcoming' || x.timing.state === 'live');
+  // Within a week and still not registered: the one event task that can't wait.
+  const unregistered = liveEvents.filter(
+    (x) => x.event.status === 'interested' && x.timing.daysUntil !== undefined && x.timing.daysUntil <= 7
+  );
 
   if (!loaded) return <p className="muted">Loading…</p>;
 
@@ -77,13 +101,26 @@ export default function Overview() {
 
       <h2>Due today</h2>
       <div className="card">
-        {due.length === 0 && queuedEmails.length === 0 ? (
+        {due.length === 0 && queuedEmails.length === 0 && unregistered.length === 0 ? (
           <p className="muted">
             Nothing due. Add roles in the <Link href="/pipeline">Pipeline</Link> or queue emails in{' '}
             <Link href="/outreach">Outreach</Link>.
           </p>
         ) : (
           <ul style={{ paddingLeft: 18 }}>
+            {unregistered.map(({ event, timing }) => (
+              <li key={event.id}>
+                <strong>Register for {event.name}</strong>:{' '}
+                {timing.state === 'live' ? "it's on now" : `it starts ${timing.label.toLowerCase()}`}.{' '}
+                {event.registerUrl ? (
+                  <a href={event.registerUrl} target="_blank" rel="noreferrer">
+                    Register ↗
+                  </a>
+                ) : (
+                  <Link href="/events">Open event</Link>
+                )}
+              </li>
+            ))}
             {due.map((a) => (
               <li key={a.id}>
                 <strong>{a.roleTitle}</strong> at {a.companyName} — {STAGE_LABELS[a.stage]}, next action{' '}
@@ -98,6 +135,44 @@ export default function Overview() {
             ))}
           </ul>
         )}
+      </div>
+
+      <h2>Upcoming events</h2>
+      <div className="card">
+        {liveEvents.length === 0 ? (
+          <p className="muted">
+            No upcoming events. See <Link href="/events">Events</Link> for fairs with dates still to
+            be announced.
+          </p>
+        ) : (
+          <table>
+            <tbody>
+              {liveEvents.slice(0, 4).map(({ event, timing }) => (
+                <tr key={event.id}>
+                  <td>
+                    <strong>{event.name}</strong>
+                    <div className="muted" style={{ fontSize: 12 }}>
+                      {formatEventDates(event)} · {event.city}
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        timing.state === 'live' ? 'badge-uae' : timing.soon ? 'badge-soon' : 'badge-status'
+                      }`}
+                    >
+                      {timing.label}
+                    </span>
+                  </td>
+                  <td className="muted">{event.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <p className="mt" style={{ fontSize: 13 }}>
+          <Link href="/events">All events, prep checklists and exhibitors →</Link>
+        </p>
       </div>
 
       <h2>Setup checklist</h2>

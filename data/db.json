@@ -14854,8 +14854,169 @@
       "category": "referral",
       "subject": "Quick favour — {{role}} at {{company}}",
       "body": "Hi {{firstName}},\n\nHope you're well! I'm applying for {{role}} at {{company}} and saw you're connected there.\n\n{{hook}}\n\nWould you be comfortable referring me, or introducing me to the hiring manager? Happy to send a short blurb + CV to make it zero-effort. And of course, tell me if it's awkward — no pressure at all.\n\nThanks either way,\n{{myName}}"
+    },
+    {
+      "id": "t7",
+      "name": "Pre-event: meet at the fair",
+      "category": "event",
+      "subject": "{{event}}: could I stop by the {{company}} stand?",
+      "body": "Hi {{firstName}},\n\nI'm a UAE National ({{headline}}) and I'll be at {{event}}. I'd really value five minutes at the {{company}} stand to hear about {{role}} opportunities.\n\n{{hook}}\n\nIs there a time that suits you, or someone on your team I should ask for? I'm happy to send my CV ahead so you have it on the day.\n\nBest,\n{{myName}}\n{{linkedin}} | {{phone}}"
+    },
+    {
+      "id": "t8",
+      "name": "Post-event follow-up (within 48 hours)",
+      "category": "event",
+      "subject": "Great meeting you at {{event}}",
+      "body": "Hi {{firstName}},\n\nThank you for your time at the {{company}} stand at {{event}}. I enjoyed our conversation about {{role}}.\n\n{{hook}}\n\nI've attached my CV. I'd love to hear about next steps, and I'm happy to come in for a conversation whenever suits you.\n\nBest,\n{{myName}}\n{{headline}}\n{{linkedin}} | {{phone}}"
     }
   ],
   "jobSources": [],
-  "runs": []
+  "runs": [],
+  "events": [
+    {
+      "id": "ev-ruya-2026",
+      "name": "Ru'ya Careers UAE 2026",
+      "shortName": "Ru'ya",
+      "kind": "emirati-fair",
+      "startDate": "2026-09-28",
+      "endDate": "2026-09-30",
+      "hours": "10:00–18:00",
+      "venue": "Dubai World Trade Centre",
+      "city": "Dubai",
+      "url": "https://www.ruyacareers.ae/",
+      "registerUrl": "https://www.ruyacareers.ae/get-hired",
+      "description": "Emirati-only careers fair: 200+ exhibitors and 1,000+ jobs over three days of recruitment, training and networking, across banking, government, technology, healthcare, energy, hospitality and retail.",
+      "status": "interested",
+      "exhibitors": [
+        "Emirates Group",
+        "Emirates NBD",
+        "DP World",
+        "DEWA",
+        "Roads and Transport Authority (RTA)",
+        "Abu Dhabi Islamic Bank (ADIB)",
+        "United Arab Bank (UAB)"
+      ],
+      "exhibitorsNote": "From press coverage of past editions; the 2026 list isn't published yet. Employers tend to return every year, so treat these as likely rather than confirmed, and check ruyacareers.ae before you go.",
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-adipec-2026",
+      "name": "ADIPEC 2026",
+      "shortName": "ADIPEC",
+      "kind": "industry-expo",
+      "startDate": "2026-11-02",
+      "endDate": "2026-11-05",
+      "venue": "ADNEC Centre Abu Dhabi",
+      "city": "Abu Dhabi",
+      "url": "https://www.adipec.com/",
+      "registerUrl": "https://www.adipec.com/",
+      "description": "The world's largest energy exhibition: 2,250+ exhibitors and 239,000+ attendees. Not a job fair, but hiring managers staff the stands, so it's the best networking week of the year for energy and industrial roles.",
+      "status": "interested",
+      "exhibitors": [
+        "ADNOC Group"
+      ],
+      "exhibitorsNote": "ADNOC hosts the event. The full exhibitor list is on adipec.com.",
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-tawdheef-2026",
+      "name": "Tawdheef x Zaheb 2026",
+      "shortName": "Tawdheef",
+      "kind": "emirati-fair",
+      "startDate": "2026-11-17",
+      "endDate": "2026-11-19",
+      "venue": "ADNEC Centre Abu Dhabi",
+      "city": "Abu Dhabi",
+      "url": "https://informaconnect.com/tawdheef/",
+      "registerUrl": "https://informaconnect.com/tawdheef/",
+      "description": "The UAE's flagship Emiratisation careers fair, now in its 20th year: 100+ employers, 1,000+ jobs and 40+ sessions, with a new Entrepreneurship Zone for 2026. Free for registered Emirati visitors.",
+      "status": "interested",
+      "exhibitors": [
+        "Abu Dhabi Airports",
+        "Abu Dhabi Commercial Bank (ADCB)",
+        "ADNOC Group",
+        "Cleveland Clinic Abu Dhabi",
+        "Commercial Bank of Dubai",
+        "Dolphin Energy",
+        "Dubai Police",
+        "Etihad Rail",
+        "e& (Etisalat Group)",
+        "HSBC Bank Middle East",
+        "Mubadala",
+        "National Bank of Fujairah",
+        "Daman (National Health Insurance)"
+      ],
+      "exhibitorsNote": "From coverage of past editions; the 2026 list will appear at informaconnect.com/tawdheef/exhibitor-list. Treat these as likely rather than confirmed.",
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-gitex-2026",
+      "name": "GITEX Global 2026",
+      "shortName": "GITEX",
+      "kind": "industry-expo",
+      "startDate": "2026-12-07",
+      "endDate": "2026-12-11",
+      "venue": "Dubai Exhibition Centre, Expo City (Summit on 7 Dec at DWTC)",
+      "city": "Dubai",
+      "url": "https://www.gitex.com/",
+      "registerUrl": "https://www.gitex.com/",
+      "description": "The region's biggest technology show, at its new Expo City home for the first time. Worth it for tech, AI and digital roles: go to meet the people staffing company stands, not to apply.",
+      "status": "interested",
+      "exhibitors": [],
+      "exhibitorsNote": "The exhibitor list is on gitex.com.",
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-sharjah-nce",
+      "name": "National Career Exhibition (Sharjah)",
+      "shortName": "Sharjah NCE",
+      "kind": "emirati-fair",
+      "dateNote": "Past editions have been held in February at Expo Centre Sharjah. 2027 dates aren't announced yet.",
+      "venue": "Expo Centre Sharjah",
+      "city": "Sharjah",
+      "url": "https://www.facebook.com/NationalCareerShow/",
+      "description": "One of the longest-running Emirati career exhibitions, with government, armed forces and private-sector employers.",
+      "status": "interested",
+      "exhibitors": [
+        "UAE Armed Forces"
+      ],
+      "exhibitorsNote": "UAE Armed Forces was platinum sponsor at a past edition.",
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-gcaa-aviation",
+      "name": "Civil Aviation Career Fair (GCAA)",
+      "shortName": "GCAA fair",
+      "kind": "career-fair",
+      "dateNote": "The first edition ran 21–22 January 2026 at Etihad Museum, Dubai. A 2027 edition isn't announced yet.",
+      "venue": "Etihad Museum",
+      "city": "Dubai",
+      "url": "https://gulfnews.com/business/aviation/jobs-in-uae-gcaas-first-career-fair-will-see-emirates-flydubai-etihad-airports-airbus-hiring-1.500393121",
+      "description": "Aviation-sector hiring fair run by the General Civil Aviation Authority.",
+      "status": "interested",
+      "exhibitors": [
+        "General Civil Aviation Authority (GCAA)",
+        "Emirates Airline",
+        "flydubai",
+        "Etihad Airways",
+        "Airbus Middle East"
+      ],
+      "exhibitorsNote": "From coverage of the January 2026 edition.",
+      "createdAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "id": "ev-industrialists",
+      "name": "Industrialists Career Exhibition",
+      "shortName": "Industrialists",
+      "kind": "emirati-fair",
+      "dateNote": "The 2026 edition has already taken place in Abu Dhabi. The next date isn't announced yet.",
+      "venue": "Venue to be confirmed",
+      "city": "Abu Dhabi",
+      "url": "https://gulfnews.com/amp/story/uae/uae-job-fair-connects-4500-emiratis-with-industrial-careers-1.500569729",
+      "description": "Industrial-sector fair for Emiratis. The 2026 edition drew 4,500 job seekers, with 1,000+ vacancies across engineering, manufacturing, AI and digital technology.",
+      "status": "interested",
+      "exhibitors": [],
+      "createdAt": "2026-09-24T00:00:00Z"
+    }
+  ]
 }

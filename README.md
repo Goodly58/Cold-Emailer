@@ -23,6 +23,7 @@ Open http://localhost:3000.
 | **Sources** | Job boards polled on a schedule; auto-discovery of which ATS a company uses |
 | **Companies** | ~1,000 seeded UAE employers with tiers, email domains/patterns, divisions, Emiratisation notes; sector and tier filters, bulk import |
 | **Contacts** | Decision-makers with email finding, research links, and hook capture |
+| **Events** | UAE career fairs and expos with countdowns, prep checklists, registration tracking, and likely exhibitors linked to your companies; pre-event and follow-up email templates |
 | **Outreach** | Template composer with merge fields, pre-filled Gmail compose, follow-up log |
 | **Templates** | Profile + job preferences (drive scoring) + editable email templates |
 | **Health** | Scraper run history, broken-source alerts, backup/restore |
@@ -31,7 +32,7 @@ Open http://localhost:3000.
 ## Tests
 
 ```bash
-npm test     # 52 tests: unit + refresh-cycle integration
+npm test     # 82 tests: unit + refresh-cycle integration
 ```
 
 CI runs these plus a build and a seed-database check on every push.

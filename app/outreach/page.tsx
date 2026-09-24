@@ -24,6 +24,7 @@ function Composer() {
   const [company, setCompany] = useState(search.get('company') || '');
   const [role, setRole] = useState('');
   const [hook, setHook] = useState(search.get('hook') || '');
+  const [eventName, setEventName] = useState(search.get('event') || '');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [copied, setCopied] = useState(false);
@@ -31,7 +32,10 @@ function Composer() {
   useEffect(() => {
     list<Template>('templates').then((t) => {
       setTemplates(t);
-      if (t.length) setTemplateId(t[0].id);
+      const wanted = search.get('template');
+      const preset = wanted ? t.find((x) => x.id === wanted) : undefined;
+      if (preset) setTemplateId(preset.id);
+      else if (t.length) setTemplateId(t[0].id);
     });
     api<Profile>('/api/profile').then(setProfile);
     list<Outreach>('outreach').then(setOutreach);
@@ -41,7 +45,7 @@ function Composer() {
 
   function applyTemplate() {
     if (!template || !profile) return;
-    const fields = { firstName: toName.split(' ')[0], company, role, hook };
+    const fields = { firstName: toName.split(' ')[0], company, role, hook, event: eventName };
     setSubject(mergeTemplate(template.subject, fields, profile));
     setBody(mergeTemplate(template.body, fields, profile));
   }
@@ -121,6 +125,14 @@ function Composer() {
           <div>
             <label>Role</label>
             <input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Data Analyst" />
+          </div>
+          <div>
+            <label>Event (for event templates)</label>
+            <input
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              placeholder="Ru'ya Careers UAE 2026"
+            />
           </div>
         </div>
         <div className="form-row">

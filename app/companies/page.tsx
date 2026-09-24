@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { api, create, list, patch, remove } from '@/lib/client';
+import { eventTiming, todayLocal } from '@/lib/events';
+import { findByName, indexByName } from '@/lib/names';
 import { PATTERN_ORDER, divisionsForSector, generateCandidates } from '@/lib/email-finder';
 import { SECTOR_GROUPS, sectorGroup } from '@/lib/sectors';
-import type { Company, Tier } from '@/lib/types';
+import type { CareerEvent, Company, Tier } from '@/lib/types';
 
 const TIERS: Tier[] = ['dream', 'target', 'backup'];
 
@@ -33,6 +36,7 @@ export default function Companies() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [events, setEvents] = useState<CareerEvent[]>([]);
   const [limit, setLimit] = useState(60);
   const [importText, setImportText] = useState('');
   const [importing, setImporting] = useState(false);
@@ -40,6 +44,7 @@ export default function Companies() {
 
   useEffect(() => {
     list<Company>('companies').then(setCompanies);
+    list<CareerEvent>('events').then(setEvents).catch(() => undefined);
   }, []);
 
   async function handleAdd(e: React.FormEvent) {
@@ -82,6 +87,27 @@ export default function Companies() {
       setSyncing(false);
     }
   }
+
+  // Which upcoming events each company is exhibiting at, so a fair shows up
+  // right where you're deciding who to contact.
+  const exhibiting = useMemo(() => {
+    const index = indexByName(companies);
+    const today = todayLocal();
+    const map = new Map<string, CareerEvent[]>();
+    for (const ev of events) {
+      if (ev.hidden) continue;
+      const state = eventTiming(ev, today).state;
+      if (state !== 'upcoming' && state !== 'live') continue;
+      for (const name of ev.exhibitors || []) {
+        const company = findByName(index, name);
+        if (!company) continue;
+        const list = map.get(company.id) || [];
+        if (!list.includes(ev)) list.push(ev);
+        map.set(company.id, list);
+      }
+    }
+    return map;
+  }, [companies, events]);
 
   const shown = companies.filter((c) => {
     const q = filter.toLowerCase();
@@ -229,6 +255,17 @@ export default function Companies() {
               <tr key={c.id}>
                 <td>
                   <strong>{c.name}</strong>
+                  {(exhibiting.get(c.id) || []).map((ev) => (
+                    <Link
+                      key={ev.id}
+                      href="/events"
+                      className="badge badge-soon"
+                      style={{ marginLeft: 6, textDecoration: 'none' }}
+                      title={`Likely exhibiting at ${ev.name}`}
+                    >
+                      at {ev.shortName || ev.name}
+                    </Link>
+                  ))}
                   <div style={{ fontSize: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {c.careersUrl && (
                       <a href={c.careersUrl} target="_blank" rel="noreferrer">
