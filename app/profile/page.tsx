@@ -93,8 +93,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error(data.error || 'Upload failed');
       const parts = [`Saved your CV (${data.words} words).`];
       if (data.filled?.length) parts.push(`Filled in: ${data.filled.join(', ')}.`);
-      else if (data.usedAi) parts.push('Your profile already had those details, so nothing was overwritten.');
-      else parts.push('AI is off, so profile fields weren\'t filled automatically.');
+      else parts.push('Your profile already had those details, so nothing was overwritten.');
       if (data.usage?.costUsd) parts.push(`AI cost ≈ $${data.usage.costUsd.toFixed(3)}.`);
       setCvMsg(parts.join(' '));
       setPasted('');
@@ -120,45 +119,19 @@ export default function ProfilePage() {
       <h1>Profile & CV</h1>
       <p className="subtitle">
         Everything here feeds the rest of the app: your details fill email merge fields, your
-        preferences rank scraped roles, and your CV is the ground truth the AI works from. It
-        tailors from what&apos;s in your CV and never invents experience.
+        preferences rank scraped roles, and your CV is kept as the source of truth for
+        tailoring your applications.
       </p>
 
-      {ai && (
-        <div className="card mb" style={{ borderColor: ai.configured ? 'var(--green)' : 'var(--amber)' }}>
-          {ai.configured ? (
-            <p>
-              <span className="badge badge-uae">AI on</span>{' '}
-              <span className="muted" style={{ fontSize: 13 }}>
-                Using <code>{ai.model}</code>. Fit analysis, tailored CVs and cover letters, email
-                drafting, interview prep and event discovery are available.
-              </span>
-            </p>
-          ) : (
-            <>
-              <p>
-                <span className="badge badge-soon">AI off</span>{' '}
-                <strong>Switch on the AI features with an Anthropic API key.</strong>
-              </p>
-              <ol className="muted" style={{ fontSize: 13, paddingLeft: 20, marginTop: 8 }}>
-                <li>
-                  Create a key at{' '}
-                  <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">
-                    console.anthropic.com ↗
-                  </a>{' '}
-                  and add a little credit. Typical use costs a few cents per action.
-                </li>
-                <li>
-                  In Vercel → your project → Settings → Environment Variables, add{' '}
-                  <code>ANTHROPIC_API_KEY</code>, then redeploy.
-                </li>
-              </ol>
-              <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-                Everything else works without it: scraping, ranking, templates, events and
-                tracking.
-              </p>
-            </>
-          )}
+      {ai?.configured && (
+        <div className="card mb" style={{ borderColor: 'var(--green)' }}>
+          <p>
+            <span className="badge badge-uae">AI on</span>{' '}
+            <span className="muted" style={{ fontSize: 13 }}>
+              Using <code>{ai.model}</code>. Fit analysis, tailored CVs and cover letters, email
+              drafting, interview prep and event discovery are available.
+            </span>
+          </p>
         </div>
       )}
 
@@ -220,11 +193,6 @@ export default function ProfilePage() {
           <button onClick={() => setShowPaste(!showPaste)} disabled={busy}>
             {showPaste ? 'Cancel' : 'Paste as text'}
           </button>
-          {!ai?.configured && (
-            <span className="muted" style={{ fontSize: 12 }}>
-              PDF reading needs the AI; pasting works without it.
-            </span>
-          )}
         </div>
         {showPaste && (
           <div className="mt">

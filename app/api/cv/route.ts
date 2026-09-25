@@ -5,7 +5,9 @@ import {
   CV_BLOB_KEY,
   CV_MAX_CHARS,
   CV_MAX_PDF_BYTES,
+  basicFields,
   cleanCvText,
+  pdfToText,
   extractFromPdf,
   extractFromText,
   wordCount,
@@ -97,16 +99,27 @@ export async function POST(req: NextRequest) {
 
   try {
     if (pdf) {
-      if (!aiConfigured()) {
-        return NextResponse.json(
-          { error: 'Reading PDFs uses the AI, which is off. Paste your CV as text, or add ANTHROPIC_API_KEY.' },
-          { status: 503 }
-        );
+      // The text layer is read locally; the AI is only a fallback for a
+      // scanned CV with no text in it.
+      text = await pdfToText(new Uint8Array(pdf)).catch(() => '');
+      if (text.length < 200) {
+        if (!aiConfigured()) {
+          return NextResponse.json(
+            { error: "That PDF has no readable text (it may be a scan). Paste your CV as text instead." },
+            { status: 400 }
+          );
+        }
+        const out = await extractFromPdf(pdf.toString('base64'));
+        text = out.text;
+        fields = out.fields;
+        usage = out.usage;
+      } else if (aiConfigured()) {
+        const out = await extractFromText(text);
+        fields = out.fields;
+        usage = out.usage;
+      } else {
+        fields = basicFields(text);
       }
-      const out = await extractFromPdf(pdf.toString('base64'));
-      text = out.text;
-      fields = out.fields;
-      usage = out.usage;
     } else {
       text = cleanCvText(text);
       if (text.length < 200) {
@@ -116,6 +129,8 @@ export async function POST(req: NextRequest) {
         const out = await extractFromText(text);
         fields = out.fields;
         usage = out.usage;
+      } else {
+        fields = basicFields(text);
       }
     }
   } catch (e) {
@@ -138,7 +153,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     words: wordCount(text),
-    usedAi: Boolean(fields),
+    usedAi: Boolean(usage),
     filled: result.filled,
     extracted: fields,
     profile: result.profile,

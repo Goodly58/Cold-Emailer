@@ -32,8 +32,9 @@ Open http://localhost:3000.
 | **Profile** | Your CV (PDF or pasted), details, what you're looking for, minimum pay, education (sets your Nafis top-up) |
 | **UAE Playbook** | Emiratisation quotas, Nafis after the September 2026 changes, career fairs, and how to use them in outreach |
 
-AI features need an Anthropic API key; everything else works without one. See
-[DEPLOY.md](./DEPLOY.md#ai-features-anthropic-api-key).
+The optional AI features (the ✨ buttons) need an Anthropic API key and are hidden without one;
+everything else, including reading a PDF CV, works with no key. See
+[DEPLOY.md](./DEPLOY.md#ai-features-optional-anthropic-api-key).
 
 ## Tests
 

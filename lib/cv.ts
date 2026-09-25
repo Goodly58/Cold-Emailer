@@ -86,3 +86,58 @@ export function cleanCvText(raw: string): string {
     .trim()
     .slice(0, CV_MAX_CHARS);
 }
+
+/* ------------------------------------------------ without the AI */
+
+/**
+ * Text from a PDF CV, read locally with no AI. Works for any CV exported from
+ * Word or Google Docs; a scanned image has no text layer and comes back
+ * (near) empty, which the caller reports.
+ */
+export async function pdfToText(pdf: Uint8Array): Promise<string> {
+  const { extractText, getDocumentProxy } = await import('unpdf');
+  const doc = await getDocumentProxy(pdf);
+  const { text } = await extractText(doc, { mergePages: true });
+  return cleanCvText(Array.isArray(text) ? text.join('\n') : text);
+}
+
+const LANGUAGES = ['Arabic', 'English', 'French', 'Hindi', 'Urdu', 'Spanish', 'German', 'Mandarin', 'Chinese', 'Russian', 'Persian', 'Farsi', 'Turkish', 'Italian', 'Japanese', 'Korean', 'Portuguese', 'Tagalog', 'Malayalam', 'Tamil', 'Bengali'];
+
+/**
+ * The profile fields a CV states plainly, found by rules rather than a model:
+ * the name on the first line, the highest degree named, and languages from a
+ * languages line. Anything less certain is left blank for you to fill.
+ */
+export function basicFields(text: string): CvFields {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const first = lines[0] || '';
+  const name = /^[A-Za-z؀-ۿ' .-]{3,60}$/.test(first) && first.split(/\s+/).length <= 6 ? first : '';
+
+  const t = text.toLowerCase();
+  const educationLevel: CvFields['educationLevel'] = /\b(ph\.?d|doctorate|doctor of)\b/.test(t)
+    ? 'doctorate'
+    : /\b(master'?s?|msc|m\.sc|mba|m\.a\.|master of)\b/.test(t)
+      ? 'master'
+      : /\b(bachelor'?s?|bsc|b\.sc|b\.a\.|beng|b\.eng|bachelor of)\b/.test(t)
+        ? 'bachelor'
+        : /\b(diploma|associate degree)\b/.test(t)
+          ? 'diploma'
+          : /\b(high school|secondary|qce|a[- ]levels?|thanaweya|ib diploma)\b/.test(t)
+            ? 'high-school'
+            : 'unknown';
+
+  // Every "Languages:" list, since "Programming Languages: Python…" often comes first.
+  const lists = [...text.matchAll(/languages?\s*:([^.;\n]*)/gi)].map((m) => m[1]).join(' ');
+  const languages = LANGUAGES.filter((l) => new RegExp(`\\b${l}\\b`, 'i').test(lists));
+
+  return {
+    name,
+    headline: '',
+    yearsExperience: null,
+    educationLevel,
+    skills: [],
+    languages,
+    recentRoles: [],
+    suggestedTargetTitles: [],
+  };
+}

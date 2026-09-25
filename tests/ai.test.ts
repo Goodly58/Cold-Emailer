@@ -263,3 +263,14 @@ test('the CV endpoint stores pasted text without AI, and keeps profile edits', a
     if (saved) process.env.ANTHROPIC_API_KEY = saved;
   }
 });
+
+test('basic CV fields are read without the AI', async () => {
+  const { basicFields } = await import('../lib/cv');
+  const f = basicFields(
+    'Sara Al Mansoori\nsara@example.com\nEDUCATION\nBachelor of Science in Finance\nSKILLS\nProgramming Languages: Python, SQL; Languages: English, Arabic.'
+  );
+  assert.equal(f.name, 'Sara Al Mansoori');
+  assert.equal(f.educationLevel, 'bachelor');
+  assert.deepEqual(f.languages, ['Arabic', 'English']);
+  assert.equal(basicFields('CURRICULUM VITAE OF SOMEONE WITH A VERY LONG HEADING LINE THAT IS NOT A NAME AT ALL\n').name, '');
+});

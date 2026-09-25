@@ -972,6 +972,9 @@ function RoleAi({ app, aiOn, onUpdate }: { app: Application; aiOn: boolean; onUp
   const meta = (r: Saved<unknown>) =>
     `${r.generatedAt.slice(0, 10)}${r.usage ? ` · ~$${r.usage.costUsd.toFixed(3)}` : ''}${r.usedJd === false ? ' · no job description, so rough' : ''}${r.usedCv === false ? ' · no CV on file' : ''}`;
 
+  // The AI features are optional; with them off there's nothing to show.
+  if (!aiOn && !fit && !prep) return null;
+
   return (
     <div className="mt" style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
       <div className="flex">
@@ -985,11 +988,7 @@ function RoleAi({ app, aiOn, onUpdate }: { app: Application; aiOn: boolean; onUp
               {busy === 'prep' ? 'Preparing… (1–2 minutes)' : prep ? '↻ Rebuild prep kit' : '✨ Interview prep kit'}
             </button>
           </>
-        ) : (
-          <span className="muted" style={{ fontSize: 12 }}>
-            Off. <Link href="/profile">Add an Anthropic API key</Link> to get fit analysis, tailored bullets, a cover letter and interview prep.
-          </span>
-        )}
+        ) : null}
       </div>
       {error && <p className="error">{error}</p>}
 

@@ -548,11 +548,7 @@ function Composer() {
                 </button>
               )}
             </>
-          ) : (
-            <span className="muted" style={{ fontSize: 12 }}>
-              AI drafting is off. <Link href="/profile">Switch it on</Link> with an Anthropic API key.
-            </span>
-          )}
+          ) : null}
         </div>
         {error && <p className="error">{error}</p>}
 

@@ -181,28 +181,22 @@ export default function Events() {
         a stand where they&apos;re expecting you beats walking up cold.
       </p>
 
+      {discovery?.configured && (
       <div className="card mb flex spread" style={{ fontSize: 13 }}>
         <div>
           <strong>Keeping this list current</strong>
           <div className="muted">
-            {discovery?.configured
-              ? discovery.last
-                ? `Checked the web on ${discovery.last.at.slice(0, 10)}: ${discovery.last.added} added, ${discovery.last.updated} updated. It checks again every Monday.`
-                : 'Every Monday the app searches the web for new UAE career fairs and newly announced dates.'
-              : 'With an Anthropic API key, the app searches the web every Monday for new UAE career fairs and newly announced dates.'}
+            {discovery.last
+              ? `Checked the web on ${discovery.last.at.slice(0, 10)}: ${discovery.last.added} added, ${discovery.last.updated} updated. It checks again every Monday.`
+              : 'Every Monday the app searches the web for new UAE career fairs and newly announced dates.'}
           </div>
           {discoveryMsg && <div className="mt">{discoveryMsg}</div>}
         </div>
-        {discovery?.configured ? (
-          <button className="fixed" disabled={discovering} onClick={discover}>
-            {discovering ? 'Searching… (1–2 minutes)' : '🔎 Check for new events now'}
-          </button>
-        ) : (
-          <Link className="btn small" href="/profile">
-            Set up AI
-          </Link>
-        )}
+        <button className="fixed" disabled={discovering} onClick={discover}>
+          {discovering ? 'Searching… (1–2 minutes)' : '🔎 Check for new events now'}
+        </button>
       </div>
+      )}
 
       <div className="flex mb" style={{ fontSize: 13 }}>
         <span className="muted">Fields:</span>

@@ -69,10 +69,12 @@ Notes:
   compute under Project Settings → Functions.
 - The **Refresh all now** button on the Sources page runs the exact same job on demand, so you're
   never waiting on the schedule.
-### AI features (Anthropic API key)
+### AI features (optional Anthropic API key)
 
-Add **`ANTHROPIC_API_KEY`** to switch on everything marked ✨ in the app: reading your CV from a
-PDF, drafting and improving emails (and Arabic versions), researching a company for a hook, fit
+**Not needed.** The app is fully usable without it: scraping, ranking, pay and Nafis, fields,
+outreach with checks and follow-ups, events and CV upload (PDFs are read locally) all work with
+no key, and the AI buttons simply don't appear. If you ever want them, adding
+**`ANTHROPIC_API_KEY`** switches on everything marked ✨: reading a scanned CV, drafting and improving emails (and Arabic versions), researching a company for a hook, fit
 analysis and tailored CV bullets per role, interview prep kits, the weekly review and the weekly
 event search.
 
